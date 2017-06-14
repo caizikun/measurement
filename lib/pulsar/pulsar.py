@@ -8,6 +8,7 @@
 import time
 import numpy as np
 import logging
+import qt
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
@@ -394,7 +395,11 @@ class Pulsar:
         # the mapping from index-name to original name will be saved in
         # qt.pulsar.simplified_wfnames_mapping and may be shown sortedly by invoking
         # qt.pulsar.show_simplified_wfnames_mapping()
-        simplify_wfnames = kw.pop('simplify_wfnames', False)
+        if qt.current_setup == 'lt2':
+            simplify_wfnames = True
+        else:
+            simplify_wfnames = kw.pop('simplify_wfnames', False)
+
         simplified_wfnames = {}
 
         # order the waveforms according to physical AWG channels and

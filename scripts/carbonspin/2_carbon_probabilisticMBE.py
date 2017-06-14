@@ -67,6 +67,8 @@ def MBE(name, carbon_list   = [1,2],
             ['I','X'],['I','Y'],['I','Z'],
             ['Z','Z'],['X','X'],['Y','Y']])
 
+    m.params['Tomography Bases'] = [['X','X']]
+
     # m.params['Tomography Bases'] = ([
     #         ['X','X'],['X','Y'],['X','Z'],
     #         ['Y','X'],['Y','Y'],['Y','Z'],
@@ -127,12 +129,12 @@ if __name__ == '__main__':
     MBE(SAMPLE + 'positive', el_RO= 'positive',carbon_list = carbons,
                         carbon_init_list = carbons,number_of_MBE_steps=1,
                         carbon_init_methods=['swap','swap'],
-                        carbon_init_thresholds = [0,0],debug=False)
+                        carbon_init_thresholds = [0,0],debug=True)
 
-    MBE(SAMPLE + 'negative', el_RO= 'negative',carbon_list = carbons,
-                        carbon_init_list = carbons,number_of_MBE_steps=1,
-                        carbon_init_methods=['swap','swap'],
-                        carbon_init_thresholds = [0,0],debug=False)
+    # MBE(SAMPLE + 'negative', el_RO= 'negative',carbon_list = carbons,
+    #                     carbon_init_list = carbons,number_of_MBE_steps=1,
+    #                     carbon_init_methods=['swap','swap'],
+    #                     carbon_init_thresholds = [0,0],debug=False)
     # MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,366,366,586,586,587,587,633,633,748,748,810,810,967,968,969,972,973
+' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,383,383,612,612,613,613,657,657,784,784,844,844,1010,1011,1012,1015,1016
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -173,6 +173,8 @@ DIM MBI_starts, MBI_failed AS LONG
 dim current_MBI_attempt, MBI_attempts_before_CR as long
 DIM C13_MBI_RO_duration, RO_duration as long 
 DIM purify_RO_is_MBI_RO as long
+DIM number_of_C_init_ROs, number_of_C_encoding_ROs AS LONG
+DIM current_C_init_RO, current_C_encoding_RO AS LONG
 
 ' Phase compensation
 DIM phase_to_compensate, total_phase_offset_after_sequence AS FLOAT
@@ -186,7 +188,12 @@ DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_fe
 DIM minimal_delay_time, delay_feedback_target_phase AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 
-DIM dedicate_next_cycle_to_nuclear_calculations AS LONG
+DIM dedicate_next_cycle_to_calculations AS LONG
+DIM requested_calculations AS LONG
+#DEFINE REQ_CALC_NONE                       0
+#DEFINE REQ_CALC_UPDATE_ON_LDE_ATTEMPT      1
+#DEFINE REQ_CALC_UPDATE_ON_DELAY_TIME       2
+#DEFINE REQ_CALC_SET_DELAY_LINE             3
 
 ' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
@@ -311,6 +318,14 @@ SUB strobe_tictoc()
   Par_44 = Par_43 - Par_42
 ENDSUB
 
+SUB AWG_start_trigger()
+  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+  ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+  sleep_for_trigger()
+  P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0) 
+ENDSUB
+
+
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -355,6 +370,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   fail_mode_after_adwin_comm = 0 'CR check
   success_mode_after_SSRO = 0
   fail_mode_after_SSRO = 0
+  current_C_init_RO = 0
+  current_C_encoding_RO = 0
       
   success_event_counter = 0
   Success_of_SSRO_is_ms0 = 1 'usually, we condition on getting a click
@@ -414,6 +431,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_fb_delayline            = DATA_20[43]
   do_sweep_delay_cycles            = DATA_20[44]
   delay_feedback_N                 = DATA_20[45]
+  number_of_C_init_ROs             = DATA_20[46]
+  number_of_C_encoding_ROs         = DATA_20[47]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -496,7 +515,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     FOR j = 1 to phase_feedback_resolution_steps
       ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
       ' of course a more elegant (i.e. with less rotation on average) exists but meh for now
-      ' note: minimal feedback time is actually twice the minimal delay time (because we delay twice)
+      ' note: minimal feedback time is actually twice the minimal delay time (because we delay twice per pulse)
       nuclear_feedback_index = (i-1) * phase_feedback_resolution_steps + j
       
       phase_to_compensate = (j - 1) * phase_feedback_resolution
@@ -517,7 +536,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     NEXT j
   NEXT i
   
-  dedicate_next_cycle_to_nuclear_calculations = 0
+  dedicate_next_cycle_to_calculations = 0
+  requested_calculations = REQ_CALC_NONE
   
     
   
@@ -545,6 +565,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_15 = -1
   PAR_55 = 0                      ' invalid data marker
   Par_62 = 0
+  
+  Par_40 = -1
+  Par_41 = -1
+  Par_42 = -1
+  Par_43 = -1
+  Par_44 = -1
 '''''''''''''''''''''''''
   ' flow control: 
 '''''''''''''''''''''''''
@@ -634,38 +660,48 @@ EVENT:
   PAR_61 = mode   
   Par_60 = timer
   
-  ' DATA_111[1000000000] = 3
-  
-  '  IF (current_mode <> mode) THEN  
-  '    inc(flowchart_index)  
-  '    if (flowchart_index > max_flowchart_modes) THEN
-  '      flowchart_index = 1
-  '    endif
-  '    mode_flowchart[flowchart_index] = mode
-  '    mode_flowchart_cycles[flowchart_index] = 0
-  '  endif
-  '                
-  '  if (flowchart_index > 0) THEN
-  '    inc(mode_flowchart_cycles[flowchart_index])
-  '  endif
+  IF (current_mode <> mode) THEN  
+    inc(flowchart_index)  
+    if (flowchart_index > max_flowchart_modes) THEN
+      flowchart_index = 1
+    endif
+    mode_flowchart[flowchart_index] = mode
+    mode_flowchart_cycles[flowchart_index] = 0
+  endif
+                  
+  if (flowchart_index > 0) THEN
+    inc(mode_flowchart_cycles[flowchart_index])
+  endif
 
   
   current_mode = mode
   start_time = Read_Timer()
   
-  IF (dedicate_next_cycle_to_nuclear_calculations > 0) THEN ' 231 cycles in the true branch
-    dedicate_next_cycle_to_nuclear_calculations = 0
+  IF (dedicate_next_cycle_to_calculations > 0) THEN ' 231 cycles in the true branch    
+    dedicate_next_cycle_to_calculations = 0
     
-    update_nuclear_phases_from_list(nuclear_phases_per_seqrep)
-    modulo_nuclear_phases()
-    
-    nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles            
-    tico_delay_line_set_cycles(phase_compensation_delay_cycles[nuclear_feedback_index]) ' takes +/- 36 cycles
-    nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index] ' takes 4 cycles
-    
-    DATA_108[repetition_counter + 1] = nuclear_phases[current_feedback_nucleus]
-    DATA_109[repetition_counter + 1] = phase_compensation_delay_cycles[nuclear_feedback_index]
-    
+    SELECTCASE requested_calculations
+        
+      CASE REQ_CALC_UPDATE_ON_LDE_ATTEMPT
+        update_nuclear_phases_from_list(nuclear_phases_per_seqrep)
+        modulo_nuclear_phases()
+        
+      CASE REQ_CALC_UPDATE_ON_DELAY_TIME
+        update_nuclear_phases_from_time(nuclear_feedback_time)
+        modulo_nuclear_phases()
+        
+      CASE REQ_CALC_SET_DELAY_LINE
+        nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles            
+        tico_delay_line_set_cycles(phase_compensation_delay_cycles[nuclear_feedback_index]) ' takes +/- 36 cycles
+        nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index] ' takes 4 cycles
+        DATA_108[repetition_counter + 1] = nuclear_phases[current_feedback_nucleus]
+        DATA_109[repetition_counter + 1] = phase_compensation_delay_cycles[nuclear_feedback_index] 
+        
+        dedicate_next_cycle_to_calculations = 1
+        requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
+        
+    ENDSELECT
+   
     INC(timer)
   ELSE
       
@@ -784,10 +820,7 @@ EVENT:
             INC(MBI_starts)
             PAR_78 = MBI_starts          
             ' Logic: If local or master, own awg is triggered. If nonlocal and slave, AWG is triggered by master's awg to minimize jitter
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            sleep_for_trigger()
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+            AWG_start_trigger()
           
           
           ELSE ' AWG in MBI sequence is running
@@ -795,6 +828,7 @@ EVENT:
             digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
             if ((digin_this_cycle and AWG_done_DI_pattern)>0) then ' AWG has done the MW pulses -> go to next step
               if (awg_done_was_low >0) then
+                INC(current_C_init_RO)
                 time_spent_in_state_preparation = time_spent_in_state_preparation + timer
                 timer = -1
                 IF (do_C_init_SWAP_wo_SSRO > 0) THEN 'no SSRO and no communication required
@@ -832,6 +866,7 @@ EVENT:
           ELSE ' MBI failed. Retry or communicate?
             INC(MBI_failed)
             PAR_74 = MBI_failed 'for debugging
+            current_C_init_RO = 0 ' go back to initialising the first carbon
 
             IF (current_MBI_attempt = MBI_attempts_before_CR) then ' failed too often -> communicate failure (if in remote mode) and then go to CR
               current_MBI_attempt = 1 'reset counter
@@ -849,8 +884,17 @@ EVENT:
           ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           sleep_for_trigger()
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          mode = 4
-          timer = -1
+          
+          IF (current_C_init_RO = number_of_C_init_ROs) THEN
+            ' the last carbon has been initialised, move on
+            mode = 4
+            timer = -1
+          ELSE
+            ' we still have some carbons to initialize
+            mode = 2
+            timer = 1 ' skip the AWG triggering for timer=0
+          ENDIF
+          
         
         CASE 4    '  wait and count repetitions of the entanglement AWG sequence
           ' the awg gives repeated adwin sync pulses, which are counted. In the case of an entanglement event, we get a plu signal.
@@ -859,10 +903,7 @@ EVENT:
           ' otherwise getting a done trigger means failure of the sequence and we go to CR cheking
           ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
           IF (timer = 0) THEN ' first run: send triggers
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            sleep_for_trigger()
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0) 
+            AWG_start_trigger()
           ENDIF
         
           ' monitor inputs
@@ -901,10 +942,7 @@ EVENT:
        
         CASE 5  ' wait for the electron Carbon swap to be done and then read out the electron if this is specified in the msmt parameters
           IF (timer =0) THEN
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            sleep_for_trigger()
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)          
+            AWG_start_trigger()          
           endif 
         
         
@@ -912,6 +950,7 @@ EVENT:
             time_spent_in_sequence = time_spent_in_sequence + timer
             timer = -1
             if (AWG_done_was_low >0) then ' prevents double jump in case the awg trigger is long
+              INC(current_C_encoding_RO)
               IF (do_SSRO_after_electron_carbon_SWAP = 0) then
                 mode = 51 ' see flow control
               ELSE
@@ -936,19 +975,22 @@ EVENT:
           ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           sleep_for_trigger()
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          mode = mode_after_swap 'see flow control
-          timer = -1
+          
+          IF (current_C_encoding_RO = number_of_C_encoding_ROs) THEN
+            ' we're done encoding, moving on
+            mode = mode_after_swap 'see flow control
+            timer = -1
+          ELSE
+            ' we still have some encoding to do, jumping back to LDE counting + swap
+            mode = 4
+            timer = 1
+          ENDIF
+          
         
         CASE 6    ' save ssro after swap result. Then wait and count repetitions of the entanglement AWG sequence as in case 4
           IF (timer =0) THEN
             'DATA_37[repetition_counter+1] = SSRO_result
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            ' CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            sleep_for_trigger()
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
-          
-            current_feedback_nucleus = 1
-          
+            AWG_start_trigger()        
           ENDIF
                 
                 
@@ -963,7 +1005,8 @@ EVENT:
               ' we don't have enough processing time left to do that in this round, 
               ' postpone it to the next round
               IF ((do_phase_fb_delayline > 0) AND (do_sweep_delay_cycles = 0)) THEN
-                dedicate_next_cycle_to_nuclear_calculations = 1
+                requested_calculations = REQ_CALC_UPDATE_ON_LDE_ATTEMPT
+                dedicate_next_cycle_to_calculations = 1
               ENDIF
               
             
@@ -990,20 +1033,37 @@ EVENT:
             ENDIF  
           ENDIF
         
-        CASE 7 ' Phase synchronisation
-          ' With the delay line phase correction there is nothing really to do here
-          ' as the delay has already been set while counting along
-          ' the only thing left to do is update the nuclear phases based on feedback time
+        CASE 7 ' phase correction phase
+          ' we receive a trigger from the AWG to set up the delay line for the next carbon
           
           IF (do_phase_fb_delayline > 0) THEN
-            update_nuclear_phases_from_time(nuclear_feedback_time) ' takes 215 cycles
-            modulo_nuclear_phases()  
-          ENDIF
+            digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE) ' 71 cycles
+                
+            if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
+              IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
+                ' we're moving to the next feedback carbon
+                INC(current_feedback_nucleus)
+                
+                dedicate_next_cycle_to_calculations = 1
+                requested_calculations = REQ_CALC_SET_DELAY_LINE
+            
+              ENDIF
+              AWG_repcount_was_low = 0
+            else
+              AWG_repcount_was_low = 1
+            endif
+            
+            IF (current_feedback_nucleus = number_of_dps_nuclei) THEN
+              ' we're done with setting up feedback cycles
+              timer = -1
+              mode = mode_after_phase_correction
+            ENDIF
+            
+          ELSE
+            timer = -1
+            mode = mode_after_phase_correction
+          ENDIF       
           
-       
-        
-          timer = -1
-          mode = mode_after_phase_correction
         CASE 8 ' Wait until purification gate is done. 
                 
           'check the done trigger
@@ -1119,11 +1179,14 @@ EVENT:
           AWG_sequence_repetitions_first_attempt = 0
           AWG_sequence_repetitions_second_attempt = 0
           current_MBI_attempt = 1
-          ' JS DLFB: reset number of tico delay cycles here
-          tico_delay_line_set_cycles(0)
+          
+          current_C_init_RO = 0
+          current_C_encoding_RO = 0
           'trying_mbi = 0
-        
+          
+          current_feedback_nucleus = 0        
           reset_nuclear_phases() ' this takes 55 cycles
+          tico_delay_line_set_cycles(0)
         
           mbi_timer = 0 
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
@@ -1156,7 +1219,7 @@ EVENT:
   IF (Par_36 > overlong_cycle_threshold) THEN
     INC(overlong_cycles_per_mode[current_mode + 1])
     INC(Par_34)
-    IF(current_mode = 6) THEN
+    IF(current_mode = 7) THEN
       Par_35 = Par_36
       Par_37 = timer
       Par_38 = Par_41

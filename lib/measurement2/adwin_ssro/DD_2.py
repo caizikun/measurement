@@ -26,7 +26,7 @@ class Gate(object):
         '''
         Supported gate types in the scripts are
         connection/phase gates: 'Connection_element' , 'electron_Gate',
-        decoupling gates:  'Carbon_Gate', 'electron_decoupling'
+        decoupling gates:  'Carbon_Gate', 'electron_decoupling', 'feedback_trigger_decoupling'
         misc gates: 'passive_elt', (also has tau_cut)
         special gates: 'mbi', 'Trigger', 'LDE'
         '''
@@ -742,6 +742,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
         elif Gate.tau<0.5e-6:
             Gate.scheme = 'single_block'
+            g = Gate
+            print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
+
         elif Gate.N%8:           ## ERROR? Should be N%8 == 0: ?
             Gate.scheme = 'XY8'
         elif Gate.N%2:           ## ERROR?
@@ -962,7 +965,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     #if (iC==1) and (g.C_phases_before_gate[iC] != None):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
                         
-            elif g.Gate_type =='electron_decoupling':
+            elif g.Gate_type =='electron_decoupling' or g.Gate_type == 'feedback_trigger_decoupling':
 
                  #print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
                 for iC in range(len(g.C_phases_before_gate)):
@@ -3001,9 +3004,63 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.elements =  [rep_LDE_elt]
         Gate.elements_duration = (duration_initial +  2*t-t_rep+repump_duration+duration_final)*Gate.reps
 
+    def generate_feedback_trigger_decoupling_element(self, Gate):
+        """
+        Generate an element that contains a trigger that signifies that the ADwin should set up
+        the delay line for feedback on the next carbon. This trigger is contained in a simple
+        decoupling sequence to maintain electron coherence.
+        :param Gate:
+        :return:
+        """
+        # TODO: check if all the tau_cut crap is correctly handled
+        Gate.scheme = 'single_element'
 
+        Gate.dec_pulse_sequence = self.params['feedback_adwin_trigger_dec_pulse_seq']
+        Gate.dec_duration = self.params['feedback_adwin_trigger_dec_duration']
 
+        Gate.N = len(Gate.dec_pulse_sequence)
+        Gate.tau = Gate.dec_duration/(2.*Gate.N)
 
+        X = self._X_elt()
+        mX = self._mX_elt()
+        Y = self._Y_elt()
+        mY = self._mY_elt()
+
+        ftd_element = element.Element('%s' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
+        T_dec_block = pulse.SquarePulse(channel='adwin_sync', name='T_dec_block', length=Gate.dec_duration, amplitude=0.)
+        feedback_trigger = pulse.SquarePulse(
+            channel=self.params['feedback_adwin_trigger_channel'],
+            length=self.params['feedback_adwin_trigger_length'],
+            amplitude=2
+        )
+
+        anchor_element = ftd_element.append(T_dec_block)
+        ftd_element.add(feedback_trigger,
+                        refpulse=anchor_element,
+                        refpoint='start',
+                        refpoint_new='start',
+                        start=0.0)
+
+        current_t = Gate.tau
+        for pulse_type in Gate.dec_pulse_sequence:
+            if pulse_type == 'X':
+                cur_pulse = pulse.cp(X)
+            elif pulse_type == 'mX':
+                cur_pulse = pulse.cp(mX)
+            elif pulse_type == 'Y':
+                cur_pulse = pulse.cp(Y)
+            elif pulse_type == 'mY':
+                cur_pulse = pulse.cp(mY)
+            ftd_element.add(cur_pulse,
+                refpulse = anchor_element,
+                refpoint = 'start',
+                refpoint_new = 'center',
+                start = current_t
+            )
+            current_t += 2. * Gate.tau
+
+        Gate.elements = [ftd_element]
+        Gate.elements_duration = Gate.dec_duration
 
     ### function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):
@@ -3523,6 +3580,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_RF_pulse_element(g)
             elif g.Gate_type == 'LDE':
                 self.generate_LDE_element(g)
+            elif g.Gate_type == 'feedback_trigger_decoupling':
+                self.generate_feedback_trigger_decoupling_element(g)
         
         Gate_sequence = self.insert_transfer_gates(Gate_sequence,pt)
         for g in Gate_sequence:
@@ -4924,7 +4983,8 @@ class MBI_C13(DynamicalDecoupling):
         do_RO_electron      = False,
         wait_for_trigger    = False,
         scheme              = 'auto',
-        addressed_carbon    = 1
+        addressed_carbon    = 1,
+        phase_feedback_sequences = None,
         ):
         
         '''
@@ -5004,6 +5064,8 @@ class MBI_C13(DynamicalDecoupling):
         ### Add RO rotations ###
         for kk, carbon_nr in enumerate(carbon_list):
 
+            if phase_feedback_sequences is not None:
+                carbon_RO_seq.extend(phase_feedback_sequences[kk])
 
             if RO_basis_list[kk] != 'I':
                 
@@ -5676,7 +5738,10 @@ class MBI_C13(DynamicalDecoupling):
 
         ### Add electron pulse, dependent on logical state ###
 
-        if logic_state == 'Z':
+        if logic_state is None:
+            # we use the electron state as is
+            pass
+        elif logic_state == 'Z':
             pass
         elif logic_state == 'mZ':
             carbon_RO_seq.append(

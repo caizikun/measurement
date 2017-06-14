@@ -162,9 +162,9 @@ def extract_carbon_param_list(m, param, carbons, etrans = None):
     return [m.params['C%d_%s%s' % (c_id, param, etrans)] for c_id in carbons] 
 
 def prepare_carbon_params(m):
-    m.params['number_of_dps_carbons'] = len(m.params['dps_carbons'])
-    m.params['nuclear_frequencies'] = np.array(extract_carbon_param_list(m, 'freq', m.params['dps_carbons']))
-    m.params['nuclear_phases_per_seqrep'] = np.array(extract_carbon_param_list(m, 'phase_per_LDE_sequence', m.params['dps_carbons']))
+    m.params['number_of_carbons'] = len(m.params['carbons'])
+    m.params['nuclear_frequencies'] = np.array(extract_carbon_param_list(m, 'freq', m.params['carbons']))
+    m.params['nuclear_phases_per_seqrep'] = np.array(extract_carbon_param_list(m, 'phase_per_LDE_sequence', m.params['carbons']))
 
     # add an empty entry for C0, as numpy arrays are 0-indexed but our carbon parameter array is 1-indexed
     m.params['Carbon_LDE_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'phase_per_LDE_sequence', list(range(1,m.params['number_of_carbon_params'] + 1))))
@@ -822,10 +822,10 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['mw_first_pulse_phase'] = m.params['X_phase']
     # m.params['mw_first_pulse_amp'] = 0
 
-    if len(m.params['dps_carbons']) > 1:
+    if len(m.params['carbons']) > 1:
         print("Warning: LDE phase calibration is only supported on one carbon at a time")
 
-    carbon = m.params['dps_carbons'][0]
+    carbon = m.params['carbons'][0]
 
 
     
@@ -1182,14 +1182,14 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # prepare_carbon_params(m)
 
     ### general params
-    pts = 5
+    pts = 1
 
     ### calculate sweep array
-    minReps = 2
+    minReps = 5
     maxReps = 65
     step = int((maxReps-minReps)/pts)+1
     
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 100000
 
     turn_all_sequence_elements_off(m)
 
@@ -1207,8 +1207,9 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         mw = True
         ####
     else:
-        m.params['do_carbon_init'] = 0
-        m.params['do_swap_onto_carbon'] = 0
+        m.params['do_carbon_init'] = 1
+        m.params['do_C_init_SWAP_wo_SSRO'] = 1
+        m.params['do_swap_onto_carbon'] = 1
         m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
         m.params['do_LDE_2'] = 1
         m.params['do_phase_correction'] = 1
@@ -1230,14 +1231,16 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
 
     # Note that these Tomography bases don't really make sense for multiple carbons
 
-    tomo_dict = { 'X' : ['Z'] * m.params['number_of_dps_carbons'],
-                  'mX': ['Z'] * m.params['number_of_dps_carbons'],
-                  'Y' : ['Y'] * m.params['number_of_dps_carbons'],
-                  'mY': ['Y'] * m.params['number_of_dps_carbons'],
-                  'Z' : ['X'] * m.params['number_of_dps_carbons'] , 
-                  'mZ': ['X'] * m.params['number_of_dps_carbons']}
+    tomo_dict = { 'X' : ['Z'] * m.params['number_of_carbons'],
+                  'mX': ['Z'] * m.params['number_of_carbons'],
+                  'Y' : ['Y'] * m.params['number_of_carbons'],
+                  'mY': ['Y'] * m.params['number_of_carbons'],
+                  'Z' : ['X'] * m.params['number_of_carbons'] , 
+                  'mZ': ['X'] * m.params['number_of_carbons']}
 
-    m.params['Tomography_bases'] = tomo_dict[input_state]
+    # m.params['Tomography_bases'] = tomo_dict[input_state]
+    m.params['Tomography_bases'] = ['X', 'X']
+
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
     #### increase the detuning for more precise measurements
@@ -1350,13 +1353,13 @@ def apply_dynamic_phase_correction_delayline_tomo(name,debug=False,upload_only =
     breakst = False
     autoconfig = True
 
-    if m.params['number_of_dps_carbons'] == 2:
+    if m.params['number_of_carbons'] == 2:
         tomo_bases = [
                 ['X','I'],['Y','I'],['Z','I'],
                 ['I','X'],['I','Y'],['I','Z'],
                 ['Z','Z'],['X','X'],['Y','Y']
         ]
-    elif m.params['number_of_dps_carbons'] == 1:
+    elif m.params['number_of_carbons'] == 1:
         tomo_bases = [['X'], ['Y'], ['Z']]
 
 
@@ -1429,7 +1432,12 @@ if __name__ == '__main__':
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    apply_dynamic_phase_correction_delayline(name + '_phase_fb_delayline',upload_only=False,dry_run=True,input_state = 'Z', simplify_wfnames=True)
+    apply_dynamic_phase_correction_delayline(
+        name + '_phase_fb_delayline',
+        upload_only=False,
+        dry_run=True,
+        input_state = 'Z',
+        simplify_wfnames=False)
 
 
     #### ionization studies:
