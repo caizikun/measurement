@@ -25,7 +25,7 @@ params_lt4['average_repump_time'] 		= 0.3e-6
 params_lt4['LDE_decouple_time']         = 2.2e-6#round(1/qt.exp_params['samples']['111no2']['C4_freq_0'],9)#2.2e-6
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
-params_lt4['MW_repump_distance']		= 150e-9
+params_lt4['MW_repump_distance']		= 1100e-9
 params_lt4['MW_final_delay_offset']		= 10e-9
 params_lt4['first_mw_pulse_is_pi2']     = 0
 
@@ -82,24 +82,24 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_phase'] 	  = 93.7 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0033566736842725
-params_lt4['sin2_theta_fit_a']		= 1.911920553501953
-params_lt4['sin2_theta_fit_x0']		= 0.8793269453647149
+params_lt4['sin2_theta_fit_of']		= 1.0002704365092767
+params_lt4['sin2_theta_fit_a']		= 2.3434687389181765
+params_lt4['sin2_theta_fit_x0']		= 0.81879453999039575
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(1.75e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(2.5e6)/TH_HH_selector#15 us # XXX was 15us 
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(1.65e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(2.0e6)/TH_HH_selector
+params_lt4['MIN_SYNC_BIN']        =   int(2.75e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(3.5e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.55e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(3.0e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 1838e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK  #XXX
-params_lt4['pulse_stop_bin'] = 1842e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_start_bin'] = 1843e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_stop_bin'] = 1873e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['pulse_start_bin'] = 2804e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 2812e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 2812e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 2840e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 20e3
 
 params_lt4['measurement_time']    =   24.*60*60 #sec = 24H

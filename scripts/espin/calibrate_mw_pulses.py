@@ -9,7 +9,6 @@ from measurement.lib.pulsar import pulselib
 reload(pulselib)
 execfile(qt.reload_current_setup)
 
-execfile(qt.reload_current_setup)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
@@ -24,14 +23,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     
     m = pulsar_msmt.GeneralPiCalibrationSingleElement(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     pulse_shape = m.params['pulse_shape']
     pts = 15
@@ -70,14 +62,7 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
     
     m = pulsar_msmt.GeneralPiCalibrationSingleElement(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     pulse_shape = m.params['pulse_shape']
     pts = 25
@@ -111,14 +96,7 @@ def calibrate_theta_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
 
 def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):
     m = pulsar_msmt.General_mw2_PiCalibrationSingleElement(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     m.params['pulse_type'] = 'Hermite quantum memory'
     # m.params['pulse_type'] = 'Square quantum memory'
@@ -160,14 +138,7 @@ def calibrate_pi_pulse_NoIQSource(name, multiplicity=1, debug=False):
 
 def pi_pulse_sweepdelay_singleelement(name, multiplicity=1, debug=False):
     m = pulsar_msmt.PiCalibrationSingleElement_SweepDelay(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     m.params['pulse_type'] = 'Hermite quantum memory'
     # m.params['pulse_type'] = 'Square quantum memory'
@@ -199,14 +170,7 @@ def pi_pulse_sweepdelay_singleelement(name, multiplicity=1, debug=False):
 
 def pi_pulse_sweepdelay(name, multiplicity=1, debug=False):
     m = pulsar_msmt.PiCalibration_SweepDelay(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     m.params['pulse_type'] = 'Hermite quantum memory'
     # m.params['pulse_type'] = 'Square quantum memory'
@@ -239,14 +203,7 @@ def pi_pulse_sweepdelay(name, multiplicity=1, debug=False):
 
 def sweep_number_pi_pulses(name,  debug=False, pts = 30):
     m = pulsar_msmt.GeneralPiCalibration(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     m.params['multiplicity'] = np.arange(1, 1 + 2 * pts, 2)
     m.params['pulse_type'] = 'Hermite quantum memory'
@@ -277,14 +234,7 @@ def sweep_number_pi_pulses(name,  debug=False, pts = 30):
 
 def calibrate_pi2_pulse(name, debug=False,mw2=False):
     m = pulsar_msmt.GeneralPi2Calibration(name)
-
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     pts = 11
     m.params['pulse_type'] = 'Hermite'    
@@ -327,14 +277,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
 
 def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
     m = pulsar_msmt.CompositePiCalibrationSingleElement(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
     m.params['pulse_type'] = 'Hermite composite'
     # m.params['pulse_type'] = 'Square quantum memory'
@@ -372,14 +315,7 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
 def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     m = pulsar_msmt.Sweep_pm_risetime(name)
-    
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    espin_funcs.prepare(m)
 
 
     pulse_shape = 'Square'
@@ -407,9 +343,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
 
 if __name__ == '__main__':
     # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
-    # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
+    calibrate_theta_pulse(SAMPLE_CFG + 'theta')
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
-    calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
+    # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
     #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

@@ -282,9 +282,10 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     
 
 
-            plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
+            
             #5 Plu gates
             if msmt.params['PLU_during_LDE'] == 1:
+                plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
                 ## the name plu 3 is historic... see bell.
                 e.add(pulse.cp(Gate.plu_gate, 
                         length = msmt.params['PLU_gate_3_duration']), 

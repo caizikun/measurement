@@ -92,7 +92,7 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
-    carbons = [2,4]
+    carbons = [2]
     debug = False
     breakst = False
     init_method = 'both'

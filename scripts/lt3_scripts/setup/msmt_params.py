@@ -19,7 +19,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 
 f_msm1_cntr = 1.719319e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.037186e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msp1_cntr = 4.037144e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.85  # 28-02
+	hermite_pi_amp =  0.8467  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.386  # 28-02 
+	hermite_pi2_amp = 0.387  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -390,7 +390,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 14e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 4e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -462,8 +462,8 @@ cfg['protocols'][name]['pulses'] = {
     	'IQ_Square_pi_amp' :		0.068, 
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
-    	'DESR_pulse_duration' :		4e-6,
-    	'DESR_pulse_amplitude' :	0.0018,#0.194,
+    	'DESR_pulse_duration' :		4.5e-6,
+    	'DESR_pulse_amplitude' :	0.0016,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,
@@ -477,14 +477,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					44e-9, # 50e-9
-        'eom_off_amplitude':				-0.033, # for 44 ns of off duration #-0.058
+        'eom_off_amplitude':				-0.033, # for 44 ns of off duration
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
-        'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
+        'eom_overshoot1':					-0.025, # calibration from 29-05-2017# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.7,#0.2
+        'aom_amplitude':					0.9,#0.2
 }
 
 

@@ -163,6 +163,26 @@ class Pulsar:
             if output:
                 getattr(self.AWG, 'set_%s_status' % id)('on')
 
+    def deactivate_channels(self, channels='all'):
+        ids = self.get_used_channel_ids()
+        #print ids
+        for id in ids:
+            output = False
+            names = self.get_channel_names_by_id(id)
+            for sid in names:
+                #print sid
+                if names[sid] == None:
+                    continue
+
+                if channels != 'all' and names[sid] not in channels:
+                    continue
+
+                if self.channels[names[sid]]['active']:
+                    output = True
+
+            if output:
+                getattr(self.AWG, 'set_%s_status' % id)('off')
+
     def get_awg_channel_cfg(self):
         channel_cfg={}
 
@@ -561,6 +581,8 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
+
+        self.deactivate_channels('all')
 
         self.AWG.send_awg_file(filename,awg_file)
 

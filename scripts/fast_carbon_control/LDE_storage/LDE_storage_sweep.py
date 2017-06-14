@@ -1409,7 +1409,7 @@ if __name__ == '__main__':
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
+    calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
     # start_time = time.time()
