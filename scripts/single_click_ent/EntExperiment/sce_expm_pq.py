@@ -307,7 +307,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 20
+    m.params['reps_per_ROsequence'] = 100
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -329,7 +329,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 10
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 100
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -777,7 +777,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.2
+    m.params['sin2_theta'] = 0.1
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
 
@@ -837,7 +837,7 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
     m.params['pts'] = len(m.params['sweep_pts'])
     m.params['do_phase_stabilisation']  = 1
     m.params['do_calc_theta']           = 1
-
+    m.params['do_post_ent_phase_msmt'] = 1
 
     ### upload and run
 
@@ -889,7 +889,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    # phase_stability(name+'_phase_stab',upload_only=False)
+    phase_stability(name+'_phase_stab',upload_only=False)
     # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
@@ -915,19 +915,19 @@ if __name__ == '__main__':
     # qt.instruments['ZPLServo'].move_out()
     
     #### Sweep theta!
-    if (qt.current_setup == 'lt3'):
-        qt.instruments['ZPLServo'].move_out()
-    else:
-        qt.instruments['ZPLServo'].move_in()
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
-    if (qt.current_setup == 'lt3'):
-        qt.instruments['ZPLServo'].move_in()
-    else:
-        qt.instruments['ZPLServo'].move_out()
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
-    SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
-    qt.instruments['ZPLServo'].move_out()
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_out()
+    # else:
+    #     qt.instruments['ZPLServo'].move_in()
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT3_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    # if (qt.current_setup == 'lt3'):
+    #     qt.instruments['ZPLServo'].move_in()
+    # else:
+    #     qt.instruments['ZPLServo'].move_out()
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_no_Pi',debug=False,upload_only=False,MW_pi_during_LDE=0)
+    # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
+    # qt.instruments['ZPLServo'].move_out()
 
     # Determine_eta(name+'_eta_from_theta_sweep',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
 

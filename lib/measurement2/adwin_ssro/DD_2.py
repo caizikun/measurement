@@ -3027,7 +3027,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         mY = self._mY_elt()
 
         ftd_element = element.Element('%s' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
-        T_dec_block = pulse.SquarePulse(channel='adwin_sync', name='T_dec_block', length=Gate.dec_duration, amplitude=0.)
+        T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block', length=Gate.dec_duration - Gate.tau_cut_before, amplitude=0.)
         feedback_trigger = pulse.SquarePulse(
             channel=self.params['feedback_adwin_trigger_channel'],
             length=self.params['feedback_adwin_trigger_length'],
@@ -3039,9 +3039,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         refpulse=anchor_element,
                         refpoint='start',
                         refpoint_new='start',
-                        start=0.0)
+                        start=self.params['feedback_adwin_trigger_delay'])
 
-        current_t = Gate.tau
+        current_t = Gate.tau - Gate.tau_cut_before
         for pulse_type in Gate.dec_pulse_sequence:
             if pulse_type == 'X':
                 cur_pulse = pulse.cp(X)

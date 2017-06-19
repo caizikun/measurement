@@ -165,6 +165,7 @@ def prepare_carbon_params(m):
     m.params['number_of_carbons'] = len(m.params['carbons'])
     m.params['nuclear_frequencies'] = np.array(extract_carbon_param_list(m, 'freq', m.params['carbons']))
     m.params['nuclear_phases_per_seqrep'] = np.array(extract_carbon_param_list(m, 'phase_per_LDE_sequence', m.params['carbons']))
+    m.params['nuclear_phases_offset'] = np.array(extract_carbon_param_list(m, 'init_phase_correction', m.params['carbons']))
 
     # add an empty entry for C0, as numpy arrays are 0-indexed but our carbon parameter array is 1-indexed
     m.params['Carbon_LDE_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'phase_per_LDE_sequence', list(range(1,m.params['number_of_carbon_params'] + 1))))
@@ -1182,14 +1183,20 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # prepare_carbon_params(m)
 
     ### general params
-    pts = 1
+    pts = 15
+    m.params['phase_detuning'] = 6.0
 
     ### calculate sweep array
     minReps = 5
-    maxReps = 65
+    maxReps = 60
     step = int((maxReps-minReps)/pts)+1
+
+    print(np.arange(minReps,maxReps,step))
+    want_this = raw_input("Do you want this? (y)")
+    if not want_this == "y":
+        return
     
-    m.params['reps_per_ROsequence'] = 100000
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
 
@@ -1238,8 +1245,8 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
                   'Z' : ['X'] * m.params['number_of_carbons'] , 
                   'mZ': ['X'] * m.params['number_of_carbons']}
 
-    # m.params['Tomography_bases'] = tomo_dict[input_state]
-    m.params['Tomography_bases'] = ['X', 'X']
+    m.params['Tomography_bases'] = tomo_dict[input_state]
+    # m.params['Tomography_bases'] = ['X', 'X']
 
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
@@ -1247,7 +1254,6 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # m.params['phase_detuning'] = 6.0
     # # phase_per_rep = m.params['phase_per_sequence_repetition']
     # m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
-    m.params['phase_detuning'] = 12.0
     m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
     m.params['nuclear_phases_per_seqrep'] += m.params['phase_detuning']
 
@@ -1409,7 +1415,7 @@ if __name__ == '__main__':
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
     # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
-    calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
+    # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
     # start_time = time.time()
@@ -1435,7 +1441,7 @@ if __name__ == '__main__':
     apply_dynamic_phase_correction_delayline(
         name + '_phase_fb_delayline',
         upload_only=False,
-        dry_run=True,
+        dry_run=False,
         input_state = 'Z',
         simplify_wfnames=False)
 

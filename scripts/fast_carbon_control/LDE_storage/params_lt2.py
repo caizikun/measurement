@@ -121,7 +121,7 @@ params_lt2['feedback_adwin_trigger_length'] = 3e-6
 
 # we don't want the old feedback crap
 params_lt2['use_old_feedback']          = 0
-params_lt2['dynamic_phase_tau']			= 2.298e-6#2.298e-6
+params_lt2['dynamic_phase_tau']			= 2.296e-6#2.298e-6
 params_lt2['dynamic_phase_N']			= 2
 params_lt2['phase_feedback_resolution']	= 4.5
 

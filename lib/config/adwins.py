@@ -2318,8 +2318,9 @@ config['adwin_lt2_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['minimal_delay_time'   , 0.0],
+                    ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
+                    ['feedback_adwin_trigger_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2357,6 +2358,7 @@ config['adwin_lt2_processes'] = {
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
                     },
                 },
         }
@@ -3285,8 +3287,9 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['minimal_delay_time'   , 0.0],
+                    ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
+                    ['feedback_adwin_trigger_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -3324,6 +3327,7 @@ config['adwin_pro_processes'] = {
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
                     },
                 },
 
@@ -3385,7 +3389,7 @@ config['adwin_pro_processes'] = {
                     ['Phase_Msmt_voltage'         , 2.0],
                     ['Phase_Msmt_off_voltage'         , 0.0],
                     ['PID_GAIN'       , 1.0],
-                    ['PID_Kp'         , 0.002],
+                    ['PID_Kp'         , 0.000],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
                     ['phase_setpoint', 3.14/2],

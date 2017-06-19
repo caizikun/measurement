@@ -119,7 +119,11 @@ class purify_single_setup(DD.MBI_C13):
 
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
         # upload the carbon feedback parameters to the ADwin
-        carbon_data_entries = ['nuclear_frequencies', 'nuclear_phases_per_seqrep']
+        carbon_data_entries = [
+            'nuclear_frequencies', 
+            'nuclear_phases_per_seqrep',
+            'nuclear_phases_offset'
+        ]
 
         for entry in carbon_data_entries:
             self.adwin_set_var(entry, self.params[entry])
@@ -572,6 +576,10 @@ class purify_single_setup(DD.MBI_C13):
             length = self.params['delayed_element_run_up_time'],
             amplitude = 0.)
 
+        # we're in a part of the sequence where all timing stuff is referenced to the Imod channel
+        # but our self-trigger stuff isn't, so we manually correct for that
+        MW_Imod_delay = qt.pulsar.channels['MW_Imod']['delay']
+
         # first element only contains a self-trigger pulse directly at the beginning and should be as short as possible
         # we need a minimal amount of ~250 samples to be able to use the AWG in "hardware sequencer" mode
         g1_elt = element.Element(g1.name, pulsar=qt.pulsar, global_time=True, min_samples=256)
@@ -586,7 +594,7 @@ class purify_single_setup(DD.MBI_C13):
             refpulse=g2_start_anchor_id,
             refpoint='start',
             refpoint_new='center',
-            start=self.params['delayed_element_run_up_time']
+            start=self.params['delayed_element_run_up_time'] + MW_Imod_delay
             )
         g2_self_trigger_id = g2_elt.add(pulse.cp(self_trigger),
             refpulse=g2_start_anchor_id,
@@ -610,6 +618,34 @@ class purify_single_setup(DD.MBI_C13):
         g2.elements = [g2_elt]
         g3.elements = [g3_elt]
 
+    def generate_delayline_tau_cut_element(self,Gate,addressed_carbon):
+        tau_cut = self.get_carbon_gate_initial_tau_cut(addressed_carbon)
+
+        e = element.Element(Gate.name, pulsar=qt.pulsar)
+        wait_pulse = pulse.SquarePulse(channel='MW_Imod', amplitude=0.0, length=tau_cut)
+        e.append(wait_pulse)
+
+        Gate.elements = [e]
+
+    def get_carbon_gate_initial_tau_cut(self, addressed_carbon):
+        c = str(addressed_carbon)
+        e_trans = self.params['electron_transition']
+
+        #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:
+        if 'ElectronDD_tau' in self.params.to_dict().keys():
+            tau = self.params['ElectronDD_tau']
+        else:
+            tau = self.params['C' + c + '_Ren_tau' + e_trans][0]
+        ps.X_pulse(self)  # update pi pulse parameters
+        fast_pi_duration = self.params['fast_pi_duration']
+        pulse_tau = tau - fast_pi_duration / 2.0
+        n_wait_reps, tau_remaind = divmod(round(2 * pulse_tau * 1e9), 1e3)
+        if n_wait_reps % 2 == 0:
+            tau_cut = 1e-6
+        else:
+            tau_cut = 1.5e-6
+
+        return tau_cut
 
     def generate_LDE_rephasing_elt(self,Gate,addressed_carbon=None):
         ### used in non-local msmts syncs master and slave AWGs
@@ -697,6 +733,7 @@ class purify_single_setup(DD.MBI_C13):
                     LDE1_final.is_final = True
                 else:
                     LDE1.is_final = True
+                    LDE1_final = None
 
                 ### if statement to decide what LDE1 does: init of the carbon via swap or entangling.
                 if self.params['LDE_1_is_init'] >0:
@@ -803,6 +840,7 @@ class purify_single_setup(DD.MBI_C13):
                         'feedback_trigger_decoupling',
                         no_connection_elt=True,
                     )
+                    start_fb_gate.tau_cut_before = self.get_carbon_gate_initial_tau_cut(c_id)
 
                     dynamic_phase_correct_list_per_carbon[i].append(start_fb_gate)
 
@@ -844,6 +882,15 @@ class purify_single_setup(DD.MBI_C13):
 
                         self.generate_delayline_phase_correction_elements(g1,g2,g3,pulse_pi=fb_pulse)
                         dynamic_phase_correct_list_per_carbon[i].extend([g1,g2,g3])
+
+                    final_tau_cut_gate = DD.Gate(
+                        'C%d_delayfb%d_tau_cut_pt%d' % (c_id, i, pt),
+                        'single_element',
+                        no_connection_elt=True
+                    )
+                    final_tau_cut_gate.scheme = 'single_element'
+                    self.generate_delayline_tau_cut_element(final_tau_cut_gate,addressed_carbon=c_id)
+                    dynamic_phase_correct_list_per_carbon[i].append(final_tau_cut_gate)
             else:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"

@@ -54,12 +54,12 @@ ENDSUB
 FUNCTION tico_delay_line_calculate_cycles(input_delay) AS LONG
   DIM excess_delay AS FLOAT
   DIM corrected_cycles AS LONG
-  excess_delay = input_delay - minimal_delay_time
-  tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) + minimal_delay_cycles
+  excess_delay = input_delay - delay_time_offset
+  tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) 
 ENDFUNCTION
 
 FUNCTION tico_delay_line_calculate_delay(input_cycles) AS FLOAT
-  tico_delay_line_calculate_delay = (input_cycles - minimal_delay_cycles) * dl_cycle_duration + minimal_delay_time
+  tico_delay_line_calculate_delay = (input_cycles * dl_cycle_duration) + delay_time_offset
 ENDFUNCTION
 
 

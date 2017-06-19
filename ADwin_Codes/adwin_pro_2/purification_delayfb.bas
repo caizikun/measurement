@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,145,145,147,147,383,383,612,612,613,613,657,657,784,784,844,844,1010,1011,1012,1015,1016
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,392,392,623,623,624,624,668,668,795,795,855,855,1021,1022,1023,1026,1027
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -124,14 +124,17 @@ DIM mode_flowchart_cycles_OUT[max_flowchart_modes] AS LONG AT DRAM_EXTERN
 #DEFINE nuclear_frequencies_IN         DATA_120
 #DEFINE nuclear_phases_OUT             DATA_121
 #DEFINE nuclear_phases_per_seqrep_IN   DATA_122
+#DEFINE nuclear_phases_offset_IN       DATA_123
 
 DIM nuclear_frequencies[max_nuclei] AS FLOAT AT DM_LOCAL ' carbon frequencies
 DIM nuclear_phases[max_nuclei] AS FLOAT AT DM_LOCAL ' carbon phases
 DIM nuclear_phases_per_seqrep[max_nuclei] AS FLOAT AT DM_LOCAL
+DIM nuclear_phases_offset[max_nuclei] AS FLOAT AT DM_LOCAL
 
 DIM nuclear_frequencies_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 DIM nuclear_phases_OUT[max_nuclei] AS FLOAT AT DRAM_EXTERN
 DIM nuclear_phases_per_seqrep_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
+DIM nuclear_phases_offset_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 
 DIM excess_phase_360s AS LONG AT DM_LOCAL
 
@@ -185,7 +188,7 @@ DIM number_of_dps_nuclei, current_feedback_nucleus AS LONG
 DIM nuclear_feedback_angle, nuclear_feedback_time AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
 DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
-DIM minimal_delay_time, delay_feedback_target_phase AS FLOAT
+DIM delay_time_offset, delay_feedback_target_phase, feedback_adwin_trigger_dec_duration AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 
 DIM dedicate_next_cycle_to_calculations AS LONG
@@ -287,6 +290,12 @@ SUB reset_nuclear_phases()
   '    nuclear_phases[i] = 0
   '  NEXT i
 ENDSUB
+
+SUB init_nuclear_phases_offset()
+  reset_nuclear_phases()
+  update_nuclear_phases_from_list(nuclear_phases_offset)
+ENDSUB
+
 
 SUB sleep_for_trigger()
   ' 6 NOPs at 3.333 ns per operation corresponds to a waiting time of 20 ns
@@ -435,13 +444,14 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   number_of_C_encoding_ROs         = DATA_20[47]
   
   ' float params from python
-  E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
-  E_MBI_voltage                = DATA_21[2]  
-  A_SP_voltage                 = DATA_21[3]
-  E_RO_voltage                 = DATA_21[4]
-  A_RO_voltage                 = DATA_21[5]
-  minimal_delay_time           = DATA_21[6]
-  delay_feedback_target_phase  = DATA_21[7]
+  E_SP_voltage                              = DATA_21[1] 'E spin pumping before MBI
+  E_MBI_voltage                             = DATA_21[2]  
+  A_SP_voltage                              = DATA_21[3]
+  E_RO_voltage                              = DATA_21[4]
+  A_RO_voltage                              = DATA_21[5]
+  delay_time_offset                         = DATA_21[6]
+  delay_feedback_target_phase               = DATA_21[7]
+  feedback_adwin_trigger_dec_duration       = DATA_21[8]
   
   ' phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   ' phase_per_compensation_repetition = DATA_21[7] '
@@ -505,10 +515,11 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   flowchart_index = 0
   
   
-  reset_nuclear_phases()
+  init_nuclear_phases_offset()
   FOR i = 1 to max_nuclei
     nuclear_frequencies[i] = nuclear_frequencies_IN[i]
     nuclear_phases_per_seqrep[i] = nuclear_phases_per_seqrep_IN[i]
+    nuclear_phases_offset[i] = nuclear_phases_offset_IN[i]
   NEXT i
   
   FOR i = 1 to number_of_dps_nuclei ' don't calculate the stuff for nuclei slots that are not in use; those have bullshit frequency values that upset the calculation
@@ -660,24 +671,24 @@ EVENT:
   PAR_61 = mode   
   Par_60 = timer
   
-  IF (current_mode <> mode) THEN  
-    inc(flowchart_index)  
-    if (flowchart_index > max_flowchart_modes) THEN
-      flowchart_index = 1
-    endif
-    mode_flowchart[flowchart_index] = mode
-    mode_flowchart_cycles[flowchart_index] = 0
-  endif
-                  
-  if (flowchart_index > 0) THEN
-    inc(mode_flowchart_cycles[flowchart_index])
-  endif
+  '  IF (current_mode <> mode) THEN  
+  '    inc(flowchart_index)  
+  '    if (flowchart_index > max_flowchart_modes) THEN
+  '      flowchart_index = 1
+  '    endif
+  '    mode_flowchart[flowchart_index] = mode
+  '    mode_flowchart_cycles[flowchart_index] = 0
+  '  endif
+  '                  
+  '  if (flowchart_index > 0) THEN
+  '    inc(mode_flowchart_cycles[flowchart_index])
+  '  endif
 
   
   current_mode = mode
   start_time = Read_Timer()
   
-  IF (dedicate_next_cycle_to_calculations > 0) THEN ' 231 cycles in the true branch    
+  IF (dedicate_next_cycle_to_calculations > 0) THEN    
     dedicate_next_cycle_to_calculations = 0
     
     SELECTCASE requested_calculations
@@ -702,7 +713,7 @@ EVENT:
         
     ENDSELECT
    
-    INC(timer)
+    ' INC(timer)
   ELSE
       
     
@@ -1036,33 +1047,42 @@ EVENT:
         CASE 7 ' phase correction phase
           ' we receive a trigger from the AWG to set up the delay line for the next carbon
           
+                   
           IF (do_phase_fb_delayline > 0) THEN
-            digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE) ' 71 cycles
+            if (timer=0) THEN
+              nuclear_feedback_time = feedback_adwin_trigger_dec_duration
+              dedicate_next_cycle_to_calculations = 1
+              requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
+            ELSE
+              digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE) ' 71 cycles
                 
-            if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
-              IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
-                ' we're moving to the next feedback carbon
-                INC(current_feedback_nucleus)
+              if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
+                IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
+                  ' we're moving to the next feedback carbon
+                  INC(current_feedback_nucleus)
                 
-                dedicate_next_cycle_to_calculations = 1
-                requested_calculations = REQ_CALC_SET_DELAY_LINE
+                  dedicate_next_cycle_to_calculations = 1
+                  requested_calculations = REQ_CALC_SET_DELAY_LINE
+                  
+                  ' we want to do the trigger decoupling block update again as well for the next carbon
+                  timer = -1
             
+                ENDIF
+                AWG_repcount_was_low = 0
+              else
+                AWG_repcount_was_low = 1
+              endif
+            
+              IF (current_feedback_nucleus = number_of_dps_nuclei) THEN
+                ' we're done with setting up feedback cycles
+                timer = -1
+                mode = mode_after_phase_correction
               ENDIF
-              AWG_repcount_was_low = 0
-            else
-              AWG_repcount_was_low = 1
-            endif
-            
-            IF (current_feedback_nucleus = number_of_dps_nuclei) THEN
-              ' we're done with setting up feedback cycles
-              timer = -1
-              mode = mode_after_phase_correction
             ENDIF
-            
           ELSE
             timer = -1
             mode = mode_after_phase_correction
-          ENDIF       
+          ENDIF      
           
         CASE 8 ' Wait until purification gate is done. 
                 
@@ -1185,7 +1205,7 @@ EVENT:
           'trying_mbi = 0
           
           current_feedback_nucleus = 0        
-          reset_nuclear_phases() ' this takes 55 cycles
+          init_nuclear_phases_offset() ' this takes 55 cycles
           tico_delay_line_set_cycles(0)
         
           mbi_timer = 0 
