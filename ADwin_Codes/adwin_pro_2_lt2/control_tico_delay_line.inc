@@ -43,17 +43,25 @@ SUB tico_delay_line_set_cycles(input_cycles)
 ENDSUB
 
 SUB tico_delay_line_set_delay(input_delay) ' input_delay in seconds
-  DIM excess_delay AS FLOAT
-  DIM corrected_cycles AS LONG
-  excess_delay = input_delay - minimal_delay_time
-  corrected_cycles = Round(excess_delay / dl_cycle_duration) + minimal_delay_cycles
-  tico_delay_line_set_cycles(corrected_cycles)
+  tico_delay_line_set_cycles(tico_delay_line_calculate_cycles(input_delay))
 ENDSUB
 
 
 SUB tico_delay_line_set_enabled(input_enabled)
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Enable, input_enabled)
 ENDSUB
+
+FUNCTION tico_delay_line_calculate_cycles(input_delay) AS LONG
+  DIM excess_delay AS FLOAT
+  DIM corrected_cycles AS LONG
+  excess_delay = input_delay - minimal_delay_time
+  tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) + minimal_delay_cycles
+ENDFUNCTION
+
+FUNCTION tico_delay_line_calculate_delay(input_cycles) AS FLOAT
+  tico_delay_line_calculate_delay = (input_cycles - minimal_delay_cycles) * dl_cycle_duration + minimal_delay_time
+ENDFUNCTION
+
 
 
 

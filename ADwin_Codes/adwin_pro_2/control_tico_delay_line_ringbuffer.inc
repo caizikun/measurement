@@ -12,6 +12,11 @@
 #DEFINE TiCoDL_IrrelevantDetections 16
 #DEFINE TiCoDL_ShortDelayErrors     17
 #DEFINE TiCoDL_Started              18
+#DEFINE TiCoDL_Awake                19
+#DEFINE TiCoDL_NoDelaySetErrors     20
+
+#DEFINE TiCoDL_Ringbuffer_Idx       1
+#DEFINE TiCoDL_Ringbuffer_TiCoPar   40
 
 #DEFINE dl_cycle_duration           20.0e-9
 
@@ -38,8 +43,60 @@ SUB tico_delay_line_finish()
   P2_TiCo_Stop_Process(tdrv_datatable, 1)
 ENDSUB
 
-SUB tico_delay_line_set_cycles(input_cycles)
-  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Delay, input_cycles)
+SUB tico_delay_line_set_cycles(input_cycles, num_delays)
+  DIM loopidx AS LONG
+  DIM delay_cycles_array[20] AS LONG AT DM_LOCAL
+  
+  ' beautifully ugly loop unwindification; should be much faster though (3 cycles per element instead of ~17-ish in a for loop)
+  SelectCase num_delays
+    CCase 20
+      delay_cycles_array[20] = input_cycles
+    CCase 19
+      delay_cycles_array[19] = input_cycles
+    CCase 18
+      delay_cycles_array[18] = input_cycles
+    CCase 17
+      delay_cycles_array[17] = input_cycles
+    CCase 16
+      delay_cycles_array[16] = input_cycles
+    CCase 15
+      delay_cycles_array[15] = input_cycles
+    CCase 14
+      delay_cycles_array[14] = input_cycles
+    CCase 13
+      delay_cycles_array[13] = input_cycles
+    CCase 12
+      delay_cycles_array[12] = input_cycles
+    CCase 11
+      delay_cycles_array[11] = input_cycles
+    CCase 10
+      delay_cycles_array[10] = input_cycles
+    CCase 9
+      delay_cycles_array[9] = input_cycles
+    CCase 8
+      delay_cycles_array[8] = input_cycles
+    CCase 7
+      delay_cycles_array[7] = input_cycles
+    CCase 6
+      delay_cycles_array[6] = input_cycles
+    CCase 5
+      delay_cycles_array[5] = input_cycles
+    CCase 4
+      delay_cycles_array[4] = input_cycles
+    CCase 3
+      delay_cycles_array[3] = input_cycles
+    CCase 2
+      delay_cycles_array[2] = input_cycles
+    CCase 1
+      delay_cycles_array[1] = input_cycles
+  EndSelect
+  
+  tico_delay_line_set_cycles_array(delay_cycles_array, num_delays)
+ENDSUB
+
+SUB tico_delay_line_set_cycles_array(input_cycles_array[], num_delays)
+  DIM ringbuffer_retval AS LONG
+  ringbuffer_retval = P2_Set_TiCo_RingBuffer(tdrv_datatable, TiCoDL_Ringbuffer_Idx, input_cycles_array, 1, num_delays, 3, TiCoDL_Ringbuffer_TiCoPar, 0) ' this takes 750 cycles (!!!)
 ENDSUB
 
 SUB tico_delay_line_set_delay(input_delay) ' input_delay in seconds

@@ -24,7 +24,7 @@ import qt
 import hdf5_data as h5
 from lib.misc import dict_to_ordered_tuples
 
-from ..config import adwins as adwins_cfg
+from ..config import adwins as adwins_cfg; reload(adwins_cfg)
 
 # FIXME type checking of max/min vals?
 # FIXME how to check after updating type,max/minval?

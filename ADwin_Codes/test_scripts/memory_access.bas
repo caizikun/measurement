@@ -47,6 +47,12 @@ DIM em_long_var_2 AS LONG AT EM_LOCAL
 
 DIM i as long at DM_LOCAL
 
+
+DIM l1, l2, l3 AS LONG AT DM_LOCAL
+DIM f1, f2, f3 AS FLOAT AT DM_LOCAL
+
+DIM fl_arr[10] AS FLOAT AT DM_LOCAL
+
 SUB timer_tic()
   Par_38 = Read_Timer()
   Par_39 = Read_Timer()
@@ -59,12 +65,21 @@ ENDSUB
 
 INIT:
   processdelay = 300
+  l1 = 1
+  l2 = 1
+  l3 = 1
+  f1 = 1
+  f2 = 1
+  f3 = 1
   
 EVENT:
-  dm_long_var = dm_data_array_2[5]
-  dm_long_var = dm_data_array[8]
+  fl_arr[1] = fl_arr[2] + fl_arr[3]
+  
+  Par_1 = 11
+  Par_2 = 3
+  
   timer_tic()
-  dm_long_var = dm_data_array_2[80]
+  f1 = f2 / f3
   timer_toc()
   
 FINISH:

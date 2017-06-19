@@ -741,8 +741,9 @@ class Tektronix_AWG5014(Instrument):
         if (len(long_wfnames) > 0):
             print("Warning: some waveforms have a name longer than 32 characters")
             print("This may upset the AWG, particularly if it is NOT an AWG5014 >>C<<")
-            print("Offending waveform names (only first ten shown): ")
-            print(long_wfnames[0:10])
+            print("If this turns out to be a problem, call program_awg with simplify_wfnames=True")
+            # print("Offending waveform names (only first ten shown): ")
+            # print(long_wfnames[0:10])
         timetuple = tuple(np.array(localtime())[[0,1,8,2,3,4,5,6,7]])
 
         #general settings
