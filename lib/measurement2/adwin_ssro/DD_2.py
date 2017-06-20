@@ -3012,7 +3012,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         :param Gate:
         :return:
         """
-        # TODO: check if all the tau_cut crap is correctly handled
         Gate.scheme = 'single_element'
 
         Gate.dec_pulse_sequence = self.params['feedback_adwin_trigger_dec_pulse_seq']
@@ -3043,20 +3042,23 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         current_t = Gate.tau - Gate.tau_cut_before
         for pulse_type in Gate.dec_pulse_sequence:
-            if pulse_type == 'X':
-                cur_pulse = pulse.cp(X)
-            elif pulse_type == 'mX':
-                cur_pulse = pulse.cp(mX)
-            elif pulse_type == 'Y':
-                cur_pulse = pulse.cp(Y)
-            elif pulse_type == 'mY':
-                cur_pulse = pulse.cp(mY)
-            ftd_element.add(cur_pulse,
-                refpulse = anchor_element,
-                refpoint = 'start',
-                refpoint_new = 'center',
-                start = current_t
-            )
+            if not pulse_type == 'I':
+                if pulse_type == 'X':
+                    cur_pulse = pulse.cp(X)
+                elif pulse_type == 'mX':
+                    cur_pulse = pulse.cp(mX)
+                elif pulse_type == 'Y':
+                    cur_pulse = pulse.cp(Y)
+                elif pulse_type == 'mY':
+                    cur_pulse = pulse.cp(mY)
+                else:
+                    print("I don't understand feedback pulse type: " + pulse_type)
+                ftd_element.add(cur_pulse,
+                    refpulse = anchor_element,
+                    refpoint = 'start',
+                    refpoint_new = 'center',
+                    start = current_t
+                )
             current_t += 2. * Gate.tau
 
         Gate.elements = [ftd_element]

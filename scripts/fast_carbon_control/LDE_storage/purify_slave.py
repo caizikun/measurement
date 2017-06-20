@@ -125,6 +125,9 @@ class purify_single_setup(DD.MBI_C13):
             'nuclear_phases_offset'
         ]
 
+        if self.params['do_sweep_delay_cycles']:
+            carbon_data_entries += ['delay_cycles_sweep']
+
         for entry in carbon_data_entries:
             self.adwin_set_var(entry, self.params[entry])
 
@@ -826,7 +829,7 @@ class purify_single_setup(DD.MBI_C13):
             ################################
 
             #### put jesse phawse correction gates here
-            if self.params['do_phase_fb_delayline'] > 0:
+            if self.params['do_phase_fb_delayline'] > 0 or self.params['do_delay_fb_pulses']:
                 #generate gates g1,g2,g3
 
                 # we need list comprehesion here to create a seperate list for each carbon

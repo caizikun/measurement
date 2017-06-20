@@ -416,6 +416,8 @@ class Pulsar:
         # qt.pulsar.simplified_wfnames_mapping and may be shown sortedly by invoking
         # qt.pulsar.show_simplified_wfnames_mapping()
         if qt.current_setup == 'lt2':
+            print("WARNING: simplifying waveform names for the LT2 AWG.")
+            print("If you don't want this, modify pulsar.py function program_awg.")
             simplify_wfnames = True
         else:
             simplify_wfnames = kw.pop('simplify_wfnames', False)

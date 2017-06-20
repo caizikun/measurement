@@ -225,6 +225,7 @@ def turn_all_sequence_elements_off(m):
     m.params['force_LDE_attempts_before_init'] = 0
     m.params['no_repump_after_LDE1']    = 0
     m.params['do_phase_fb_delayline']   = 0
+    m.params['do_delay_fb_pulses']      = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -478,7 +479,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1
-    m.params['do_carbon_readout']  = 1 
+    m.params['do_carbon_readout']  = 1
     # m.params['mw_first_pulse_amp'] = 0
     m.params['MW_during_LDE'] = 1
     # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
@@ -1381,6 +1382,101 @@ def apply_dynamic_phase_correction_delayline_tomo(name,debug=False,upload_only =
             run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig)
             autoconfig = False
 
+def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_only=False):
+    """
+        runs the measurement for X and Y tomography. Also does positive vs. negative RO
+        """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    m.params['reps_per_ROsequence'] = 500
+
+    ### calculate the sweep array
+    minReps = 1
+    maxReps = 20
+    step = 1
+    sweep_pts = np.arange(minReps, maxReps, step)
+    pts = len(sweep_pts)
+
+    C_id = m.params['carbons'][0]
+    C_freq_0 = m.params['C%s_freq_0' % C_id]
+
+    delay_cycles_fixed = int(round((1.0/C_freq_0) / m.params['delay_clock_cycle_time'] ))
+    print("delay_cycles_fixed: %d" % delay_cycles_fixed)
+
+    m.params['pts'] = pts
+    m.params['delay_cycles_sweep'] = np.ones(pts, dtype=np.int32) * delay_cycles_fixed
+
+    print(sweep_pts)
+    want_this = raw_input("Do you want this? (y)")
+    if not want_this == "y":
+        return
+
+    ### define sweep
+    m.params['general_sweep_name'] = 'delay_feedback_N'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = sweep_pts
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    turn_all_sequence_elements_off(m)
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['do_general_sweep'] = 1
+    m.params['do_carbon_init'] = 1
+    m.params['do_delay_fb_pulses'] = 1
+    m.params['do_sweep_delay_cycles'] = 1
+    m.params['do_carbon_readout'] = 1
+    # m.params['mw_first_pulse_amp'] = 0
+    m.params['MW_during_LDE'] = 1
+    # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
+    # m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180
+    # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    m.joint_params['opt_pi_pulses'] = 0
+
+
+    ### loop over tomography bases and RO directions upload & run
+
+    breakst = False
+    autoconfig = True
+    if do_Z:
+        for t in ['Z']:
+            if breakst:
+                break
+            for ro in ['positive', 'negative']:
+                breakst = show_stopper()
+                if breakst:
+                    break
+                print t, ro
+                m.params['do_C_init_SWAP_wo_SSRO'] = 1
+                save_name = t + '_' + ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
+                          autoconfig=autoconfig)
+                autoconfig = False
+
+    else:
+        for t in ['X', 'Y']:
+            if breakst:
+                break
+            for ro in ['positive', 'negative']:
+                breakst = show_stopper()
+                if breakst:
+                    break
+                m.params['do_C_init_SWAP_wo_SSRO'] = 0
+                m.params['carbon_init_method'] = 'MBI'
+                print t, ro
+                save_name = t + '_' + ro
+                m.params['Tomography_bases'] = [t]
+                m.params['carbon_readout_orientation'] = ro
+                run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
+                          autoconfig=autoconfig)
+                autoconfig = False
+
+    m.finish()
+
+
 # some auxiliary functions for ADwin debugging
 def get_overlong_cycles():
     return adwin.get_purification_delayfb_var('overlong_cycles_per_mode', start=1, length=100)
@@ -1438,12 +1534,14 @@ if __name__ == '__main__':
     #full_sequence_local(name+'_full_sequence_local_Z', upload_only = False,do_Z = True)
     
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
-    apply_dynamic_phase_correction_delayline(
-        name + '_phase_fb_delayline',
-        upload_only=False,
-        dry_run=False,
-        input_state = 'Z',
-        simplify_wfnames=False)
+    # apply_dynamic_phase_correction_delayline(
+    #     name + '_phase_fb_delayline',
+    #     upload_only=False,
+    #     dry_run=False,
+    #     input_state = 'Z',
+    #     simplify_wfnames=False)
+
+    sweep_number_of_delay_feedback_pulses("_delay_pulses_sweep", upload_only=True)
 
 
     #### ionization studies:

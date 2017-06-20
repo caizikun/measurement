@@ -103,7 +103,7 @@ params_lt2['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt2['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt2['carbons']                       = [2, 4]
+params_lt2['carbons']                       = [2]
 params_lt2['carbon_init_method']            = 'swap'
 params_lt2['carbon_readout_orientation']    = 'positive'
 # carbon_encoding: serial_swap or MBE
@@ -118,6 +118,7 @@ params_lt2['feedback_adwin_trigger_dec_pulse_seq'] = ['X', 'Y', 'Y', 'X']
 params_lt2['feedback_adwin_trigger_dec_duration'] = 20e-6
 params_lt2['feedback_adwin_trigger_channel'] = 'adwin_count'
 params_lt2['feedback_adwin_trigger_length'] = 3e-6
+params_lt2['feedback_adwin_trigger_delay'] = 1e-6
 
 # we don't want the old feedback crap
 params_lt2['use_old_feedback']          = 0

@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,392,392,623,623,624,624,668,668,795,795,855,855,1021,1022,1023,1026,1027
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,393,393,624,624,625,625,669,669,801,801,867,867,1033,1034,1035,1038,1039
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -193,10 +193,11 @@ DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 
 DIM dedicate_next_cycle_to_calculations AS LONG
 DIM requested_calculations AS LONG
-#DEFINE REQ_CALC_NONE                       0
-#DEFINE REQ_CALC_UPDATE_ON_LDE_ATTEMPT      1
-#DEFINE REQ_CALC_UPDATE_ON_DELAY_TIME       2
-#DEFINE REQ_CALC_SET_DELAY_LINE             3
+#DEFINE REQ_CALC_NONE                                           0
+#DEFINE REQ_CALC_UPDATE_ON_LDE_ATTEMPT                          1
+#DEFINE REQ_CALC_UPDATE_ON_DELAY_TIME                           2
+#DEFINE REQ_CALC_SET_DELAY_LINE_FOR_PHASE_CORRECTION            3
+#DEFINE REQ_CALC_SET_DELAY_LINE_CYCLES_FROM_SWEEP               4
 
 ' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
@@ -701,15 +702,20 @@ EVENT:
         update_nuclear_phases_from_time(nuclear_feedback_time)
         modulo_nuclear_phases()
         
-      CASE REQ_CALC_SET_DELAY_LINE
-        nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles            
-        tico_delay_line_set_cycles(phase_compensation_delay_cycles[nuclear_feedback_index]) ' takes +/- 36 cycles
+      CASE REQ_CALC_SET_DELAY_LINE_FOR_PHASE_CORRECTION
+        nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles
+        nuclear_feedback_cycles = phase_compensation_delay_cycles[nuclear_feedback_index]            
+        tico_delay_line_set_cycles(nuclear_feedback_cycles) ' takes +/- 36 cycles
         nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index] ' takes 4 cycles
         DATA_108[repetition_counter + 1] = nuclear_phases[current_feedback_nucleus]
-        DATA_109[repetition_counter + 1] = phase_compensation_delay_cycles[nuclear_feedback_index] 
+        DATA_109[repetition_counter + 1] = nuclear_feedback_cycles 
         
         dedicate_next_cycle_to_calculations = 1
         requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
+      
+      CASE REQ_CALC_SET_DELAY_LINE_CYCLES_FROM_SWEEP
+        nuclear_feedback_cycles = DATA_125[current_ROseq]
+        tico_delay_line_set_cycles(nuclear_feedback_cycles)
         
     ENDSELECT
    
@@ -818,6 +824,12 @@ EVENT:
               wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
               time_spent_in_state_preparation = time_spent_in_state_preparation + timer
               timer = -1
+              
+              IF (do_sweep_delay_cycles > 0) THEN
+                dedicate_next_cycle_to_calculations = 1
+                requested_calculations = REQ_CALC_SET_DELAY_LINE_CYCLES_FROM_SWEEP
+              ENDIF
+              
             ENDIF
           ENDIF
         
@@ -1049,7 +1061,7 @@ EVENT:
           
                    
           IF (do_phase_fb_delayline > 0) THEN
-            if (timer=0) THEN
+            if ((timer=0) AND (do_sweep_delay_cycles=0)) THEN
               nuclear_feedback_time = feedback_adwin_trigger_dec_duration
               dedicate_next_cycle_to_calculations = 1
               requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
@@ -1058,15 +1070,17 @@ EVENT:
                 
               if ((digin_this_cycle AND AWG_repcount_DI_pattern) > 0) then 
                 IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
-                  ' we're moving to the next feedback carbon
-                  INC(current_feedback_nucleus)
+                  ' if we are doing a fixed sweep of the number of delay cycles, we don't need to anything here anymore, the delay cycles are already set at the beginning of the repetition (case 1)
+                  IF (do_sweep_delay_cycles = 0) THEN                    
+                    ' we're moving to the next feedback carbon
+                    INC(current_feedback_nucleus)
                 
-                  dedicate_next_cycle_to_calculations = 1
-                  requested_calculations = REQ_CALC_SET_DELAY_LINE
+                    dedicate_next_cycle_to_calculations = 1
+                    requested_calculations = REQ_CALC_SET_DELAY_LINE_FOR_PHASE_CORRECTION
                   
-                  ' we want to do the trigger decoupling block update again as well for the next carbon
-                  timer = -1
-            
+                    ' we want to do the trigger decoupling block update again as well for the next carbon
+                    timer = -1
+                  ENDIF            
                 ENDIF
                 AWG_repcount_was_low = 0
               else
