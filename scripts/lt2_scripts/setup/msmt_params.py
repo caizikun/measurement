@@ -195,7 +195,7 @@ dl_delayed_element_run_up_time  = 400e-9
 
 cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DI_channel':                 20,
-    'delay_trigger_DO_channel':                 12,
+    'delay_trigger_DO_channel':                 1,
     'do_tico_delay_control':                    1,
     # 'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
     # JS: the following parameter shouldn't be defined and isn't used anywhere anymore

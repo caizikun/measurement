@@ -210,6 +210,7 @@ def turn_all_sequence_elements_off(m):
     m.params['is_two_setup_experiment'] = 0
     m.params['do_N_MBI']                = 0 
     m.params['do_carbon_init']          = 0
+    m.params['do_LDE_1']                = 0
     m.params['do_C_init_SWAP_wo_SSRO']  = 0
     m.params['MW_before_LDE1']          = 0
     m.params['LDE_1_is_init']           = 0
@@ -239,6 +240,7 @@ def turn_all_sequence_elements_on(m):
     m.params['is_two_setup_experiment'] = 1
     m.params['do_N_MBI']                = 0 # we never do this (or might actually do this... depends)
     m.params['do_carbon_init']          = 1
+    m.params['do_LDE_1']                = 1
     m.params['do_C_init_SWAP_wo_SSRO']  = 1
     m.params['LDE_1_is_el_init']        = 0
     m.params['do_swap_onto_carbon']     = 1
@@ -270,7 +272,8 @@ def repump_speed(name,debug = False,upload_only=False):
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
-    
+
+    m.params['do_LDE_1'] = 1
     m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ'
@@ -313,6 +316,7 @@ def sweep_number_of_reps_ionization(name,do_Z = False, upload_only = False, debu
 
     ### sequence specific parameters
 
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ' ### mZ or Z!
     m.params['MW_during_LDE'] = 1
@@ -363,6 +367,7 @@ def ionzation_sweep_pi_amp(name,upload_only = False, debug = False):
 
     ### sequence specific parameters
 
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ' ### mZ or Z!
     m.params['MW_during_LDE'] = 1
@@ -408,7 +413,8 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1 
-    m.params['do_carbon_readout']  = 1 
+    m.params['do_carbon_readout']  = 1
+    m.params['do_LDE_1'] = 1
 
     m.joint_params['LDE1_attempts'] = 150
     m.params['MW_during_LDE'] = 1
@@ -479,6 +485,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False):
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1
+    m.params['do_LDE_1'] = 1
     m.params['do_carbon_readout']  = 1
     # m.params['mw_first_pulse_amp'] = 0
     m.params['MW_during_LDE'] = 1
@@ -562,6 +569,7 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.params['do_swap_onto_carbon'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
     # m.params['do_C_init_SWAP_wo_SSRO'] = 0
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 # only use a preparational value
     # m.params['MW_during_LDE'] = 0
     m.joint_params['opt_pi_pulses'] = 0 # no pi pulses in this sequence.
@@ -652,6 +660,7 @@ def characterize_el_to_c_swap_success(name, upload_only = False,debug=False):
     m.params['do_swap_onto_carbon'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
     # m.params['do_C_init_SWAP_wo_SSRO'] = 0
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 # only use a preparational value
     # m.params['MW_during_LDE'] = 0
 
@@ -737,6 +746,7 @@ def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
     m.params['do_carbon_readout']  = 1 
     m.params['do_swap_onto_carbon'] = 1
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 # only use a preparational value
     m.joint_params['opt_pi_pulses'] = 1 # no pi pulses in this sequence.
     m.params['force_LDE_attempts_before_init'] = 1
@@ -818,6 +828,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False):
     m.params['do_carbon_readout']  = 1
 
     ### awg sequencing logic / lde parameters
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
@@ -898,6 +909,7 @@ def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
 
 
     ### awg sequencing logic / lde parameters
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
@@ -974,6 +986,7 @@ def apply_dynamic_phase_correction(name,debug=False,upload_only = False,input_st
 
 
     ### awg sequencing logic / lde parameters
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] =  input_state
@@ -1052,6 +1065,7 @@ def check_phase_offset_after_LDE2(name,debug=False,upload_only = False,tomo = 'X
     m.joint_params['LDE2_attempts'] = 1
 
     ### awg sequencing logic / lde parameters
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z' ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'; Y puts in Y
@@ -1105,6 +1119,7 @@ def full_sequence_local(name,debug=False,upload_only = False,do_Z = False):
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_carbon_init'] = 1
+    m.params['do_LDE_1'] = 1
     m.params['do_swap_onto_carbon'] = 1
     m.params['do_C_init_SWAP_wo_SSRO'] = 1 # we still have to decide on this
     m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
@@ -1184,7 +1199,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # prepare_carbon_params(m)
 
     ### general params
-    pts = 15
+    pts = 5
     m.params['phase_detuning'] = 6.0
 
     ### calculate sweep array
@@ -1206,6 +1221,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         m.params['do_carbon_init'] = 1
         m.params['do_swap_onto_carbon'] = 1
         m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+        m.params['do_LDE_1'] = 1
         m.params['do_LDE_2'] = 1
         m.params['do_phase_correction'] = 1
         
@@ -1219,6 +1235,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         m.params['do_C_init_SWAP_wo_SSRO'] = 1
         m.params['do_swap_onto_carbon'] = 1
         m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+        m.params['do_LDE_1'] = 1
         m.params['do_LDE_2'] = 1
         m.params['do_phase_correction'] = 1
         
@@ -1326,6 +1343,7 @@ def apply_dynamic_phase_correction_delayline_tomo(name,debug=False,upload_only =
 
 
     ### awg sequencing logic / lde parameters
+    m.params['do_LDE_1'] = 1
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] =  input_state
@@ -1382,7 +1400,7 @@ def apply_dynamic_phase_correction_delayline_tomo(name,debug=False,upload_only =
             run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig)
             autoconfig = False
 
-def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_only=False):
+def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_only=False, dry_run=False):
     """
         runs the measurement for X and Y tomography. Also does positive vs. negative RO
         """
@@ -1390,11 +1408,11 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
     prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 10000
 
     ### calculate the sweep array
     minReps = 1
-    maxReps = 20
+    maxReps = 5
     step = 1
     sweep_pts = np.arange(minReps, maxReps, step)
     pts = len(sweep_pts)
@@ -1402,7 +1420,7 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
     C_id = m.params['carbons'][0]
     C_freq_0 = m.params['C%s_freq_0' % C_id]
 
-    delay_cycles_fixed = int(round((1.0/C_freq_0) / m.params['delay_clock_cycle_time'] ))
+    delay_cycles_fixed = int(round((1.0/C_freq_0 - m.params['delay_time_offset']) / m.params['delay_clock_cycle_time'] ))
     print("delay_cycles_fixed: %d" % delay_cycles_fixed)
 
     m.params['pts'] = pts
@@ -1424,6 +1442,7 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
     m.params['do_general_sweep'] = 1
     m.params['do_carbon_init'] = 1
+    m.params['do_LDE_1'] = 0
     m.params['do_delay_fb_pulses'] = 1
     m.params['do_sweep_delay_cycles'] = 1
     m.params['do_carbon_readout'] = 1
@@ -1433,6 +1452,9 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
     # m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180
     # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
     m.joint_params['opt_pi_pulses'] = 0
+    m.params['feedback_HHsync_include'] = 1
+
+    mw = dry_run
 
 
     ### loop over tomography bases and RO directions upload & run
@@ -1453,7 +1475,7 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
                 m.params['Tomography_bases'] = [t]
                 m.params['carbon_readout_orientation'] = ro
                 run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
-                          autoconfig=autoconfig)
+                          autoconfig=autoconfig, mw=mw)
                 autoconfig = False
 
     else:
@@ -1464,14 +1486,17 @@ def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_
                 breakst = show_stopper()
                 if breakst:
                     break
-                m.params['do_C_init_SWAP_wo_SSRO'] = 0
-                m.params['carbon_init_method'] = 'MBI'
+                if not dry_run:
+                    m.params['do_C_init_SWAP_wo_SSRO'] = 0
+                    m.params['carbon_init_method'] = 'MBI'
+                else:
+                    m.params['do_C_init_SWAP_wo_SSRO'] = 1
                 print t, ro
                 save_name = t + '_' + ro
                 m.params['Tomography_bases'] = [t]
                 m.params['carbon_readout_orientation'] = ro
                 run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
-                          autoconfig=autoconfig)
+                          autoconfig=autoconfig, mw=mw)
                 autoconfig = False
 
     m.finish()
@@ -1537,11 +1562,15 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction_delayline(
     #     name + '_phase_fb_delayline',
     #     upload_only=False,
-    #     dry_run=False,
+    #     dry_run=True,
     #     input_state = 'Z',
     #     simplify_wfnames=False)
 
-    sweep_number_of_delay_feedback_pulses("_delay_pulses_sweep", upload_only=True)
+    sweep_number_of_delay_feedback_pulses("_delay_pulses_sweep",
+                                          debug=False,
+                                          upload_only=False,
+                                          do_Z=True
+                                          )
 
 
     #### ionization studies:

@@ -119,6 +119,9 @@ params_lt4['feedback_adwin_trigger_dec_duration'] = 20e-6
 params_lt4['feedback_adwin_trigger_channel'] = 'adwin_count'
 params_lt4['feedback_adwin_trigger_length'] = 3e-6
 params_lt4['feedback_adwin_trigger_delay'] = 1e-6
+params_lt4['feedback_HHsync_include'] = 0
+params_lt4['feedback_HHsync_delay'] = params_lt4['feedback_adwin_trigger_dec_duration'] - 1e-6
+params_lt4['feedback_HHsync_duration'] = 50e-9
 
 # we don't want the old feedback crap
 params_lt4['use_old_feedback']			= 0 

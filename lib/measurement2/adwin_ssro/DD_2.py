@@ -3039,6 +3039,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         refpoint='start',
                         refpoint_new='start',
                         start=self.params['feedback_adwin_trigger_delay'])
+        
+        if (self.params['feedback_HHsync_include']):
+            HHsync = pulse.SquarePulse(channel = 'sync', length = self.params['feedback_HHsync_duration'], amplitude = 1.0)
+            ftd_element.add(HHsync,
+                            refpulse=anchor_element,
+                            refpoint='start',
+                            refpoint_new='start',
+                            start=self.params['feedback_HHsync_delay'])
 
         current_t = Gate.tau - Gate.tau_cut_before
         for pulse_type in Gate.dec_pulse_sequence:

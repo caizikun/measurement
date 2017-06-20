@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,393,393,624,624,625,625,669,669,801,801,867,867,1033,1034,1035,1038,1039
+' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,394,394,632,632,633,633,677,677,809,809,875,875,1041,1042,1043,1046,1047
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -217,11 +217,12 @@ DIM current_ROseq, no_of_sweep_pts as LONG
 
 ' Sequence flow control
 DIM do_carbon_init, do_C_init_SWAP_wo_SSRO AS LONG
+DIM do_LDE_1 AS LONG
 DIM do_swap_onto_carbon, do_SSRO_after_electron_carbon_SWAP as long
 DIM do_LDE_2, do_phase_correction as long
 DIM do_purifying_gate, do_carbon_readout as long
 
-DIM mode_after_spinpumping, mode_after_LDE, mode_after_LDE_2, mode_after_SWAP, mode_after_purification, mode_after_phase_correction as long
+DIM mode_after_spinpumping, mode_after_init, mode_after_LDE, mode_after_LDE_2, mode_after_SWAP, mode_after_purification, mode_after_phase_correction as long
 
 Dim time as long
 
@@ -443,6 +444,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   delay_feedback_N                 = DATA_20[45]
   number_of_C_init_ROs             = DATA_20[46]
   number_of_C_encoding_ROs         = DATA_20[47]
+  do_LDE_1                         = DATA_20[48]
   
   ' float params from python
   E_SP_voltage                              = DATA_21[1] 'E spin pumping before MBI
@@ -622,10 +624,16 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     mode_after_LDE = mode_after_swap ' as defined above
   endif
   
+  IF (do_LDE_1=1) THEN
+    mode_after_init = 4 ' LDE 1
+  ELSE
+    mode_after_init = mode_after_LDE
+  ENDIF
+    
   if (do_carbon_init = 1) then
     mode_after_spinpumping = 2 'MBI
   else
-    mode_after_spinpumping = 4 ' LDE 1
+    mode_after_spinpumping = mode_after_init ' LDE 1
   endif
 
 
@@ -647,7 +655,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_fail_channel, 0)
   P2_DIGOUT(DIO_MODULE, remote_adwin_do_success_channel, 0)
   
-  IF (do_phase_fb_delayline > 0) THEN
+  IF ((do_phase_fb_delayline > 0) OR (do_sweep_delay_cycles > 0)) THEN
     tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
     tico_delay_line_set_enabled(1)
     tico_delay_line_set_cycles(0)
@@ -672,18 +680,18 @@ EVENT:
   PAR_61 = mode   
   Par_60 = timer
   
-  '  IF (current_mode <> mode) THEN  
-  '    inc(flowchart_index)  
-  '    if (flowchart_index > max_flowchart_modes) THEN
-  '      flowchart_index = 1
-  '    endif
-  '    mode_flowchart[flowchart_index] = mode
-  '    mode_flowchart_cycles[flowchart_index] = 0
-  '  endif
-  '                  
-  '  if (flowchart_index > 0) THEN
-  '    inc(mode_flowchart_cycles[flowchart_index])
-  '  endif
+  IF (current_mode <> mode) THEN  
+    inc(flowchart_index)  
+    if (flowchart_index > max_flowchart_modes) THEN
+      flowchart_index = 1
+    endif
+    mode_flowchart[flowchart_index] = mode
+    mode_flowchart_cycles[flowchart_index] = 0
+  endif
+                    
+  if (flowchart_index > 0) THEN
+    inc(mode_flowchart_cycles[flowchart_index])
+  endif
 
   
   current_mode = mode
@@ -910,12 +918,12 @@ EVENT:
           
           IF (current_C_init_RO = number_of_C_init_ROs) THEN
             ' the last carbon has been initialised, move on
-            mode = 4
+            mode = mode_after_init
             timer = -1
           ELSE
             ' we still have some carbons to initialize
             mode = 2
-            timer = 1 ' skip the AWG triggering for timer=0
+            timer = 0 ' skip the AWG triggering for timer=0
           ENDIF
           
         
@@ -1266,7 +1274,7 @@ FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0) 
   
-  IF (do_phase_fb_delayline > 0) THEN
+  IF ((do_phase_fb_delayline > 0) OR (do_sweep_delay_cycles > 0)) THEN
     tico_delay_line_finish()
   ENDIF
   
