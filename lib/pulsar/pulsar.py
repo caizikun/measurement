@@ -561,6 +561,15 @@ class Pulsar:
 
         self.AWG.load_awg_file(filename)
 
+        # setting jump modes directly
+        if self.AWG_type in ['opt09'] and sequence.djump_table != None:
+            for i in range(16):
+                self.AWG.set_djump_def(i, 0)
+
+            for i in sequence.djump_table.keys():
+                el_idx = sequence.element_index(sequence.djump_table[i])
+                self.AWG.set_djump_def(i, el_idx)
+
         self.activate_channels(channels)
 
         if simplified_wfnames:

@@ -3401,19 +3401,29 @@ config['adwin_pro_processes'] = {
                 },
                 },
                 'dynamic_jump' : {
-                'index' : 1,
-                'file' : 'dynamic_jump.TC1',
-                'par' :{
-                    'processdelay'         : 10, # Process delay in ns
-
+                    'index' : 1,
+                    'file' : 'dynamic_jump.TC9',
+                    'par' : {
                     },
-                 'params_long' : [
+                    'params_long' : [
+                        ['cycle_duration'           ,   1000],
+                        ['AWG_start_DO_channel'     ,   16  ],
+                        ['AWG_done_DI_channel'      ,   8   ],
+                        ['delay_trigger_DI_channel' ,   20  ],
+                        ['delay_trigger_DO_channel' ,   12  ],
                     ],
-                'params_float' :[],
-                'params_long_index'  : 20,
-                'params_float_index' : 21,
-                'data_long' : {
-                },
+                    'params_long_index'  : 20,
+                    'params_long_length' : 100,
+                    'params_float' : [
+                    ],
+                    'params_float_index' : 21,
+                    'data_long' : {
+                        'jump_table' :   40,
+                        'next_seq_table'    :   42,
+                    },
+                    'data_float' : {
+                        'delay_cycles'  :   41
+                    }
                 }
         }
 

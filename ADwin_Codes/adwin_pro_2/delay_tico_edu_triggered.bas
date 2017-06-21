@@ -8,10 +8,10 @@
 ' External_Operation             = greater
 ' Priority                       = High
 ' Version                        = 1
-' TiCoBasic_Version              = 1.2.8
+' TiCoBasic_Version              = 1.6.2
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD278276  DASTUD\TUD278276
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017

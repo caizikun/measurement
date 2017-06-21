@@ -5,10 +5,11 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 5.0.8
+' ADbasic_Version                = 6.2.0
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Stacksize                      = 1000
+' Info_Last_Save                 = TUD278276  DASTUD\TUD278276
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
