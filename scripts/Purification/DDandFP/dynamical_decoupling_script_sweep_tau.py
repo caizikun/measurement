@@ -66,9 +66,13 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 if __name__ == '__main__':
 
+    center_tau = 6.402e-6
+    tau_step = 2e-9
+    steps = 20
+
     SimpleDecoupling_swp_tau(SAMPLE, 
-        tau_min=6.34e-6,
-        tau_max=6.38e-6,
-        tau_step = 2e-9,
+        tau_min=center_tau - (steps/2)*tau_step,
+        tau_max=center_tau + (steps/2)*tau_step,
+        tau_step = tau_step,
         N=64,
         reps_per_ROsequence = 250)

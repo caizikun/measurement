@@ -31,7 +31,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [4]
+carbons = [2,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -42,14 +42,14 @@ use_queue = False
 
 f_ms0 = True
 
-f_ms1 = False
+f_ms1 = True
 
-self_phase_calibration = False
+self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
-cross_phase_calibration = False
+cross_phase_calibration = True
 cross_phase_steps       = 1
 
 # Note that you wont save to msmt params if debug is on.
@@ -87,11 +87,11 @@ elif SETUP == 'lt4':
     detuning_basic = 5e3
     detuning_dict = {
         '1' : detuning_basic,
+        '2' : detuning_basic,
         '3' : detuning_basic,
         '4' : detuning_basic,
         '5' : detuning_basic,
-        '6' : detuning_basic,
-        '8' : detuning_basic
+        '6' : detuning_basic
         }
 ######
 

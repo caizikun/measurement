@@ -22,6 +22,7 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_pi2 = ps.Xpi2_pulse(msmt)
     Gate.mw_mpi2 = ps.mXpi2_pulse(msmt)
 
+
     if msmt.params['do_calc_theta'] > 0 or msmt.params['general_sweep_name'] == 'sin2_theta':
         fit_a  = msmt.params['sin2_theta_fit_a']      
         fit_x0 = msmt.params['sin2_theta_fit_x0']     
@@ -227,6 +228,15 @@ def generate_LDE_elt(msmt,Gate, **kw):
                 refpoint_new    = 'center',
                 name            = 'MW_pi')
 
+
+            if msmt.params['MW_RO_pulse_in_LDE'] == 1:
+                e.add(pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']),
+                    start           = msmt.params['LDE_decouple_time'],
+                    refpulse        = 'MW_pi',
+                    refpoint        = 'center',
+                    refpoint_new    = 'center',
+                    name            = 'RO_pulse')
+
     else:
 
         #mw pi/2 pulse or 'theta'
@@ -261,21 +271,27 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     refpulse = refpulse,
                     refpoint = refpoint,)
 
+                opt_ref_name = 'opt pi {}'.format(i+1)
 
+                if msmt.params['PLU_during_LDE'] == 1 :
+                    plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
+                    e.add(Gate.plu_gate, name = plu_to_plu_ref_name, 
+                        refpulse = opt_ref_name,
+                        start = msmt.params['PLU_1_delay'])
+
+                    
+
+
+            
             #5 Plu gates
-            if msmt.params['PLU_during_LDE'] == 1 :
-                e.add(Gate.plu_gate, name = 'plu gate 1', 
-                    refpulse = 'opt pi 1',
-                    start = msmt.params['PLU_1_delay'])
-
-                plu_ref_name = 'plu gate 1'
-
+            if msmt.params['PLU_during_LDE'] == 1:
+                plu_to_plu_ref_name = 'plu gate {}'.format(i+1)
                 ## the name plu 3 is historic... see bell.
                 e.add(pulse.cp(Gate.plu_gate, 
                         length = msmt.params['PLU_gate_3_duration']), 
                     name = 'plu gate 3', 
                     start = msmt.params['PLU_3_delay'], 
-                    refpulse = plu_ref_name)
+                    refpulse = plu_to_plu_ref_name)
 
 
                 e.add(pulse.cp(Gate.plu_gate, 
@@ -355,7 +371,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
 
 
 
-    if msmt.joint_params['do_final_mw_LDE'] == 1:
+    if msmt.joint_params['do_final_mw_LDE'] == 1 and (not msmt.params['MW_RO_pulse_in_LDE'] == 1):
 
         if msmt.params['do_dynamical_decoupling'] > 0:
             e.add(pulse.cp(Gate.mw_X,phase = msmt.params['Y_phase']),

@@ -96,6 +96,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         self.awg.stop()
 
     def save(self,**kw):
+
         ssro.IntegratedSSRO.save(self, **kw)
 
         grp=self.h5basegroup.create_group('pulsar_settings')

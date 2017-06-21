@@ -97,14 +97,15 @@ if __name__ == '__main__':
     stopper = False
 
     detuning = 5000
-    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(4)+'_ms' + str(1) + '_' + 'positive', 
-                        carbon_nr           = 1,               
+    carbon = 2
+    NuclearRamseyWithInitialization_cal(SAMPLE_CFG+'_C'+str(carbon)+'_ms' + str(1) + '_' + 'positive', 
+                        carbon_nr           = carbon,               
                         carbon_init_state   = 'up', 
                         el_RO               = 'positive',
                         detuning            = detuning,
                         el_state            = 1,
-                        debug               = True,
-                        free_evolution_time = 400e-6 + np.linspace(0.,2.8*1./detuning,1))
+                        debug               = False,
+                        free_evolution_time = np.linspace(400e-6, 10000e-6, 38))
     
 
 

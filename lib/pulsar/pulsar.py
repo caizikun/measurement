@@ -8,6 +8,7 @@
 import time
 import numpy as np
 import logging
+import qt
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
@@ -161,6 +162,26 @@ class Pulsar:
 
             if output:
                 getattr(self.AWG, 'set_%s_status' % id)('on')
+
+    def deactivate_channels(self, channels='all'):
+        ids = self.get_used_channel_ids()
+        #print ids
+        for id in ids:
+            output = False
+            names = self.get_channel_names_by_id(id)
+            for sid in names:
+                #print sid
+                if names[sid] == None:
+                    continue
+
+                if channels != 'all' and names[sid] not in channels:
+                    continue
+
+                if self.channels[names[sid]]['active']:
+                    output = True
+
+            if output:
+                getattr(self.AWG, 'set_%s_status' % id)('off')
 
     def get_awg_channel_cfg(self):
         channel_cfg={}
@@ -394,7 +415,13 @@ class Pulsar:
         # the mapping from index-name to original name will be saved in
         # qt.pulsar.simplified_wfnames_mapping and may be shown sortedly by invoking
         # qt.pulsar.show_simplified_wfnames_mapping()
-        simplify_wfnames = kw.pop('simplify_wfnames', False)
+        if qt.current_setup == 'lt2':
+            print("WARNING: simplifying waveform names for the LT2 AWG.")
+            print("If you don't want this, modify pulsar.py function program_awg.")
+            simplify_wfnames = True
+        else:
+            simplify_wfnames = kw.pop('simplify_wfnames', False)
+
         simplified_wfnames = {}
 
         # order the waveforms according to physical AWG channels and
@@ -556,6 +583,8 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
+
+        self.deactivate_channels('all')
 
         self.AWG.send_awg_file(filename,awg_file)
 

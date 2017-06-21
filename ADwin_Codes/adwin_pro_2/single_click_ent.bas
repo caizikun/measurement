@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,174,174,359,359,379,379,758,758,830,831
+' Bookmarks                      = 3,3,87,87,174,174,370,370,390,390,770,770,842,843
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -43,7 +43,7 @@
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
 #DEFINE max_single_click_ent_repetitions    50000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
-#DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
+#DEFINE max_pid       1000000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -117,8 +117,8 @@ DIM PLU_during_LDE, LDE_is_init as long
 DIM is_master,cumulative_awg_counts, timeout_mode_after_adwin_comm, mode_flag as long
 
 ' Sequence flow control
-DIM do_phase_stabilisation, only_meas_phase, do_dynamical_decoupling as long
-DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm as long
+DIM do_phase_stabilisation, only_meas_phase, do_dynamical_decoupling, do_post_ent_phase_msmt as long
+DIM init_mode, mode_after_phase_stab, mode_after_LDE, mode_after_expm, mode_after_e_msmt as long
 
 ' Phase shifter PID params (note that only the master ADWIN controls the phase)
 DIM Sig, setpoint, setpoint_angle, Prop, Dif,Int                    AS FLOAT        ' PID terms
@@ -217,6 +217,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   raw_phase_stab_max_time     = DATA_20[39]
   modulate_stretcher_during_phase_msmt = DATA_20[40]
   max_LDE_attempts                = DATA_20[41]
+  do_post_ent_phase_msmt      = DATA_20[42]
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -255,6 +256,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
+  Prop = 0
+  Int = 0
+  Dif = 0
   e = 0
   e_old = 0
   Sig = 0 
@@ -330,7 +334,14 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
 
   if (do_dynamical_decoupling = 1) then
     mode_after_LDE = 5 ' dynamical decoupling
-  else 
+  else
+    if (do_post_ent_phase_msmt = 1) then
+      mode_after_e_msmt = 9
+    else
+      mode_after_e_msmt = 7
+      
+    endif
+    
     mode_after_LDE = 6 ' electron RO
   endif
   
@@ -607,10 +618,11 @@ EVENT:
               
               ' PID control
               e = SETPOINT_angle - counts
-              Prop = PID_Kp * e'                   ' Proportional term      
+              Prop = PID_Kp * e                   ' Proportional term      
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
               Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
+              FPAR_74 = Sig
               ' Output inside reach of fibre stretcher?
               if (Sig > stretcher_V_max) then
                 Sig = Sig - stretcher_V_correct
@@ -908,8 +920,8 @@ EVENT:
           if (awg_done_was_low =1) then
             timer = -1
             mode = 200 'SSRO
-            success_mode_after_SSRO = 7
-            fail_mode_after_SSRO = 7
+            success_mode_after_SSRO = mode_after_e_msmt
+            fail_mode_after_SSRO = mode_after_e_msmt
           endif 
           awg_done_was_low = 0 ' remember
         ELSE ' awg done is low.
@@ -921,7 +933,34 @@ EVENT:
         ENDIF
         
           
+      
+      CASE 9 ' Phase msmt after success
+        IF (timer = 0) THEN 
           
+          P2_CNT_ENABLE(CTR_MODULE, 0000b)
+          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter 'zpl1_counter_pattern
+          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
+          P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
+          index = 0  
+        ELSE
+                       
+          if (index = count_int_cycles_meas) then ' Only reads apds every count int cycles
+            counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) 
+            counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel)
+            DATA_106[repetition_counter+1] = counts_1
+            DATA_107[repetition_counter+1] = counts_2
+             
+            mode = 7 ' Finish the things
+            timer = -1
+            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
+
+          endif
+          
+            
+          
+        endif
+        
+        inc(index)
           
       CASE 7 'store the result of the e measurement and the sync number counter
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run

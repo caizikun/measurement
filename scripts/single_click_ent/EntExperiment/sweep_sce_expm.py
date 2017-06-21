@@ -154,6 +154,8 @@ def turn_all_sequence_elements_off(m):
     m.params['do_yellow_with_AWG']      = 0
     m.params['do_calc_theta']           = 0
     m.params['check_EOM_projective_noise'] = 0
+    m.params['do_post_ent_phase_msmt'] = 0
+    m.params['MW_RO_pulse_in_LDE']      = 0
     
 def turn_all_sequence_elements_on(m):
     """
@@ -268,7 +270,7 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     ### general params
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1500
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -277,13 +279,89 @@ def lastpi2_phase_action(name, debug = False, upload_only = False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE_attempts'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
-    m.params['first_mw_pulse_is_pi2'] = True
+    m.params['first_mw_pulse_is_pi2'] = False
+    m.params['do_calc_theta'] = True
+    m.params['sin2_theta'] = 0.1
     
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_final_mw_phase'
     print 'sweeping the', m.params['general_sweep_name']
     m.params['general_sweep_pts'] = np.linspace(0,360,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def lastpi2_phase_action_compressed_BK(name, debug = False, upload_only = False):
+    """
+    This measurement sweeps the phase of the last pi/2 pulse and includes MW pulses in the LDE element.
+    Is used as a sanity check --> how coherent are we at the last pi/2 pulse and what is the phase relation for the MW source.
+    """
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['first_mw_pulse_is_pi2'] = 1
+    m.params['LDE_decouple_time'] = 480e-9
+    m.params['MW_RO_pulse_in_LDE'] = 1
+
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(0,360,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+
+    ### upload and run
+
+    run_sweep(m,debug = debug,upload_only = upload_only)
+
+
+def LDE_decouple_time_compressed_BK(name, debug = False, upload_only = False):
+    """
+    This measurement sweeps the phase of the last pi/2 pulse and includes MW pulses in the LDE element.
+    Is used as a sanity check --> how coherent are we at the last pi/2 pulse and what is the phase relation for the MW source.
+    """
+    m = sce_expm.SingleClickEntExpm(name)
+    prepare(m)
+
+    ### general params
+    pts = 21
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+
+    ### sequence specific parameters
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 0
+    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['first_mw_pulse_is_pi2'] = 1
+    m.params['LDE_decouple_time'] = 500e-9
+    m.params['MW_RO_pulse_in_LDE'] = 1
+    m.params['LDE_final_mw_phase'] = 90
+    ### prepare sweep
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = 'LDE_decouple_time'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = np.linspace(450e-9,600e-9,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
 
@@ -457,7 +535,8 @@ if __name__ == '__main__':
     # lastpi2_measure_delay(name,debug=False,upload_only=False)
     # lastpi2_phase_vs_amplitude(name,debug=False,upload_only=False)
     lastpi2_phase_action(name,debug=False,upload_only=False)
-
+    # lastpi2_phase_action_compressed_BK(name,debug=False,upload_only=False)
+    # LDE_decouple_time_compressed_BK(name,debug=False,upload_only=False)
     # ionization_study_LT4(name,debug=True, upload_only = True,use_yellow = False)
 
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)

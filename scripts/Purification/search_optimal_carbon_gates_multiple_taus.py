@@ -132,10 +132,11 @@ def show_stopper():
     else: return False
 
 def optimize():
-    GreenAOM.set_power(10e-6)
-    counters.set_is_running(1)
+    # GreenAOM.set_power(10e-6)
+    # counters.set_is_running(1)
+    # execfile(r'testing/load_cr_linescan.py')
     optimiz0r.optimize(dims = ['x','y','z','y','x'])
-    GreenAOM.set_power(0e-6)
+    # GreenAOM.set_power(0e-6)
 
 
 def add_carbon_dictionary(C_taus = None, C_tau_rng = 10e-9, C_N = [24], C_N_steps = 10, carbon = 5):
@@ -187,13 +188,13 @@ def add_carbon_dictionary(C_taus = None, C_tau_rng = 10e-9, C_N = [24], C_N_step
 
 	if (len(raw_tau_list)*len(raw_N_list))%9 !=0:
 		Msmts_for_single_tau +=1 
-	print 'Number of measurement blocks of 9 per single tau: ' +str(Msmts_for_single_tau)
-	print 'len(raw_tau_list): ' + str(len(raw_tau_list))
-	print 'len(raw_N_list): ' + str(len(raw_N_list))
-	print 'raw_tau: ' + str(raw_tau_list)
-	print 'raw_N_list: ' + str(raw_N_list)
-	print tau_list
-	print N_list
+	# print 'Number of measurement blocks of 9 per single tau: ' +str(Msmts_for_single_tau)
+	# print 'len(raw_tau_list): ' + str(len(raw_tau_list))
+	# print 'len(raw_N_list): ' + str(len(raw_N_list))
+	# print 'raw_tau: ' + str(raw_tau_list)
+	# print 'raw_N_list: ' + str(raw_N_list)
+	# print tau_list
+	# print N_list
 
 	multi_tau_carbon_dict['C' + str(c)]['nr_of_blocks_single_tau'] = Msmts_for_single_tau
 	Msmts_for_C = len(C_taus)*Msmts_for_single_tau	
@@ -267,15 +268,28 @@ if __name__ == '__main__':
 		#######################
 		#### SIL 2 ###########
 		#####################
-		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [10.884e-6],#[8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
-										'C_tau_rng' : 14e-9, # steps of 2e-9
-										'C_N' 		: [12],#[10,10,10,10,10,10,14],
-										'C_N_steps' : 6} # steps of 2 	
+		# multi_tau_carbon_dict['C1'] = {'C_taus' 	: [10.884e-6],#[8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
+		# 								'C_tau_rng' : 14e-9, # steps of 2e-9
+		# 								'C_N' 		: [12],#[10,10,10,10,10,10,14],
+		# 								'C_N_steps' : 6} # steps of 2 	
 
-		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [9.318e-6,10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
-										'C_tau_rng' : 12e-9, # steps of 2e-9
-										'C_N' 		: [24,24,22,24,26,26,42],
-										'C_N_steps' : 10} # steps of 2 	
+		# multi_tau_carbon_dict['C2'] = {'C_taus' 	: [9.318e-6,10.786e-6,11.92e-6,13.05e-6,14.19e-6,16.46e-6,22.14e-6], 
+		# 								'C_tau_rng' : 12e-9, # steps of 2e-9
+		# 								'C_N' 		: [24,24,22,24,26,26,42],
+		# 								'C_N_steps' : 10} # steps of 2 	
+		#######################
+		#### SIL 3 ###########
+		#####################
+		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [6.302e-6],#[8.592e-6, 10.884e-6,6.3e-6,7.476e-6,9.76e-6,13.142e-6, 15.46e-6], 
+										'C_tau_rng' : 14e-9, # steps of 2e-9
+										'C_N' 		: [30],#[10,10,10,10,10,10,14],
+										'C_N_steps' : 12} # steps of 2 	
+
+		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [6.356e-6], 
+										'C_tau_rng' : 8e-9, # steps of 2e-9
+										'C_N' 		: [58],
+										'C_N_steps' : 8} # steps of 2 	
+										
 	
 	elif qt.current_setup == 'lt4':
 		
@@ -316,7 +330,7 @@ if __name__ == '__main__':
 										'C_N_steps' : 12} 
 
 	### choose your carbons.
-	carbons = [4]
+	carbons = [2]
 
 	### msmt loop begins here.
 	breakst = False
@@ -382,8 +396,8 @@ if __name__ == '__main__':
 					current_N_list = N_list[i*9:]
 					current_tau_list = tau_list[i*9:]
 					
-				print 'Current_N_list, i.e. chopped up: ' + str(current_N_list)
-				print 'Current_tau_list, i.e. chopped up: ' + str(current_tau_list)
+				# print 'Current_N_list, i.e. chopped up: ' + str(current_N_list)
+				# print 'Current_tau_list, i.e. chopped up: ' + str(current_tau_list)
 
 				for el_RO in ['positive','negative']:
 					print '@el_ro: ' + el_RO

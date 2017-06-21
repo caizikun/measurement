@@ -6,6 +6,7 @@
 *.TB*
 *.TC*
 *.T9*
+*.TI*
 *.bak
 *.npz
 *.dll
@@ -21,6 +22,7 @@ CPLD
 *.bmp
 *.png
 /hardware/EDAC40
+.idea
 
 
 

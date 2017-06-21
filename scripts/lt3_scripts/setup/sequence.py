@@ -20,7 +20,7 @@ qt.pulsar.define_channel(id='ch1', name='MW_Imod', type='analog', high=1.0,
 qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1.0,
     low=-1.0, offset=0., delay=230e-9, active=True)
 qt.pulsar.define_channel(id='ch3', name='EOM_AOM_Matisse', type='analog', 
-    high=1.0, low=-1.0, offset=0.0, delay=464e-9+17e-9, active=True) #546e-9
+    high=1.0, low=-1.0, offset=0.0, delay=464e-9+17e-9, active=True) #546e-9 # PH Note that shifted from + 17e-9 to buy power
 qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
     low=-2.0, offset=0., delay=200e-9, active=True)
 
@@ -56,7 +56,7 @@ qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM']
 # qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', 0.5)
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
-# qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.2)
+# qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.1)
 
 
 qt.pulsar.AWG_sequence_cfg={

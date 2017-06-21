@@ -184,20 +184,28 @@ cfg['protocols']['Magnetometry']={
 'AWG_to_adwin_ttl_trigger_duration'     :   5e-6,
 'threshold_majority_vote'               :   1}
 
-dl_minimal_delay_time_bare      = 1440e-9
-dl_awg_delay                    = 380e-9
+############################################
+### General settings for AdwinSSRO+delay ###
+############################################
+
+dl_physical_delay_time_offset	= 1294e-9 #1820e-9
 dl_delayed_element_run_up_time  = 400e-9
 
-dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_awg_delay + dl_delayed_element_run_up_time
+# dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
 
 cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DI_channel':                 20,
-    'delay_trigger_DO_channel':                 1, # this is just the awg start channel #12
+    'delay_trigger_DO_channel':                 1,
     'do_tico_delay_control':                    1,
-    'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
-    'awg_delay':                                dl_awg_delay,
+    # 'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
+    # JS: the following parameter shouldn't be defined and isn't used anywhere anymore
+    # I hope I got rid of all left-over occurrences.
+    # "awg_delay':                                0, # this parameter is not dfined@!!!!! dl_awg_delay,
     'delayed_element_run_up_time':              dl_delayed_element_run_up_time,
-    'minimal_delay_time':                       dl_minimal_delay_time,
+    'self_trigger_pulse_timing_offset':			0e-9,
+    # 'minimal_delay_time':                       dl_minimal_delay_time,
+	'physical_delay_time_offset':				dl_physical_delay_time_offset,
+	'delay_time_offset':						dl_physical_delay_time_offset + dl_delayed_element_run_up_time,
     'minimal_delay_cycles':                     15,
     'delay_clock_cycle_time':                   20e-9,
     'self_trigger_duration':                    100e-9,
@@ -325,107 +333,117 @@ cfg['samples'][sample_name] = {
 ###############
 ### Carbons ###
 ###############
-    ### Please uncomment the SIL you are working on
-    'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
-    'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 328.057+1.-0.09, #adwin needs positive values
-    'phase_per_compensation_repetition': 12.583, # adwin needs positive values
-    'total_phase_offset_after_sequence': 159.77, # adwin needs positive values
+    'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
+    'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
+    # 'phase_per_sequence_repetition'    : 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    # 'phase_per_compensation_repetition': 18.298,# adwin needs positive values
+    # 'total_phase_offset_after_sequence': 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
+###############
+### SIL2    ###
+###############
 
-    #########################
-    #####     SIL2      #####
-    #########################
-    ################
-    #### C1 ~ -35 ###
-    ################
-    'C1_freq_m1'        : (447929.95 + 483714)/2., 
-    'C1_freq_1_m1'      : 483714,
+    'number_of_carbon_params':  6, # JS: should match with the list below
 
-    'C1_Ren_tau_m1'    :   [4.822e-6],
-    'C1_Ren_N_m1'      :   [12],
-    'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    # ###############
+    # # C1 (A~ -350)#
+    # ###############
+    'C1_freq_m1'        : (441045.84+8165920)/2.,
+    'C1_freq_0'         : 446434.69,
+    'C1_freq_1_m1'      : 8166020.65,
 
-    'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
-    'C1_freq_0'         : 447747.11,
-    'C1_freq_1_p1'      : 425341.4,
+    'C1_Ren_tau_m1'    :   [5.97e-6],
+    'C1_Ren_N_m1'      :   [28],
+    'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [135.74] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-    'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
-    'C1_Ren_N_p1'      :   [12], #12
-    'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [36.64] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
-
-    'C1_unc_tau_p1'    :   [9.132e-6],
-    'C1_unc_N_p1'      :   [12],
-    'C1_unc_phase_offset_p1' : 82.6,
-    'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C1_phase_per_LDE_sequence_m1'  :   0.0,
+    'C1_init_phase_correction_m1': 0.0,
 
     ###############
-    #### C2 ~ 15 ###
+    # C2(A ~ -26)  #
     ###############
-    'C2_freq_m1'        : (447774.53+432700)/2.,
-    'C2_freq_0'         : 447725.47,
-    'C2_freq_1_m1'      : 432700, 
+    'C2_freq_m1'        : (443015.21+475444.0)/2,
+    'C2_freq_0'         : 443002.18,
+    'C2_freq_1_m1'      : 475430.27,
 
-    'C2_Ren_tau_m1'    :   [10.786e-6],
-    'C2_Ren_N_m1'      :   [24],
-    'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
+    'C2_Ren_N_m1'      :   [48], #36
+    'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [201.26] + [20.11] + [19.47] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-    'C2_freq_p1'        : 456025,
-    'C2_freq_0'         : 447725.47,
-    'C2_freq_1_p1'      : 464353.86,
+    'C2_phase_per_LDE_sequence_m1'  :   30.0,
+    'C2_init_phase_correction_m1': 0.0,
     
-    'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
-    'C2_Ren_N_p1'      :   [24],#[26],
-    'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    ###############
+    # C3 (A ~ -55)#
+    ###############
+    'C3_freq_m1'        : (440252.25 + 516843)/2.,
+    'C3_freq_0'         : 440252.25,
+    'C3_freq_1_m1'      : 516843,
+
+    'C3_Ren_tau_m1'    :   [3.66e-6],
+    'C3_Ren_N_m1'      :   [50],
+    'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
+
+    'C3_phase_per_LDE_sequence_m1'  :   0.0,
+    'C3_init_phase_correction_m1': 0.0,
+    
+    ###############
+    # C4 (A ~ 33) #
+    ###############
+    'C4_freq_m1'        : (442773.49 + 416024.45)/2,
+    'C4_freq_0'         : 442822.02,
+    'C4_freq_1_m1'      : 416228.08,
+    # 'C4_freq_1_p1'        : 416427.2,
+
+    'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
+    'C4_Ren_N_m1'      :   [24],#[56], #28
+    'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.91] + [0.0] + [-1.1] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+    'C4_phase_per_LDE_sequence_m1'  :   37.0,
+    'C4_init_phase_correction_m1': 0.0,
+
 
     ###############
-    #### C3 ~ 42 ###
+    # C5 (A ~ 26) #
     ###############
-    'C3_freq_m1'        : (447528.84*2 - 42e3)/2.,
-    'C3_freq_0'         : 447528.84,
-    'C3_freq_1_m1'      : 447e3-42e3, 
+    'C5_freq_m1'        : (443741.6+422796.72)/2,
+    'C5_freq_0'         : 443691.58,
+    'C5_freq_1_m1'      : 422786.11,
 
-    'C3_Ren_tau_m1'    :   [4.11e-6],
-    'C3_Ren_N_m1'      :   [32],
-    'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C5_Ren_tau_m1'    :   [10.964e-6], #8.826
+    'C5_Ren_N_m1'      :   [48], 
+    'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.82] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-    ###############
-    #### C4 ~ -80 ###
-    ###############
-    'C4_freq_m1'        : (447953.99*2 + 42e3)/2.,
-    'C4_freq_0'         : 447953.99,
-    'C4_freq_1_m1'      : 447e3+82e3,
+    'C5_phase_per_LDE_sequence_m1'  :   0.0,
+    'C5_init_phase_correction_m1': 0.0,
 
-    'C4_Ren_tau_m1'    :   [4.51e-6],
-    'C4_Ren_N_m1'      :   [66],
-    'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
-
-    'C4_phase_per_LDE_sequence_m1'     : 2.0, #328.057+1.-0.09,
 
     ###############
-    #### C5 ~-114 ###
+    # C6(A ~ -72) #
     ###############
-    'C5_freq_m1'        : (446138*2 + 114e3)/2.,
-    'C5_freq_0'         : 447479.34,
-    'C5_freq_1_m1'      : 447e3+114e3, 
+    'C6_freq_m1'        : (443762.23 + 500277.)/2.,
+    'C6_freq_0'         : 443762.95,
+    'C6_freq_1_m1'      : 500277.17,
 
-    'C5_Ren_tau_m1'    :   [5.445e-6],
-    'C5_Ren_N_m1'      :   [38],
-    'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C6_Ren_tau_m1'    :   [4.935e-6],
+    'C6_Ren_N_m1'      :   [44],
+    'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0]*11),
 
-    'C5_phase_per_LDE_sequence_m1'     : 4.0,
+    'C6_phase_per_LDE_sequence_m1'  :   0.0,
+    'C6_init_phase_correction_m1': 0.0,
 
     ###############
-    #### C6 ~ 14 ###
+    # C7(A ~ 11)  #
     ###############
-    'C6_freq_m1'        : (447765.59 +433431)/2.,
-    'C6_freq_0'         : 447765.59,
-    'C6_freq_1_m1'      : 433431, 
+    # 'C7_freq_m1'        : (441e3*2 + 55e3)/2.,
+    # 'C7_freq_0'       : 440252.25,
+    # 'C7_freq_1_m1'        : 516843,
 
-    'C6_Ren_tau_m1'    :   [21.895e-6],
-    'C6_Ren_N_m1'      :   [26],
-    'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+    # 'C7_Ren_tau_m1'    :   [5.28e-6],
+    # 'C7_Ren_N_m1'      :   [26],
+    # 'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [63.23] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-}
+
+    }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
         'A_CR_amplitude':                2e-9,#2.5e-9,

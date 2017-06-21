@@ -5,11 +5,10 @@
 ' Control_long_Delays_for_Stop   = No
 ' Priority                       = High
 ' Version                        = 1
-' ADbasic_Version                = 6.2.0
+' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Stacksize                      = 1000
-' Info_Last_Save                 = TUD278276  DASTUD\TUD278276
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -118,6 +117,7 @@ INIT:
   ' set up tico delay control
   IF (do_tico_delay_control > 0) THEN
     tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
+    tico_delay_line_set_enabled(1)
   ENDIF
   
   sweep_index = 1
@@ -177,7 +177,7 @@ EVENT:
           ' set up the delay line
           IF (do_tico_delay_control > 0) THEN
             tico_delay_line_set_cycles(DATA_41[sweep_index])
-            tico_delay_line_set_enabled(1)
+            ' tico_delay_line_set_enabled(1)
           ENDIF
           IF (send_AWG_start > 0) THEN
             P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,1)  ' AWG trigger
@@ -222,7 +222,7 @@ EVENT:
           
           ' disable delay line
           IF (do_tico_delay_control > 0) THEN
-            tico_delay_line_set_enabled(0)
+            tico_delay_line_set_cycles(0)
           ENDIF
           
           P2_CNT_CLEAR(CTR_MODULE, counter_pattern)    'clear counter

@@ -19,7 +19,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 
 f_msm1_cntr = 1.719319e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.037186e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
+f_msp1_cntr = 4.037144e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 110e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.785  # 28-02
+	hermite_pi_length = 106e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp =  0.8467  # 28-02
 	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.386  # 28-02 
+	hermite_pi2_amp = 0.387  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.398
+	hermite_pi_amp = 0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.160
+	hermite_pi2_amp = 0.157
 
 	square_pi_length = 30e-9
 	square_pi_amp = 0.79 
@@ -361,20 +361,20 @@ cfg['samples'][sample_name] = {
 	# #### C1 ###
 	# ###########
 	'C1_freq_p1'        : (443932.+428732.)/2., # random
-	'C1_freq_0' 		: 443932.,
-	'C1_freq_1_p1' 		: 428732.,
+	'C1_freq_0' 		: 442470.36,
+	'C1_freq_1_p1' 		: 430387.02,
 
-	'C1_Ren_tau_p1'    :   [6.302e-6],
-	'C1_Ren_N_p1'      :   [30],
+	'C1_Ren_tau_p1'    :   [6.31e-6],
+	'C1_Ren_N_p1'      :   [32],
 	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C2_freq_p1'        : (442681.+424544.)/2., # random
-	'C2_freq_0' 		: 442681.,
-	'C2_freq_1_p1' 		: 424544.,
+	'C2_freq_0' 		: 442442.82,
+	'C2_freq_1_p1' 		: 422822.15,
 
 	'C2_Ren_tau_p1'    :   [6.356e-6],
 	'C2_Ren_N_p1'      :   [58],
-	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [8.82] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 }
@@ -390,7 +390,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 14e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 4e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -462,8 +462,8 @@ cfg['protocols'][name]['pulses'] = {
     	'IQ_Square_pi_amp' :		0.068, 
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
-    	'DESR_pulse_duration' :		4e-6,
-    	'DESR_pulse_amplitude' :	0.0018,#0.194,
+    	'DESR_pulse_duration' :		4.5e-6,
+    	'DESR_pulse_amplitude' :	0.0016,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,
@@ -477,14 +477,14 @@ cfg['protocols'][name]['pulses'] = {
 
     	'eom_pulse_duration':				2e-9,
         'eom_off_duration':					44e-9, # 50e-9
-        'eom_off_amplitude':				-0.033, # for 44 ns of off duration #-0.058
+        'eom_off_amplitude':				-0.033, # for 44 ns of off duration
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
-        'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
+        'eom_overshoot1':					-0.025, # calibration from 29-05-2017# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#40e-9
-        'aom_amplitude':					0.8,#0.2
+        'aom_amplitude':					0.9,#0.2
 }
 
 

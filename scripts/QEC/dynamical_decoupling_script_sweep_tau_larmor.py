@@ -40,7 +40,7 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     else:
         m.params['Final_Pulse'] = '-x'
     ### Calculate tau larmor
-    tau_larmor = round(1/442829.51,9)
+    tau_larmor = round(1/442812.73,9)
 
     print 'tau_larmor = %s' %tau_larmor
 
@@ -100,7 +100,7 @@ def SimpleDecoupling_Single_Block(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], 
     m.params['DD_in_eigenstate'] = False
     ### Calculate tau larmor
 
-    tau_larmor = round(1/442829.51,9)
+    tau_larmor = round(1/442812.73,9)
     print 'tau_larmor = %s' %tau_larmor
 
 
@@ -311,13 +311,14 @@ if __name__ == '__main__':
 
         if Run_Msmt:
             Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
-            
+    
+    n=1     
     if n==1 and Cont:
         N = 2
         pts = 70
-        larmor_max = 450
+        larmor_max = 350
         larmor_min = 2
-        larmor_step = 8
+        larmor_step = 10
         reps = 800
 
         Number_of_pulses = N
@@ -330,16 +331,16 @@ if __name__ == '__main__':
             Cont = take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=larmor_step,optimize=optimize,Single_Block=False,shutter=True,XY_scheme=8,reps=reps,debug=debug)
          
 
-    n=1
+    n=0
 
 
     if n==1 and Cont:
         debug = False
-        N = 64
-        pts = 24
-        larmor_max = 60
+        N = 1
+        pts = 60
+        larmor_max = 350
         larmor_min = 2
-        larmor_step = 4
+        larmor_step = 10
         reps = 800
 
         Number_of_pulses = N

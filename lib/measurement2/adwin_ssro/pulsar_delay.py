@@ -25,10 +25,9 @@ class DelayTimedPulsarMeasurement(pulsar_msmt.PulsarMeasurement):
         delay_cycles = (
             (
                 np.array(self.params['delay_times']) 
-                - self.params['minimal_delay_time']
+                - self.params['delay_time_offset']
             ) 
-            / self.params['delay_clock_cycle_time'] 
-            + self.params['minimal_delay_cycles']
+            / self.params['delay_clock_cycle_time']
         )
         self.params['delay_cycles'] = delay_cycles
         if np.min(delay_cycles) < self.params['minimal_delay_cycles']:
@@ -212,10 +211,9 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         pulse_pi = kw.get('pulse_pi', None)
         evolution_1_self_trigger = kw.get('evolution_1_self_trigger', True)
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
-        post_selftrigger_delay = kw.pop('post_selftrigger_delay', 200e-9)
 
         # waiting element        
-        empty_pulse = pulse.SquarePulse(channel='MW_Qmod', name='delay',
+        empty_pulse = pulse.SquarePulse(channel='self_trigger', name='delay',
             length = 1000e-9, amplitude = 0.)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
@@ -248,7 +246,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         self.params['refocussing_time'][i] 
                         + self.params['defocussing_offset'][i] 
                         - self.params['self_trigger_delay'][i]
-                        - post_selftrigger_delay
+                        + self.params['self_trigger_pulse_timing_offset']
                         ))
 
                 elements.append(e)
@@ -264,7 +262,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     refpulse = dummy_start_pulse_1,
                     refpoint = 'start',
                     refpoint_new = 'center',
-                    start = post_selftrigger_delay
+                    start = self.params['delayed_element_run_up_time']
                 )
             else:
                 second_pulse_id = e.add(pulse.cp(pulse_pi),
@@ -285,7 +283,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     start = (
                         self.params['refocussing_time'][i]
                         - self.params['self_trigger_delay'][i]
-                        - post_selftrigger_delay
+                        + self.params['self_trigger_pulse_timing_offset']
                         ))
                 elements.append(e)
 
@@ -298,7 +296,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                     refpulse = dummy_start_pulse_2,
                     refpoint = 'start',
                     refpoint_new = 'center',
-                    start = post_selftrigger_delay
+                    start = self.params['delayed_element_run_up_time']
                 )
             else:
                 final_pulse_id = e.add(pulse.cp(pulse_pi2),
@@ -344,10 +342,9 @@ class DummySelftriggerSequence(m2.LocalAdwinControlledMeasurement):
                 delay_cycles = (
                     (
                         np.array(self.params['delay_times']) 
-                        - self.params['minimal_delay_time']
+                        - self.params['delay_time_offset']
                     ) 
-                    / self.params['delay_clock_cycle_time'] 
-                    + self.params['minimal_delay_cycles']
+                    / self.params['delay_clock_cycle_time']
                 )
                 if np.min(delay_cycles) < self.params['minimal_delay_cycles']:
                     raise Exception("Desired delay times are too short")
