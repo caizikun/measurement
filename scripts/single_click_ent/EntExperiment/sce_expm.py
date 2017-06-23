@@ -81,8 +81,13 @@ class SingleClickEntExpm(DD.MBI_C13):
         self.params['SP_voltage_AWG'] = \
                 self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
-        # qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
+        qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
+        if qt.current_setup == 'lt3':
+            self.params['Yellow_voltage_AWG'] = \
+                    self.repump_aom.power_to_voltage( self.params['Yellow_AWG_power'], controller='sec')
+            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['Yellow_voltage_AWG'])
+        
         ### Adwin LT4 is connected to the plu. Needs to reset it.
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
             self.reset_plu()
@@ -346,33 +351,32 @@ class SingleClickEntExpm(DD.MBI_C13):
                 if self.params['do_yellow_with_AWG'] > 0:
                     LDE_list = []
                     LDE_reionize = DD.Gate('LDE_reionize_'+str(pt),'Trigger')
-                    LDE_reionize.duration = self.joint_params['Yellow_AWG_duration']
+                    LDE_reionize.duration = self.params['Yellow_AWG_duration']
                     LDE_reionize.elements_duration = LDE_reionize.duration
-                    LDE_reionize.channel = 'AOM_Newfocus' #### this needs to change
+                    LDE_reionize.channel = 'AOM_Yellow'
 
-                    LDE_rounds, remaining_LDE_reps = divmod(LDE.reps,self.joint_params['LDE_attempts_before_yellow'])
+                    # LDE_rounds, remaining_LDE_reps = divmod(LDE.reps,self.joint_params['LDE_attempts_before_yellow'])
+                    LDE_rounds, remaining_LDE_reps = divmod(LDE.reps,self.params['LDE_attempts_before_yellow'])
 
-                    for i in range(LDE_rounds):
+                    for i in range(int(LDE_rounds)):
                         #### when putting more stuff in the AWG have to make sure that names are unique
                         ## LDE elts
                         L = copy.deepcopy(LDE)
                         L.name = L.name + '_' + str(i)
-                        L.reps = self.joint_params['LDE_attempts_before_yellow']
+                        L.reps = int(self.params['LDE_attempts_before_yellow'])
                         LDE_list.append(L)
 
                         ### yellow elts
                         Y = copy.deepcopy(LDE_reionize)
                         Y.name = Y.name + '_' + str(i)
-
+                        Y.prefix = Y.prefix + '_' + str(i)
                         LDE_list.append(Y)
 
+                    if remaining_LDE_reps != 0:
+                        LDE.reps = remaining_LDE_reps
+                        LDE.name = LDE.name + '_'+str(int(LDE_rounds))
+                        LDE_list.append(LDE)
 
-                    LDE.reps = remaining_LDE_reps
-                    LDE.name = LDE.name + str(1+i)
-                    LDE_list.append(LDE)
-
-                    ### shelf in a reionization element after so and so many LDE attempts
-                    #self.joint_params['LDE_attempts_before_yellow']
                 else:
                     LDE_list = [LDE]
             else:
@@ -448,11 +452,12 @@ class SingleClickEntExpm(DD.MBI_C13):
                 if gate_seq == []:
                     LDE_list[0].wait_for_trigger = True
                 gate_seq.extend(LDE_list)
-
                 ### append last adwin synchro element 
                 if not LDE_list[0].is_final:
                     gate_seq.append(LDE_final)
-
+                    if self.params['force_repump_after_LDE'] > 0:
+                        gate_seq.append(LDE_repump)
+                        
                     if self.params['do_dynamical_decoupling'] > 0:
                         LDE_rephasing.go_to = 'dynamical_decoupling_'+str(pt)
                     else:
@@ -463,13 +468,12 @@ class SingleClickEntExpm(DD.MBI_C13):
                     if self.params['PLU_during_LDE'] > 0:
                         gate_seq.append(Fail_done)
 
-                elif self.params['LDE_is_init'] == 0 and self.joint_params['opt_pi_pulses'] < 2 and self.params['no_repump_after_LDE'] == 0:
-                    gate_seq.append(LDE_repump)
-
                 else:
                     ### there is only a single LDE repetition in the LDE element and we do not repump. 
                     ### --> add the rephasing element
                     gate_seq.append(LDE_rephasing)
+
+
 
             if self.params['do_dynamical_decoupling'] > 0:
                 gate_seq.append(cond_decoupling)

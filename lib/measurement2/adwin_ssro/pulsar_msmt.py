@@ -332,7 +332,7 @@ class DarkESR(PulsarMeasurement):
         # define the necessary pulses
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
+            PM_channel='MW_pulsemod',Sw_channel = self.params['MW_switch_channel'],
             amplitude = self.params['ssbmod_amplitude'],
             length = self.params['pulse_length'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])
@@ -1757,6 +1757,9 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
 
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
+
+        if not 'interpulse_delay' in self.params.to_dict().keys():
+            self.params['interpulse_delay'] = np.array([15e-6]*self.params['pts'])
         T = pulse.SquarePulse(channel='MW_Imod',
             length = 15000e-9, amplitude = 0)
 
@@ -1781,7 +1784,7 @@ class GeneralPiCalibrationSingleElement(GeneralPiCalibration):
         for i in range(self.params['pts']):
             e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
             for j in range(int(self.params['multiplicity'][i])):
-                e.append(T,
+                e.append(pulse.cp(T,length = self.params['interpulse_delay'][i]),
                     pulse.cp(X,
                         amplitude=self.params['MW_pulse_amplitudes'][i]
                         ))
@@ -1820,15 +1823,7 @@ class General_mw2_PiCalibrationSingleElement(GeneralPiCalibration):
     def __init__(self, name):
         GeneralPiCalibration.__init__(self, name)
 
-        # print 'init second source'
-        # PulsarMeasurement.mwsrc2.set_pulm('on')
-        # PulsarMeasurement.mwsrc2.set_frequency(self.params['mw2_frq'])
-        # PulsarMeasurement.mwsrc2.set_power(self.params['mw2_power'])
-        # PulsarMeasurement.mwsrc2.set_status('on')
-
-
     def generate_sequence(self, upload=True, **kw):
-        # electron manipulation pulses
 
 
         T = pulse.SquarePulse(channel='MW_Imod',
@@ -1850,7 +1845,7 @@ class General_mw2_PiCalibrationSingleElement(GeneralPiCalibration):
         for i in range(self.params['pts']):
             e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
             for j in range(int(self.params['multiplicity'][i])):
-                e.append(T,
+                e.append(T, 
                     pulse.cp(X,
                         amplitude=self.params['mw2_pulse_amplitudes'][i],
                         length = self.params['mw2_duration']
@@ -2865,7 +2860,7 @@ class Sweep_pm_risetime(GeneralPiCalibration):
                     Sw_risetime = self.params['MW_switch_risetime'],
                     length = self.params['Square_pi_length'],
                     amplitude = self.params['Square_pi_amp'],
-                    phase =  self.params['X_phase'])
+                    phase =  self.params['Y_phase'])
             else:
                 X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
                     I_channel='mw2_MW_Imod', Q_channel='mw2_MW_Qmod',
@@ -2874,7 +2869,7 @@ class Sweep_pm_risetime(GeneralPiCalibration):
                     PM_risetime = self.params['PM_risetime_sweep'][i],
                     Sw_risetime = self.params['MW_switch_risetime'],
                     length = self.params['mw2_Square_pi_length'],
-                    phase =  self.params['X_phase'],
+                    phase =  self.params['Y_phase'],
                     amplitude = self.params['mw2_Square_pi_amp'])
             e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
             e.append(T, X)

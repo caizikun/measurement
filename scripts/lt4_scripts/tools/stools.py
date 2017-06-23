@@ -40,6 +40,8 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[name].turn_off()
     qt.instruments[name].set_cur_controller(previous_controller)
     qt.msleep(1)
+    qt.instruments[name].save_cfg()
+    
     qt.instruments[name].turn_off()
     qt.instruments[servo].move_out()
     qt.msleep(1)

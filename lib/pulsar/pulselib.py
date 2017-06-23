@@ -57,7 +57,7 @@ class MW_IQmod_pulse(pulse.Pulse):
         # self.Sw_channel = 'MW_switch'
         # self.channels = [I_channel, Q_channel, PM_channel, 'MW_switch']
         # For implementation of MW Switch (has been implemented on lt2)
-        if 'Sw_channel' in kw and kw['Sw_channel'] != 'None':
+        if 'Sw_channel' in kw and kw['Sw_channel'].lower() != 'none':
             self.Sw_channel = kw['Sw_channel']
             self.channels.append(self.Sw_channel)
 

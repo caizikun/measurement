@@ -622,7 +622,7 @@ if __name__ == '__main__':
                 ### synchronize the measurement name index.
                 qt.purification_name_index = int(qt.instruments['remote_measurement_helper'].get_measurement_name())
 
-            AWG.clear_visa
+            AWG.clear_visa()
             qt.msleep(2)
             qt.instruments['purification_optimizer'].start_babysit()
             

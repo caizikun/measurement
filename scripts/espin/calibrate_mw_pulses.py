@@ -35,7 +35,6 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params['repetitions'] = 1600 if multiplicity == 1 else 1000
     rng = 0.1 if multiplicity == 1 else 0.03
 
-
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
     ###             therefore, I removed them
     if mw2:
@@ -44,8 +43,9 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
         m.params['MW_pulse_amplitudes'] = m.params['fast_pi_amp'] + np.linspace(-rng, rng, pts)
 
     print m.params['MW_pulse_amplitudes']
+    # m.params['MW_pulse_amplitudes'] = np.linspace(0,0.9,pts)
             
-            
+    m.params['interpulse_delay'] = [7.5e-6]*pts
     m.params['AWG_controlled_readout'] = 0
     m.params['multiplicity'] = np.ones(pts)*multiplicity
     m.params['delay_reps'] = 0
@@ -328,11 +328,10 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     m.params['repetitions'] = 1000
 
     min_risetime = 0e-9
-    max_risetime = 100e-9
+    max_risetime = 20e-9
 
     m.params['PM_risetime_sweep'] = np.linspace(min_risetime, max_risetime, pts)
 
-    m.params['delay_reps'] = 195 ## Currently not used
     # for the autoanalysis
     m.params['sweep_name'] = 'PM risetime (ns)'
    
@@ -342,9 +341,9 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
-    calibrate_theta_pulse(SAMPLE_CFG + 'theta')
-    #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
+    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 31, debug = False, mw2=False)
+    # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
+    # sweep_pm_risetime(SAMPLE_CFG + 'PMrisetime', debug = True, mw2=False) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
     # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
