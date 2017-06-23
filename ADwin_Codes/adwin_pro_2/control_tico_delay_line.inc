@@ -12,6 +12,7 @@
 #DEFINE TiCoDL_IrrelevantDetections 16
 #DEFINE TiCoDL_ShortDelayErrors     17
 #DEFINE TiCoDL_Started              18
+#DEFINE TiCoDL_Awake                19
 
 #DEFINE dl_cycle_duration           20.0e-9
 
@@ -30,7 +31,13 @@ SUB tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Trigger_In, delay_trigger_DI_channel)
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Trigger_In_Pattern, delay_trigger_DI_pattern)
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Trigger_Out, delay_trigger_DO_channel)
+  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Awake, 0)
   P2_TiCo_Start_Process(tdrv_datatable, 1)
+  
+  ' Wait until the TiCo is done initializing
+  DO
+    CPU_SLEEP(100)
+  UNTIL (P2_Get_Par(TiCo_DIO_MODULE, 1, TiCoDL_Awake) > 0)
 ENDSUB
 
 SUB tico_delay_line_finish()
@@ -54,12 +61,12 @@ ENDSUB
 FUNCTION tico_delay_line_calculate_cycles(input_delay) AS LONG
   DIM excess_delay AS FLOAT
   DIM corrected_cycles AS LONG
-  excess_delay = input_delay - minimal_delay_time
-  tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) + minimal_delay_cycles
+  excess_delay = input_delay - delay_time_offset
+  tico_delay_line_calculate_cycles = Round(excess_delay / dl_cycle_duration) 
 ENDFUNCTION
 
 FUNCTION tico_delay_line_calculate_delay(input_cycles) AS FLOAT
-  tico_delay_line_calculate_delay = (input_cycles - minimal_delay_cycles) * dl_cycle_duration + minimal_delay_time
+  tico_delay_line_calculate_delay = (input_cycles * dl_cycle_duration) + delay_time_offset
 ENDFUNCTION
 
 

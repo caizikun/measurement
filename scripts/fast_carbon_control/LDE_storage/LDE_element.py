@@ -333,7 +333,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     #     raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
 
 
-def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
+def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0,addressed_carbon=None):
     """waits the right amount of time after and LDE element for the 
     electron to rephase.
 
@@ -349,7 +349,7 @@ def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0):
         ### we need to add some time for the following carbon gate to this rephasing element
         ### this time is tau_cut and is calculated below.
         # TODO: generalize this to multiple carbons
-        c = str(msmt.params['dps_carbons'][0])
+        c = str(addressed_carbon)
         e_trans = msmt.params['electron_transition']
 
         #### for concatenating LDE with a longer entangling sequence, see also purify_slave, function carbon_swap_gate:

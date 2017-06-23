@@ -1,3 +1,5 @@
+
+import qt
 import os
 qt.current_setup='qn1'
 qt.reload_current_setup = os.path.join(qt.config['startdir'],"qn1_scripts/setup_qn1.py")

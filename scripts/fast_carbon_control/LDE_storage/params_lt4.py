@@ -34,7 +34,7 @@ params_lt4['MW_during_LDE']             = 1
 params_lt4['AWG_SP_power']              = 950e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['average_repump_time'] 		= 570e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -103,14 +103,26 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt4['dps_carbons']                    = [2]
+params_lt4['carbons']                       = [2]
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
-params_lt4['dps_logical_state']				= 'X'
-params_lt4['dps_MBE_bases']					= ['Y','Y']
-params_lt4['delay_feedback_N']              = 2
+# carbon_encoding: serial_swap or MBE
+params_lt4['carbon_encoding']               = 'serial_swap'
+params_lt4['dps_MBE_bases']                 = ['Y','Y']
+params_lt4['dps_MBE_readout_orientation']   = 'positive'
+params_lt4['delay_feedback_N']              = 6
 params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
 params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
+
+params_lt4['feedback_adwin_trigger_dec_pulse_seq'] = ['X', 'Y', 'X', 'Y']
+params_lt4['feedback_adwin_trigger_dec_duration'] = 20e-6
+params_lt4['feedback_adwin_trigger_channel'] = 'adwin_count'
+params_lt4['feedback_adwin_trigger_length'] = 3e-6
+params_lt4['feedback_adwin_trigger_delay'] = 1e-6
+params_lt4['feedback_HHsync_include'] = 0
+params_lt4['feedback_HHsync_delay'] = params_lt4['feedback_adwin_trigger_dec_duration'] - 1e-6
+params_lt4['feedback_HHsync_duration'] = 50e-9
+
 # we don't want the old feedback crap
 params_lt4['use_old_feedback']			= 0 
 params_lt4['dynamic_phase_tau']			= 2.296e-6#2.298e-6

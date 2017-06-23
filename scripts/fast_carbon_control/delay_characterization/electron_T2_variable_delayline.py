@@ -157,7 +157,7 @@ if __name__ == '__main__':
     #     evolution_2_self_trigger = False)
 
     hahn_echo_variable_delayline("VariableDelay_HahnEcho_2T_" + name, 
-        debug=False,
+        debug=True,
         range_start = 100e-6,
         range_end = 1000e-6,
         vary_refocussing_time = True,

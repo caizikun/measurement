@@ -2302,11 +2302,14 @@ config['adwin_lt2_processes'] = {
                     ['LDE_1_is_init'                   ,   1],
                     ['delay_trigger_DI_channel'        ,   0],
                     ['delay_trigger_DO_channel'        ,   0],
-                    ['number_of_dps_carbons'           ,   0],
+                    ['number_of_carbons'               ,   0],
                     ['minimal_delay_cycles'            ,   0],
                     ['do_phase_fb_delayline'           ,   0],
                     ['do_sweep_delay_cycles'           ,   0],
                     ['delay_feedback_N'                ,   1],
+                    ['number_of_C_init_ROs'            ,   0],
+                    ['number_of_C_encoding_ROs'        ,   0],
+                    ['do_LDE_1'                        ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2316,8 +2319,9 @@ config['adwin_lt2_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['minimal_delay_time'   , 0.0],
+                    ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
+                    ['feedback_adwin_trigger_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2355,6 +2359,7 @@ config['adwin_lt2_processes'] = {
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
                     },
                 },
         }
@@ -3267,11 +3272,14 @@ config['adwin_pro_processes'] = {
                     ['LDE_1_is_init'                   ,   1],
                     ['delay_trigger_DI_channel'        ,   0],
                     ['delay_trigger_DO_channel'        ,   0],
-                    ['number_of_dps_carbons'           ,   0],
+                    ['number_of_carbons'               ,   0],
                     ['minimal_delay_cycles'            ,   0],
                     ['do_phase_fb_delayline'           ,   0],
                     ['do_sweep_delay_cycles'           ,   0],
                     ['delay_feedback_N'                ,   1],
+                    ['number_of_C_init_ROs'            ,   0],
+                    ['number_of_C_encoding_ROs'        ,   0],
+                    ['do_LDE_1'                        ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3281,8 +3289,9 @@ config['adwin_pro_processes'] = {
                     ['A_SP_voltage'         , 0.8],
                     ['Ex_RO_voltage'        , 0.8],
                     ['A_RO_voltage'         , 0.8],
-                    ['minimal_delay_time'   , 0.0],
+                    ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
+                    ['feedback_adwin_trigger_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -3320,6 +3329,7 @@ config['adwin_pro_processes'] = {
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
                     },
                 },
 
@@ -3381,7 +3391,7 @@ config['adwin_pro_processes'] = {
                     ['Phase_Msmt_voltage'         , 2.0],
                     ['Phase_Msmt_off_voltage'         , 0.0],
                     ['PID_GAIN'       , 1.0],
-                    ['PID_Kp'         , 0.002],
+                    ['PID_Kp'         , 0.000],
                     ['PID_Ki'         , 0.0],
                     ['PID_Kd'         , 0.0],
                     ['phase_setpoint', 3.14/2],
@@ -3505,19 +3515,29 @@ config['adwin_pro_processes'] = {
                 },
                 },
                 'dynamic_jump' : {
-                'index' : 1,
-                'file' : 'dynamic_jump.TC1',
-                'par' :{
-                    'processdelay'         : 10, # Process delay in ns
-
+                    'index' : 1,
+                    'file' : 'dynamic_jump.TC9',
+                    'par' : {
                     },
-                 'params_long' : [
+                    'params_long' : [
+                        ['cycle_duration'           ,   1000],
+                        ['AWG_start_DO_channel'     ,   16  ],
+                        ['AWG_done_DI_channel'      ,   8   ],
+                        ['delay_trigger_DI_channel' ,   20  ],
+                        ['delay_trigger_DO_channel' ,   12  ],
                     ],
-                'params_float' :[],
-                'params_long_index'  : 20,
-                'params_float_index' : 21,
-                'data_long' : {
-                },
+                    'params_long_index'  : 20,
+                    'params_long_length' : 100,
+                    'params_float' : [
+                    ],
+                    'params_float_index' : 21,
+                    'data_long' : {
+                        'jump_table' :   40,
+                        'next_seq_table'    :   42,
+                    },
+                    'data_float' : {
+                        'delay_cycles'  :   41
+                    }
                 }
         }
 

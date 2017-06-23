@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,174,174,367,367,387,387,766,766,838,839
+' Bookmarks                      = 3,3,87,87,174,174,370,370,390,390,770,770,842,843
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -43,7 +43,7 @@
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
 #DEFINE max_single_click_ent_repetitions    50000 ' high number needed to have good statistics in the phase msmt stuff
 #DEFINE max_SP_bins       2000  
-#DEFINE max_pid       100000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
+#DEFINE max_pid       1000000 ' Max number of measured points for pid stabilisation (5 ms / 200 mus ~ 25, 25*20000 ~ 500000, so can do 20000 repetitions)
 
 'init
 DIM DATA_20[100] AS LONG   ' integer parameters from python
@@ -256,6 +256,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   stretcher_V_correct = Round(1.2*stretcher_V_max/stretcher_V_2pi) * stretcher_V_2pi
   
   elapsed_cycles_since_phase_stab = 0
+  Prop = 0
+  Int = 0
+  Dif = 0
   e = 0
   e_old = 0
   Sig = 0 
@@ -615,10 +618,11 @@ EVENT:
               
               ' PID control
               e = SETPOINT_angle - counts
-              Prop = PID_Kp * e'                   ' Proportional term      
+              Prop = PID_Kp * e                   ' Proportional term      
               Int = PID_Ki * ( Int + e )                    ' Integration term                                              ' 
               Dif = PID_Kd * ( e - e_old )             ' Differentiation term
               Sig = Sig + PID_GAIN * pid_time_factor* (Prop + Int + Dif) ' Calculate Output
+              FPAR_74 = Sig
               ' Output inside reach of fibre stretcher?
               if (Sig > stretcher_V_max) then
                 Sig = Sig - stretcher_V_correct

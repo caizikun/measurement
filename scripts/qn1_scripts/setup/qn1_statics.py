@@ -4,3 +4,4 @@
 
 pulsar_msmt.PulsarMeasurement.awg = qt.instruments['AWG']
 pulsar_msmt.PulsarMeasurement.physical_adwin = qt.instruments['physical_adwin']
+ssro.AdwinSSRO.adwin = qt.instruments['adwin']

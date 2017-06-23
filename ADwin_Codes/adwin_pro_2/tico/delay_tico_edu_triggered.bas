@@ -8,10 +8,10 @@
 ' External_Operation             = greater
 ' Priority                       = High
 ' Version                        = 1
-' TiCoBasic_Version              = 1.6.2
+' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD278276  DASTUD\TUD278276
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -30,9 +30,12 @@
 ' Minimal delay setting: 15 cycles
 ' Effective delay on LT3 (rough measurement): (setting - 15) * 20ns + 1120ns
 ' Effective delay on LT4 (nice measurement with OR-box etc connected): (setting - 15) * 20ns + 1440ns + [0-20]ns of jitter
+'
+' TROUBLESHOOTING CHECKLIST:
+'   - Is the DIO module address set correctly in the compiler settings? (funnily enough it doesn't complain if it is not talking to a DIO)
+'   - Are the event trigger settings for the process correctly set corresponding to the hardware at hand?
 
 #INCLUDE C:\ADwin\TiCoBasic\inc\DIO32TiCo.inc
-#INCLUDE .\configuration.inc
 
 #DEFINE Enable                Par_10
 #DEFINE Delay                 Par_11    ' number of delay cycles [* 20 ns]
@@ -42,9 +45,10 @@
 #DEFINE Trigger_In_Pattern    Par_15
 #DEFINE IrrelevantDetections  Par_16
 #DEFINE ShortDelayErrors      Par_17
-#DEFINE Started               Par_20
+#DEFINE Started               Par_18
+#DEFINE Awake                 Par_19
 
-#DEFINE Output_Duration   10
+#DEFINE Output_Duration   2 ' 40 ns
 
 ' Dim current_time, time_past, cycles_past AS LONG
 ' Dim detected_bit_pattern, detected_time AS LONG
@@ -65,11 +69,12 @@ INIT:
   
   ProcessDelay = 30
   
-  Enable = 0
+  ' Enable = 0
   Trigger_Count = 0
   IrrelevantDetections = 0
   ShortDelayErrors = 0
   Started = Trigger_In_Pattern
+  Awake = 1
 
 
 EVENT:  

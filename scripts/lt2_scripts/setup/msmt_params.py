@@ -184,20 +184,28 @@ cfg['protocols']['Magnetometry']={
 'AWG_to_adwin_ttl_trigger_duration'     :   5e-6,
 'threshold_majority_vote'               :   1}
 
-dl_minimal_delay_time_bare      = 1440e-9
-dl_awg_delay                    = 380e-9
+############################################
+### General settings for AdwinSSRO+delay ###
+############################################
+
+dl_physical_delay_time_offset	= 1294e-9 #1820e-9
 dl_delayed_element_run_up_time  = 400e-9
 
-dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_awg_delay + dl_delayed_element_run_up_time
+# dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
 
 cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DI_channel':                 20,
-    'delay_trigger_DO_channel':                 1, # this is just the awg start channel #12
+    'delay_trigger_DO_channel':                 1,
     'do_tico_delay_control':                    1,
-    'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
-    'awg_delay':                                dl_awg_delay,
+    # 'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
+    # JS: the following parameter shouldn't be defined and isn't used anywhere anymore
+    # I hope I got rid of all left-over occurrences.
+    # "awg_delay':                                0, # this parameter is not dfined@!!!!! dl_awg_delay,
     'delayed_element_run_up_time':              dl_delayed_element_run_up_time,
-    'minimal_delay_time':                       dl_minimal_delay_time,
+    'self_trigger_pulse_timing_offset':			0e-9,
+    # 'minimal_delay_time':                       dl_minimal_delay_time,
+	'physical_delay_time_offset':				dl_physical_delay_time_offset,
+	'delay_time_offset':						dl_physical_delay_time_offset + dl_delayed_element_run_up_time,
     'minimal_delay_cycles':                     15,
     'delay_clock_cycle_time':                   20e-9,
     'self_trigger_duration':                    100e-9,

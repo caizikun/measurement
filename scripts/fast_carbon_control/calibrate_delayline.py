@@ -74,14 +74,14 @@ def hahn_echo_variable_delayline(name, debug=False,
         if is_calibration_msmt:
             m.params['sweep_name'] = 'effective delay (ns)'
             m.params['sweep_pts'] = (
-                m.params['minimal_delay_time'] - m.params['delayed_element_run_up_time']
-                # - (m.params['minimal_delay_cycles'] * m.params['delay_clock_cycle_time']) 
+                m.params['physical_delay_time_offset'] # - m.params['delayed_element_run_up_time']
+                # - (m.params['minimal_delay_cycles'] * m.params['delay_clock_cycle_time'])
                 - m.params['defocussing_offset']) * 1e9
 
             # compatibilize the refocussing time and the delay time 
             # (i.e. make the number of delay cycles integer)
             delay_clock_cycle_time = m.params['delay_clock_cycle_time']
-            minimal_delay_time = m.params['minimal_delay_time']
+            minimal_delay_time = m.params['delay_time_offset']
             delay_time_remainder = minimal_delay_time - int(minimal_delay_time / delay_clock_cycle_time) * delay_clock_cycle_time
 
             refocussing_time = int(refocussing_time / delay_clock_cycle_time) * delay_clock_cycle_time
@@ -153,8 +153,8 @@ if __name__ == '__main__':
     elif msmt == "check_calibration":
         hahn_echo_variable_delayline("VariableDelay_CheckCalib_HahnEcho_1T_" + name, 
             debug=False,
-            range_start = 10e-6,
-            range_end = 100e-6,
+            range_start = 10e-6 + 1294e-9,
+            range_end = 100e-6 + 1294e-9,
             vary_refocussing_time = True,
             evolution_1_self_trigger = True,
             evolution_2_self_trigger = False,

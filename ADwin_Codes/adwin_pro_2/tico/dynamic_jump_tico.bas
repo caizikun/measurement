@@ -1,9 +1,9 @@
 '<TiCoBasic Header, Headerversion 001.001>
 ' Process_Number                 = 1
-' Initial_Processdelay           = 30
+' Initial_Processdelay           = 1000
 ' Eventsource                    = External
 ' External_Address               = 80804880H
-' External_Mask                  = FFFFH
+' External_Mask                  = 65535
 ' External_Value                 = 0
 ' External_Operation             = greater
 ' Priority                       = High
@@ -62,8 +62,6 @@ INIT:
   Digin_Fifo_Enable(0)
   Digin_Fifo_Clear()
   Digin_Fifo_Enable(Trigger_In_Pattern)
-  
-  ProcessDelay = 30
   
   Enable = 0
   Trigger_Count = 0

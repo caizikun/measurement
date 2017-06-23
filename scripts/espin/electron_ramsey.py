@@ -201,5 +201,5 @@ def electronramseyHermiteSelfTriggered(name, debug = False):
 if __name__ == '__main__':
     
     # electronramsey(name)
-    electronramseyHermiteSelfTriggered(name, debug = False)
+    electronramseyHermiteSelfTriggered('onzintest', debug = False)
 

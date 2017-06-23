@@ -23,9 +23,10 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
         ssro.IntegratedSSRO.__init__(self, name)
         self.params['measurement_type'] = self.mprefix
 
-    def setup(self, wait_for_awg=True, mw=True, mw2=False, **kw):       
+    def setup(self, wait_for_awg=True, mw=True, mw2=False, ssro_setup=True, awg_ready_state='Waiting for trigger', **kw):       
 
-        ssro.IntegratedSSRO.setup(self)
+        if ssro_setup:
+            ssro.IntegratedSSRO.setup(self)
 
         if mw:        
             # print 'this is the mw frequency!', self.params['mw_frq']
@@ -59,7 +60,7 @@ class PulsarMeasurement(ssro.IntegratedSSRO):
                     raise Exception('User abort while waiting for AWG')
 
                 try:
-                    if self.awg.get_state() == 'Waiting for trigger':
+                    if self.awg.get_state() == awg_ready_state:
                         qt.msleep(1)
                         awg_ready = True
                         print 'AWG Ready!'
