@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,174,174,370,370,390,390,770,770,842,843
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,87,87,174,174,375,375,395,395,764,764,834,835
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -133,7 +133,7 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 
 ' On-demand decoupling stuff
 DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
-DIM max_LDE_attempts,decoupling_repetitions AS LONG
+DIM max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -238,7 +238,12 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   LDE_element_duration         = DATA_21[16]
   decoupling_element_duration  = DATA_21[17]
   
+  
+  ' DD on demand stuff init
   max_sequence_duration = LDE_element_duration*max_LDE_attempts
+  required_DD_repetitions = 0
+  
+  
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
@@ -320,7 +325,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   PAR_55 = 0                      ' Invalid data marker
   Par_60 = timer                  ' time
-  Par_61 = mode                   ' current mode
+  Par_61 = 0                      ' current mode
   PAR_62 = 0                      ' n_of_communication_timeouts for debugging
   PAR_63 = 0                      ' stop flag
   PAR_65 = -1                     ' for debugging
@@ -335,14 +340,14 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   if (do_dynamical_decoupling = 1) then
     mode_after_LDE = 5 ' dynamical decoupling
   else
-    if (do_post_ent_phase_msmt = 1) then
-      mode_after_e_msmt = 9
-    else
-      mode_after_e_msmt = 7
-      
-    endif
-    
     mode_after_LDE = 6 ' electron RO
+  endif
+  
+  if (do_post_ent_phase_msmt = 1) then
+    mode_after_e_msmt = 9
+  else
+    mode_after_e_msmt = 7
+      
   endif
   
   if (only_meas_phase = 1) then
@@ -715,18 +720,7 @@ EVENT:
           
         endif
         
-      CASE 2 'CR check
-        
-        '        P2_DIGOUT(DIO_MODULE, 10, 1) what is this?
-        '        P2_DIGOUT(DIO_MODULE, 11, 1)
-        
-        '        IF (timer = 0) then
-        '          par_65 = elapsed_cycles_since_phase_stab
-        '          Fpar_25 = mode_after_phase_stab
-        '          Fpar_26 = 
-        '          Fpar_27 = 
-        '        endif
-        
+      CASE 2 'CR check     
         
         cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
         '        record_cr_counts()
@@ -827,7 +821,6 @@ EVENT:
         endif
         
         if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE ' save the result
           DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
           DATA_109[repetition_counter+1] = store_index_stab
           time_spent_in_sequence = time_spent_in_sequence + timer
@@ -839,7 +832,6 @@ EVENT:
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1
               if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
-                DATA_102[repetition_counter+1] = AWG_sequence_repetitions_LDE 'save the result
                 DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
                 DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
@@ -861,61 +853,44 @@ EVENT:
            
 
         
-      CASE 5 ' Decoupling '' PH REWRITE!!
-        mode = 6
+      CASE 5 ' Decoupling 
+        
         ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
         ' Each adwin will count the number pulses and send a jump once the specified time has been reached.
         IF (timer =0) THEN 'first go: calculate required repetitions
-        
           awg_repcount_was_low = 1
           awg_done_was_low = 1
-          'Round((max_LDE_attempts-attempts_this_round)*LDE_element_duration/decoupling_element_duration) + 1
-          ' DATA_100[repetition_counter+1] = required_phase_compensation_repetitions ' need to reinvent this calculation.
-                        
+          
+          required_DD_repetitions = round((max_sequence_duration - AWG_sequence_repetitions_LDE*LDE_element_duration)/decoupling_element_duration) - 2
+          IF (required_DD_repetitions < 2) THEN
+            required_DD_repetitions = 2
+          ENDIF
         ENDIF 
-                        
-        '        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
-        '          if (awg_repcount_was_low = 1) then
-        '            inc(decoupling_repetitions)  
-        '            'Par_65 = phase_compensation_repetitions
-        '          endif
-        '          awg_repcount_was_low = 0
-        '        ELSE
-        '          awg_repcount_was_low = 1
-        '        ENDIF
         
         
-        
-                
-        '        IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
-        '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
-        '          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
-        '          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-        '          time_spent_in_sequence = time_spent_in_sequence + timer
-        '          timer = -1
-        '          mode = 6
-                  
-        '      ENDIF
-        
-        
-      CASE 6 ' wait for RO trigger to come in
-        ' monitor inputs 
-        
-        
-        ' this should go into CASE 5. Here now for debugging purposes.
-        '--------------------------------
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
           if (awg_repcount_was_low = 1) then
             inc(decoupling_repetitions)  
-            'Par_65 = phase_compensation_repetitions
           endif
           awg_repcount_was_low = 0
         ELSE
           awg_repcount_was_low = 1
+        ENDIF      
+                          
+        IF (decoupling_repetitions = required_DD_repetitions-1) THEN 'give jump trigger and go to next mode: tomography
+          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
+          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
+          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+          time_spent_in_sequence = time_spent_in_sequence + timer
+          timer = -1
+          mode = 6
+                                          
         ENDIF
-        '----------------------------------
-        'everything above should go into case 5. Currently we are only counting the DD repetitions
         
+        
+      CASE 6 ' wait for RO trigger to come in
+        ' monitor inputs 
+
         IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
           if (awg_done_was_low =1) then
             timer = -1

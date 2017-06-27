@@ -98,7 +98,7 @@ if __name__ == '__main__':
         '256'     : [256,15,90,2,1,200],
         '512'     : [512,7,60,2,1,200],
         '1024'     : [1024,3,40,2,2,300],
-        'sweepN' : [0,4,1024+512,2,80,500] ### first entry could be made the tau that we want to sweep here
+        'sweepN' : [0,4,512+256,2,120,500] ### first entry could be made the tau that we want to sweep here
     }
 
     success = True

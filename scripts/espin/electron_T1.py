@@ -86,6 +86,30 @@ if __name__ == '__main__':
     times = np.linspace(1e2,260e3,7)
 
     
+    if RO_power != None: 
+        m.params['Ex_RO_amplitude'] = RO_power
+    if SSRO_duration != None: 
+        m.params['SSRO_duration'] = SSRO_duration
+
+    # ms = 0 calibration
+    m.params['Ex_SP_amplitude'] = 0
+    m.run()
+    m.save('ms0')
+    
+    # ms = 1 calibration
+    m.params['SP_duration']     = 500
+    m.params['A_SP_amplitude']  = 0.
+    m.params['Ex_SP_amplitude'] = 15e-9#20e-9
+    m.run()
+    m.save('ms1')
+
+    m.finish()
+
+if __name__ == '__main__':
+
+    times = np.linspace(1e2,70e3,7)
+
+    
     T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
                     T1_readout_state = 'ms=0', debug=False)
     # T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 

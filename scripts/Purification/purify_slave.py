@@ -103,6 +103,11 @@ class purify_single_setup(DD.MBI_C13):
             length = self.params['pts']
             self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
         
+        if qt.current_setup == 'lt3':
+            self.params['Yellow_voltage_AWG'] = \
+                    self.repump_aom.power_to_voltage( self.params['Yellow_AWG_power'], controller='sec')
+            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['Yellow_voltage_AWG'])
+        
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
 

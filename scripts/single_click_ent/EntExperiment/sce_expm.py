@@ -146,7 +146,7 @@ class SingleClickEntExpm(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         stab_reps = self.adwin_var('store_index_stab')
-        print 'stab_reps, ', stab_reps
+        # print 'stab_reps, ', stab_reps
         sample_points = self.params['sample_points']
 
         toSave =   [   ('CR_before',1, reps),
@@ -458,8 +458,8 @@ class SingleClickEntExpm(DD.MBI_C13):
                     if self.params['force_repump_after_LDE'] > 0:
                         gate_seq.append(LDE_repump)
                         
-                    if self.params['do_dynamical_decoupling'] > 0:
-                        LDE_rephasing.go_to = 'dynamical_decoupling_'+str(pt)
+                    if self.params['do_dynamical_decoupling'] + self.params['do_dynamical_decoupling_AWG_only'] > 0:
+                        LDE_rephasing.go_to = 'dd_'+str(pt)
                     else:
                         LDE_rephasing.go_to = 'Tomo_Trigger_'+str(pt)
 
@@ -475,7 +475,7 @@ class SingleClickEntExpm(DD.MBI_C13):
 
 
 
-            if self.params['do_dynamical_decoupling'] > 0:
+            if self.params['do_dynamical_decoupling'] + self.params['do_dynamical_decoupling_AWG_only'] > 0:
                 gate_seq.append(cond_decoupling)
                 gate_seq.append(cond_decoupling_end)
                 gate_seq.append(tomography_pulse)

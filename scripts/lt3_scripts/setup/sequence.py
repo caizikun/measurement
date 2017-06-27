@@ -26,8 +26,8 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
 
 
 # Marker channels
-# qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', # TH sync
-#     high=2.0, low=0, offset=0., delay=0., active=True)   
+qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', # TH sync
+    high=2.0, low=0, offset=0., delay=0., active=True)   
 
 qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Yellow', type='marker', # TH sync
     high=0.6, low=0, offset=0., delay=0., active=True)   
@@ -60,7 +60,8 @@ qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM']
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 # qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.1)
-
+qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Yellow','low',  qt.instruments['YellowAOM'].get_sec_V_off())
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,
