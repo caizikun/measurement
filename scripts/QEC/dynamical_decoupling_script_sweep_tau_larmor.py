@@ -314,7 +314,7 @@ if __name__ == '__main__':
     
     n=1     
     if n==1 and Cont:
-        N = 2
+        N = 1
         pts = 70
         larmor_max = 350
         larmor_min = 2

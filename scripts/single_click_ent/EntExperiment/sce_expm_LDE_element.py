@@ -91,9 +91,9 @@ def _create_syncs_and_triggers(msmt,Gate):
     if setup == 'lt4' and msmt.params['is_two_setup_experiment'] == 1:
         Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 0)
     else:
-        Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
+    #     Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
-    if setup == 'lt3':
+    # if setup == 'lt3':
         Gate.LT3HHsync = pulse.SquarePulse(channel = 'HHsync',length = 50e-9, amplitude = 1.0)
 
 
@@ -116,7 +116,7 @@ def _create_wait_times(Gate):
     Gate.TIQ = pulse.SquarePulse(channel = 'MW_Imod',length=2e-6)
     Gate.T = pulse.SquarePulse(channel='MW_pulsemod',
         length = 50e-9, amplitude = 0)
-    Gate.T_sync = pulse.SquarePulse(channel='sync',
+    Gate.T_sync = pulse.SquarePulse(channel='HHsync',
         length = 50e-9, amplitude = 0)
 
 
@@ -176,12 +176,11 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
 
     if msmt.params['sync_during_LDE'] == 1 :
-        e.add(Gate.HHsync,
-            refpulse = 'initial_delay')
-
+        if setup == 'lt4':
+            e.add(Gate.HHsync,
+                refpulse = 'initial_delay')
         ### one awg has to sync all time-tagging devices.
         if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
-            # print 'i added the thing' 
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization
@@ -213,6 +212,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             mw_theta_delay = msmt.params['MW_repump_distance']
             mw_theta_refpoint = 'end'
             #mw pi/2 pulse or 'theta'
+
         e.add(Gate.mw_first_pulse,
             start           = mw_theta_delay,
             refpulse        = mw_theta_ref_pulse,

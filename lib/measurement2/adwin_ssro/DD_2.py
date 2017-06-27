@@ -389,6 +389,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
+
         if outputChannel == 'adwin_sync':
             Trig = pulse.SquarePulse(channel = outputChannel,
                 length = duration, amplitude = 2)
@@ -1149,7 +1150,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         adds trigger element to Gate object
         '''
         Gate.scheme ='trigger'
-
         #implement output of the awg on a laser channel.
         if hasattr(Gate,'channel'):
             Gate.elements = [self._Trigger_element(Gate.elements_duration,Gate.prefix,outputChannel=Gate.channel)]

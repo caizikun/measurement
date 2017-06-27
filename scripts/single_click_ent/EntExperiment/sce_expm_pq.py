@@ -771,7 +771,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] =  100
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -974,8 +974,9 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
+    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only=False)
+    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
 
     # EntangleXsweepXY(name+'_EntangleXsweepXY',debug = False,upload_only=False)
 

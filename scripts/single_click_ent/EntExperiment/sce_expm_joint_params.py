@@ -28,5 +28,3 @@ joint_params['LDE_attempts'] = 250
 
 joint_params['LDE_element_length'] = 5.5e-6#3e-6 #DO NOT CHANGE THIS # PH Had to change to avoid the NF noise
 
-joint_params['LDE_attempts_before_yellow']  = 200
-joint_params['Yellow_AWG_duration']			= 300e-6

@@ -20,7 +20,7 @@ params_lt3['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 150e-9#1000e-9
+params_lt3['AWG_SP_power']              = 250e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
@@ -28,6 +28,9 @@ params_lt3['MW_repump_distance']		= 1200e-9
 params_lt3['LDE_decouple_time']         = 2.2e-6
 params_lt3['MW_final_delay_offset']		= 0e-9
 params_lt3['first_mw_pulse_is_pi2']     = 0
+params_lt3['LDE_attempts_before_yellow']  = 100
+params_lt3['Yellow_AWG_duration']			= 300e-6
+params_lt3['Yellow_AWG_power']			= 50e-9
 
 
 #adwin params defs:
@@ -43,10 +46,7 @@ params_lt3['MBI_attempts_before_CR'] = 1
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
 params_lt3['PLU_event_di_channel'] = 20 
 params_lt3['PLU_which_di_channel'] = 21 # not used on slave
-#params_lt3['AWG_start_DO_channel'] =  defined in msmt params
-#params_lt3['AWG_done_DI_channel']= defined in msmt params
 params_lt3['wait_for_awg_done_timeout_cycles'] = 1e7  # 10ms
-#params_lt3['AWG_event_jump_DO_channel'] =  defined in msmt params
 params_lt3['AWG_repcount_DI_channel'] = 16 
 params_lt3['remote_adwin_di_success_channel'] = 19 
 params_lt3['remote_adwin_di_fail_channel'] = 18
@@ -78,12 +78,12 @@ params_lt3['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt3['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 params_lt3['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt3['LDE_final_mw_phase']  = 0.0#qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt3['LDE_final_mw_phase']      = 0.0
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.99612130119230147
-params_lt3['sin2_theta_fit_a']		= 2.1499647771446604
-params_lt3['sin2_theta_fit_x0']		= 0.79069802965296954
+params_lt3['sin2_theta_fit_of']		= 0.99290825310801334
+params_lt3['sin2_theta_fit_a']		= 1.7624629794004711
+params_lt3['sin2_theta_fit_x0']		= 0.8893242344254747
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
@@ -132,10 +132,10 @@ params_lt3['PID_Kd'] = 0.0
 params_lt3['phase_setpoint'] = np.pi/2
 
 params_lt3['count_int_time_stab'] = 10000 # How long to integrate counts for in microseconds
-params_lt3['count_int_time_meas'] = 1000 # How long to integrate counts for in microseconds
+params_lt3['count_int_time_meas'] = 200 # How long to integrate counts for in microseconds
 params_lt3['pid_points'] = 4 # How many points to sample the phase at during the PID loop
 params_lt3['pid_points_to_store'] = 4 # How many points to store
-params_lt3['sample_points'] = 500 # How many points to sample the phase at during the expm part
+params_lt3['sample_points'] = 20 # How many points to sample the phase at during the expm part
 params_lt3['phase_stab_max_time'] = 300000 # How long in microseconds to run the expm for after phase stabilisation
 
 
