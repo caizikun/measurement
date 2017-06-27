@@ -333,7 +333,8 @@ class DarkESR(PulsarMeasurement):
         # define the necessary pulses
         X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
             I_channel='MW_Imod', Q_channel='MW_Qmod',
-            PM_channel='MW_pulsemod',
+            PM_channel='MW_pulsemod',Sw_channel = self.params['MW_switch_channel'],
+            Sw_risetime = self.params['MW_switch_risetime'],
             amplitude = self.params['ssbmod_amplitude'],
             length = self.params['pulse_length'],
             PM_risetime = self.params['MW_pulse_mod_risetime'])

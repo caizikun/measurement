@@ -33,8 +33,8 @@ qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker',
 qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHarp Sync
     high=2.0, low=0, offset=0., delay=102e-9, active=True) #XX plug in/ calibrate delay
 
-# qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0, delay=182e-9, active=True)
+qt.pulsar.define_channel(id='ch2_marker1', name='mw_switch', type='marker', 
+   high=2.0, low=0, offset=0, delay=200e-9+MW_parallel_shift, active=True)
 qt.pulsar.define_channel(id='ch2_marker2', name='self_trigger', type='marker', 
    high=2.0, low=0.0, offset=0.0, delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 

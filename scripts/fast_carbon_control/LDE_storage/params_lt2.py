@@ -28,6 +28,7 @@ params_lt2['do_phase_correction']       = 1
 params_lt2['do_purifying_gate']         = 1
 params_lt2['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
 params_lt2['do_sweep_delay_cycles']     = 0
+params_lt2['do_dd_phase_correction_calibration'] = 0
 
 # LDE element
 params_lt2['MW_during_LDE']             = 1 
