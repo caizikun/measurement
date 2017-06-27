@@ -32,7 +32,7 @@ C_split  = 0.847e6
 
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
-electron_transition = '+1'
+electron_transition = '-1'
 multiple_source = False
 
 mw1_source = ''
@@ -42,9 +42,9 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 280e-9#106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.95#0.8467  # 28-02
+	hermite_pi_amp =  0.934#0.8467  # 28-02
 	hermite_pi2_length = 150e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.634 #  # 28-02 
+	hermite_pi2_amp = 0.626 #  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 144e-9#100e-9 
-	hermite_pi_amp = 0.939#0.394
+	hermite_pi_amp = 0.928#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.487#0.157
+	hermite_pi2_amp = 0.475#0.157
 
 	square_pi_length = 10e-9
 	square_pi_amp = 0.79 

@@ -34,7 +34,7 @@ params_lt4['AWG_SP_power']              = 1350e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
-params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
+params_lt4['LDE_decouple_time']         = 2.26e-6#round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 
@@ -70,18 +70,6 @@ params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1 ms
 params_lt4['remote_awg_trigger_channel'] = 13
 params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
-
-#eom pulse went to msmt params but might come back.
-# params_lt4['eom_pulse_amplitude']		= 1.9 
-# params_lt4['eom_pulse_duration']        = 2e-9
-# params_lt4['eom_off_duration']          = 50e-9
-# params_lt4['eom_off_amplitude']         = -0.293 # calibration 2015-11-04 <--> should be calibrated 
-# params_lt4['eom_overshoot_duration1']   = 20e-9
-# params_lt4['eom_overshoot1']            = -0.04 # calibrate!
-# params_lt4['eom_overshoot_duration2']   = 4e-9
-# params_lt4['eom_overshoot2']            = -0.00 # calibrate!
-# params_lt4['aom_risetime']              = 17e-9
-# params_lt4['aom_amplitude']             = 0.57 #calibrate!
 
 
 params_lt4['AWG_wait_for_lt3_start']    =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 

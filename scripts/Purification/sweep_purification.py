@@ -162,6 +162,8 @@ def turn_all_sequence_elements_off(m):
     m.params['force_LDE_attempts_before_init'] = 0
     m.params['no_repump_after_LDE1']    = 0
     m.params['do_phase_fb_delayline']   = 0
+    m.params['sync_during_LDE']   = 0
+    
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -199,9 +201,9 @@ def repump_speed(name,debug = False,upload_only=False):
     prepare(m)
 
     ### general params
-    pts = 101
+    pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 2000
 
     turn_all_sequence_elements_off(m)
 
@@ -214,17 +216,15 @@ def repump_speed(name,debug = False,upload_only=False):
     m.joint_params['opt_pi_pulses'] = 0
     m.joint_params['LDE1_attempts'] = 1
 
-    # m.params['is_two_setup_experiment'] = 1
-
-    # m.params['Hermite_pi_amp'] = 0
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.0,2.e-6,pts)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['general_sweep_pts'] = np.linspace(0.4e-6,1.5e-6,pts)
+    m.params['sweep_name'] = m.params['general_sweep_name'] + ' (ns)'
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
-    m.params['is_two_setup_experiment']=0  
+
+
 
     ### upload and run
 
