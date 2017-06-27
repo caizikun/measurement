@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,439,439,440,440,455,455,681,681,752,752,931,932,933,940,941,942
-' Foldings                       = 611,634
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,440,440,441,441,456,456,682,682,753,753,932,933,934,941,942,943
+' Foldings                       = 612,635
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -314,6 +314,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     min_phase_deviation = 361
     acquired_phase_during_compensation = phase_per_compensation_repetition
     phase_repetitions = 1
+    required_phase_compensation_repetitions = 2
     Do   
       inc(phase_repetitions)                           
       acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition

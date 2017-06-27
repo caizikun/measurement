@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,16,16,22,22,148,148,150,150,394,394,632,632,633,633,677,677,809,809,875,875,1041,1042,1043,1046,1047
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,423,423,663,663,664,664,708,708,843,843,909,909,1075,1076,1077,1080,1081
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -89,6 +89,7 @@ DIM DATA_108[max_purification_repetitions] as FLOAT at DRAM_Extern' required pha
 ' DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
 
 DIM DATA_109[max_purification_repetitions] AS LONG AT DRAM_Extern ' feedback delay setting
+DIM DATA_124[max_purification_repetitions] AS LONG AT DRAM_Extern ' nuclear phase offset sweep
 DIM DATA_125[max_purification_repetitions] AS LONG AT DRAM_Extern ' sweep delay cycles
 
 DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data marker
@@ -185,11 +186,12 @@ DIM phase_to_calculate, phase_compensation_repetitions, required_phase_compensat
 DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
 
 DIM number_of_dps_nuclei, current_feedback_nucleus AS LONG
-DIM nuclear_feedback_angle, nuclear_feedback_time AS FLOAT
+DIM nuclear_feedback_angle, nuclear_feedback_time, nuclear_offset_sweep_value AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
 DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
 DIM delay_time_offset, delay_feedback_target_phase, feedback_adwin_trigger_dec_duration AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
+DIM do_phase_offset_sweep AS LONG
 
 DIM dedicate_next_cycle_to_calculations AS LONG
 DIM requested_calculations AS LONG
@@ -198,6 +200,7 @@ DIM requested_calculations AS LONG
 #DEFINE REQ_CALC_UPDATE_ON_DELAY_TIME                           2
 #DEFINE REQ_CALC_SET_DELAY_LINE_FOR_PHASE_CORRECTION            3
 #DEFINE REQ_CALC_SET_DELAY_LINE_CYCLES_FROM_SWEEP               4
+#DEFINE REQ_CALC_INIT_PHASES_OFFSET                             5
 
 ' Communication with other Adwin
 DIM remote_adwin_di_success_channel, remote_adwin_di_success_pattern, remote_adwin_di_fail_channel, remote_adwin_di_fail_pattern as long
@@ -238,6 +241,21 @@ SUB update_nuclear_phases_from_list(phase_list[])
   nuclear_phases[4] = nuclear_phases[4] + phase_list[4]
   nuclear_phases[5] = nuclear_phases[5] + phase_list[5]
   nuclear_phases[6] = nuclear_phases[6] + phase_list[6]
+  
+ENDSUB
+
+SUB update_nuclear_phases_from_scalar(phase_scalar)
+  ' unfortunately variable indexed array access takes twice as long as constant access
+  ' ugly solution: unroll the loop by hand
+  
+  ' note: max_nuclei is set at 6 now!
+  
+  nuclear_phases[1] = nuclear_phases[1] + phase_scalar
+  nuclear_phases[2] = nuclear_phases[2] + phase_scalar
+  nuclear_phases[3] = nuclear_phases[3] + phase_scalar
+  nuclear_phases[4] = nuclear_phases[4] + phase_scalar
+  nuclear_phases[5] = nuclear_phases[5] + phase_scalar
+  nuclear_phases[6] = nuclear_phases[6] + phase_scalar
   
 ENDSUB
 
@@ -296,6 +314,17 @@ ENDSUB
 SUB init_nuclear_phases_offset()
   reset_nuclear_phases()
   update_nuclear_phases_from_list(nuclear_phases_offset)
+  
+  IF (do_phase_offset_sweep > 0) THEN
+    nuclear_offset_sweep_value = DATA_124[current_ROseq]
+    IF (nuclear_offset_sweep_value < 0) THEN
+      nuclear_offset_sweep_value = nuclear_offset_sweep_value + 360.0
+    ENDIF
+    INC(Par_65)
+    FPar_38 = nuclear_offset_sweep_value
+    update_nuclear_phases_from_scalar(nuclear_offset_sweep_value)
+    modulo_nuclear_phases()
+  ENDIF
 ENDSUB
 
 
@@ -445,6 +474,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   number_of_C_init_ROs             = DATA_20[46]
   number_of_C_encoding_ROs         = DATA_20[47]
   do_LDE_1                         = DATA_20[48]
+  do_phase_offset_sweep            = DATA_20[49]
   
   ' float params from python
   E_SP_voltage                              = DATA_21[1] 'E spin pumping before MBI
@@ -518,12 +548,13 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   flowchart_index = 0
   
   
-  init_nuclear_phases_offset()
   FOR i = 1 to max_nuclei
     nuclear_frequencies[i] = nuclear_frequencies_IN[i]
     nuclear_phases_per_seqrep[i] = nuclear_phases_per_seqrep_IN[i]
     nuclear_phases_offset[i] = nuclear_phases_offset_IN[i]
   NEXT i
+  
+  init_nuclear_phases_offset()
   
   FOR i = 1 to number_of_dps_nuclei ' don't calculate the stuff for nuclei slots that are not in use; those have bullshit frequency values that upset the calculation
     FOR j = 1 to phase_feedback_resolution_steps
@@ -539,8 +570,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
       nuclear_feedback_cycles = tico_delay_line_calculate_cycles(nuclear_feedback_time / (2*delay_feedback_N)) ' two triggers per pulse
       IF (nuclear_feedback_cycles < minimal_delay_cycles) THEN
         Par_40 = delay_feedback_N
-        FPar_40 = nuclear_feedback_time
-        FPar_41 = delay_feedback_target_phase
+        FPar_38 = nuclear_feedback_time
+        FPar_39 = delay_feedback_target_phase
         Par_65 = 0DEADBEEFh
         EXIT ' we've arrived at an impossible number of delay cycles, abandon ship!
       ENDIF
@@ -724,6 +755,9 @@ EVENT:
       CASE REQ_CALC_SET_DELAY_LINE_CYCLES_FROM_SWEEP
         nuclear_feedback_cycles = DATA_125[current_ROseq]
         tico_delay_line_set_cycles(nuclear_feedback_cycles)
+        
+      CASE REQ_CALC_INIT_PHASES_OFFSET
+        init_nuclear_phases_offset()
         
     ENDSELECT
    
@@ -1227,7 +1261,9 @@ EVENT:
           'trying_mbi = 0
           
           current_feedback_nucleus = 0        
-          init_nuclear_phases_offset() ' this takes 55 cycles
+          ' init_nuclear_phases_offset() ' this takes 55 cycles
+          dedicate_next_cycle_to_calculations = 1
+          requested_calculations = REQ_CALC_INIT_PHASES_OFFSET
           tico_delay_line_set_cycles(0)
         
           mbi_timer = 0 

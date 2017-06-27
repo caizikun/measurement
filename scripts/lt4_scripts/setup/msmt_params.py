@@ -36,27 +36,27 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.935 #Not calibrated
+	hermite_pi_amp = 0.0#0.935 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
 
 	hermite_pi2_length = 76e-9 #Not calibrated
-	hermite_pi2_amp = 0.915 #Not calibrated
+	hermite_pi2_amp = 0.0#0.915 #Not calibrated
 
 else:
 	electron_transition_string = '_m1'
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 240e-9#104e-9 # divisible by 2
-	hermite_pi_amp = 0.3#0.873 # 0.893 # for a single pi pulse
+	hermite_pi_length = 104e-9 # divisible by 2
+	hermite_pi_amp = 0.64#0.889 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.638 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp =  0.556# 0.638 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -121,7 +121,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'MW_pulse_mod_risetime':                   10e-9,
 		'send_AWG_start':                          1,
 		'MW_pulse_mod_frequency' : 				   43e6,
-		'MW_switch_risetime':						1e-9, # 500e-9
+		'MW_switch_risetime':						450e-9, # 500e-9
 	}
 
 ##########################################
@@ -224,9 +224,9 @@ cfg['samples'][sample_name] = {
 ###############
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]*4+[0]+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]*4+[180.]+[0.0]*7),
-    'phase_per_sequence_repetition'    : 60.134, # 360.0 - 60.818, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
-    'phase_per_compensation_repetition': 78.375, #360.0 - 78.291, # 18.298,# adwin needs positive values
-    'total_phase_offset_after_sequence': 0.0, # 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
+    'phase_per_sequence_repetition'    : 59.691, # 360.0 - 60.818, # 15.23+0.07+0.1+0.1-0.03+0.43, #adwin needs positive values
+    'phase_per_compensation_repetition': 78.057, #360.0 - 78.291, # 18.298,# adwin needs positive values
+    'total_phase_offset_after_sequence': 301.63, # 101.63-1.3+1.7-1.1-1.5+2.5, #adwin needs positive values
 ###############
 ### SIL2    ###
 ###############
@@ -250,16 +250,18 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (443011.55+475435.75)/2,
-	'C2_freq_0' 		: 443011.55,
-	'C2_freq_1_m1' 		: 475435.75,
+	'C2_freq_m1'        : (442999.99 + 475435.82)/2,
+	'C2_freq_0' 		: 442999.99,
+	'C2_freq_1_m1' 		: 475435.82,
 
 	'C2_Ren_tau_m1'    :   [4.900e-06], #3.87
 	'C2_Ren_N_m1'      :   [38], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [5.04] + [20.11] + [2.39] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [0.97] + [20.11] + [-2.71] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	: 60.134, #360-160.818,  #61.357, #61.124, #299.431,
-	'C2_init_phase_correction_m1': 256.506,
+	'C2_phase_per_LDE_sequence_m1'	: 60.074, #360-160.818,  #61.357, #61.124, #299.431,
+	'C2_init_phase_correction_m1': 0.0,
+	'C2_init_phase_correction_serial_swap_m1': 182.740, # C2,C4 serial swap sequence offset
+	# 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
 	# offsets for the LDE calibration, not really interesting #178.552, #184.075, #181.041, # 185.919, #270.0,
 	
 	###############
@@ -279,17 +281,18 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442807.76 + 416199.79)/2,
-	'C4_freq_0' 		: 442807.76,
-	'C4_freq_1_m1' 		: 416199.79,
+	'C4_freq_m1'        : (442806.88 + 416218.72)/2,
+	'C4_freq_0' 		: 442806.88,
+	'C4_freq_1_m1' 		: 416218.72,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.404e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.97] + [0.0] + [19.99] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.17] + [0.0] + [19.89] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	:	343.706,
-	'C4_init_phase_correction_m1': 180.0,
+	'C4_phase_per_LDE_sequence_m1'	: 16.684, #344.723,
+	'C4_init_phase_correction_m1'	: 0.0,
+	'C4_init_phase_correction_serial_swap_m1': 276.585, # C2,C4 serial swap sequence offset
 
 
 	###############
@@ -451,7 +454,7 @@ cfg['protocols'][name]['pulses'] = {
 		'C13_Y_phase' 			:270,
 
 		'pulse_shape': pulse_shape,
-		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
+		'MW_switch_channel'		:	'mw_switch', ### if you want to activate the switch, put to MW_switch
 		'mw2_modulation_frequency'   :  0,
 		'MW_modulation_frequency'   :  0,
     	'CORPSE_rabi_frequency' :   9e6,

@@ -307,7 +307,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 50
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -329,7 +329,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     ### general params
     pts = 10
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -787,7 +787,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
         m.params['general_sweep_pts'] = np.array([0]*10)
     else:
         hist_only = False
-        m.params['general_sweep_pts'] = np.linspace(0,360,10) 
+        m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
 
     
     m.params['do_general_sweep'] = 1
@@ -803,7 +803,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
 
 
-def EntangleXsweepXY(name,debug = False,upload_only=False):
+def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
     """
     Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
     stabilized phase of the entangled state.
@@ -831,7 +831,7 @@ def EntangleXsweepXY(name,debug = False,upload_only=False):
         m.params['general_sweep_pts'] = np.array([0]*4)
     else:
         hist_only = False
-        m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase'], m.params['LDE_final_mw_phase']+90,m.params['LDE_final_mw_phase']+180,m.params['LDE_final_mw_phase']+270])
+        m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase'],m.params['LDE_final_mw_phase']+90,m.params['LDE_final_mw_phase']+180,m.params['LDE_final_mw_phase']+270])
 
     
     m.params['do_general_sweep'] = 1
@@ -844,8 +844,6 @@ def EntangleXsweepXY(name,debug = False,upload_only=False):
 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
-
-
 
 
 
@@ -974,18 +972,19 @@ if __name__ == '__main__':
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
     # qt.instruments['ZPLServo'].move_out()
 
-    
+    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
 
     # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
 
-    # EntangleXsweepXY(name+'_EntangleXsweepXY',debug = False,upload_only = False)
+    # EntangleXsweepXY(name+'_EntangleXsweepXY',debug = False,upload_only=False)
 
-    Determine_eta(name+'_eta_from_theta_sweep',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
-
+    # Determine_eta(name+'_eta_from_theta_sweep',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
+    
     # EntangleXX(name+'_EntangleXX',debug = False,upload_only=False)
 
+    #
 
     # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
 
