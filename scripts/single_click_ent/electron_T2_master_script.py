@@ -102,11 +102,11 @@ if __name__ == '__main__':
     }
 
     success = True
-    tau_offsets =[-8e-9]# [-6e-9,-4e-9,4e-9,10e-9]#[-20e-9,-10e-9,0,10e-9,20e-9]
+    tau_offsets =[-8e-9,-4e-9,0e-9,4e-9,8e-9]
     sweep_Ns = ['1','4','8','16','32','64','128','256','512','1024','sweepN']
 
 
-    keys_to_measure = ['sweepN']#['128','256','512','1024']#['1','4','8','16','32'] ## change this to only do parts of the measurement
+    keys_to_measure = ['1','4','8','16','32','64','128','256','512','1024']# ## change this to only do parts of the measurement
 
 
     last_opt_time = time.time()

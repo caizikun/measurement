@@ -142,7 +142,7 @@ if __name__ == '__main__':
     if n==1 and Cont:
         N = qt.decoupling_parameter_list[0] ### number of pulses
         pts = qt.decoupling_parameter_list[1] ### number of points per loading of the AWG
-        larmor_freq = 1/qt.exp_params['samples']['Pippin']['C1_freq_0']
+        larmor_freq = 1/qt.exp_params['samples'][qt.exp_params['samples']['current']]['C2_freq_0']#1/qt.exp_params['samples']['Pippin']['C1_freq_0']
         larmor_max = qt.decoupling_parameter_list[2] ### the order of the last revival
         larmor_min = qt.decoupling_parameter_list[3]
         larmor_step =  qt.decoupling_parameter_list[4]
