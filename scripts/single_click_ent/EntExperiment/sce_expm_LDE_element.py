@@ -81,7 +81,9 @@ def _create_laser_pulses(msmt,Gate):
                     eom_overshoot2          = msmt.params['eom_overshoot2'],
                     aom_risetime            = msmt.params['aom_risetime'],
                     aom_amplitude           = msmt.params['aom_amplitude'])
-
+    if setup == 'lt3':
+        Gate.yellow = pulse.SquarePulse(channel = 'AOM_Yellow',name = 'reionize',
+                            length = msmt.params['LDE_SP_duration'],amplitude = 1.)
 
 
 
@@ -90,10 +92,10 @@ def _create_syncs_and_triggers(msmt,Gate):
     #### hydraharp/timeharp synchronization
     if setup == 'lt4' and msmt.params['is_two_setup_experiment'] == 1:
         Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 0)
-    else:
+    # else:
     #     Gate.HHsync = pulse.SquarePulse(channel = 'sync', length = 50e-9, amplitude = 1.0)
 
-    # if setup == 'lt3':
+    if setup == 'lt3':
         Gate.LT3HHsync = pulse.SquarePulse(channel = 'HHsync',length = 50e-9, amplitude = 1.0)
 
 
@@ -160,6 +162,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
         amplitude = 0, 
         length = msmt.joint_params['initial_delay']),
     name = 'initial_delay')
+
+
     
     e.add(pulse.cp( Gate.AWG_repump,
                     length          = msmt.params['LDE_SP_duration'], 
@@ -167,6 +171,14 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     start           = msmt.params['LDE_SP_delay'],
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
+
+    if setup == 'lt3':
+        e.add(pulse.cp( Gate.yellow,
+                        length          = msmt.params['LDE_SP_duration'], 
+                        amplitude       = sp_amp), 
+                        start           = msmt.params['LDE_SP_delay'],
+                        name            = 'spintominus', 
+                        refpulse        = 'initial_delay')
 
     ### add the option to plug in a yellow laser pulse during spin pumping. not yet considered
 
@@ -176,9 +188,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
 
     if msmt.params['sync_during_LDE'] == 1 :
-        if setup == 'lt4':
-            e.add(Gate.HHsync,
-                refpulse = 'initial_delay')
+        if setup == 'lt4' or setup == 'lt3':
+            pass
+            # e.add(Gate.HHsync, refpulse = 'initial_delay')
         ### one awg has to sync all time-tagging devices.
         if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
@@ -238,7 +250,6 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     name            = 'RO_pulse')
 
     else:
-
         #mw pi/2 pulse or 'theta'
         e.add(pulse.cp(Gate.mw_first_pulse,amplitude=0),
             start           = msmt.params['MW_repump_distance'],
@@ -373,7 +384,7 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
 
     if msmt.joint_params['do_final_mw_LDE'] == 1 and (not msmt.params['MW_RO_pulse_in_LDE'] == 1):
 
-        if msmt.params['do_dynamical_decoupling'] > 0:
+        if msmt.params['do_dynamical_decoupling'] + msmt.params['do_dynamical_decoupling_AWG_only'] > 0:
             e.add(pulse.cp(Gate.mw_X,phase = msmt.params['Y_phase']),
                 start           = echo_time+msmt.params['dynamic_decoupling_tau'],
                 refpulse        = 'initial_delay',

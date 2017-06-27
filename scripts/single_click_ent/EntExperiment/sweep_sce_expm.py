@@ -150,6 +150,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_stabilisation']  = 0
     m.params['only_meas_phase']         = 0
     m.params['do_dynamical_decoupling'] = 0 
+    m.params['do_dynamical_decoupling_AWG_only'] = 0
     m.params['do_only_opt_pi']          = 0
     m.params['do_yellow_with_AWG']      = 0
     m.params['do_calc_theta']           = 0
@@ -177,8 +178,8 @@ def turn_all_sequence_elements_on(m):
     m.params['do_general_sweep']        = 0
     m.params['do_phase_stabilisation']  = 1
     m.params['only_meas_phase']         = 0
-    m.params['do_dynamical_decoupling'] = 0 # Not doing this yet (PH) 
-    m.params['do_only_opt_pi']          = 0 # for single setup testing!
+    m.params['do_dynamical_decoupling'] = 0 # not fully implemented yet.
+    m.params['do_only_opt_pi']          = 0 # for single setup testing
     m.params['do_yellow_with_AWG']      = 0
     
 
@@ -380,9 +381,9 @@ def ionization_study(name, debug = False, upload_only = False, use_yellow = Fals
     prepare(m)
 
     ### general params
-    pts = 11
+    pts = 8
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
 
@@ -391,15 +392,14 @@ def ionization_study(name, debug = False, upload_only = False, use_yellow = Fals
     m.params['MW_during_LDE'] = 1
     m.params['is_two_setup_experiment'] = 0
     m.joint_params['do_final_mw_LDE'] = 0
-    # m.params['first_pulse_is_pi2'] = True
     m.params['mw_first_pulse_amp'] = 0
-    # m.params['no_first_pulse'] = True
+    m.params['mw_first_pulse_length'] = 1e-9
     m.params['force_repump_after_LDE'] = 1
     ### prepare sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(5,550,pts)
+    m.params['general_sweep_pts'] = np.linspace(5,25000,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['do_yellow_with_AWG'] = use_yellow
@@ -417,7 +417,7 @@ def ionization_non_local(name, debug = False, upload_only = False, use_yellow = 
     prepare(m)
 
     ### general params
-    pts = 10
+    pts = 3
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
@@ -459,9 +459,9 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 20
+    pts = 4
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 1000
 
 
     ### sequence specific parameters
@@ -469,17 +469,18 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
-    m.params['do_dynamical_decoupling'] = 1
+    m.params['do_dynamical_decoupling_AWG_only'] = 1
+    m.params['do_dynamical_decoupling'] = 0 ### lets the adwin count along!
 
-    m.joint_params['LDE_attempts'] = 1
+    m.joint_params['LDE_attempts'] = 1 ## don't put this to 1. will give problems
     m.params['LDE_final_mw_phase'] = 90
     m.params['tomography_basis'] = 'X'
-    m.params['dynamic_decoupling_tau'] = m.params['dynamic_decoupling_tau']+10e-9
+    m.params['dynamic_decoupling_tau'] = m.params['dynamic_decoupling_tau']
     ### sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'max_decoupling_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(1,100,pts)
+    m.params['general_sweep_pts'] = np.round(np.linspace(2,5,pts))
     m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['decoupling_element_duration']*m.params['general_sweep_pts']*1e3
 
@@ -539,8 +540,7 @@ if __name__ == '__main__':
     # lastpi2_phase_action_compressed_BK(name,debug=False,upload_only=False)
     # LDE_decouple_time_compressed_BK(name,debug=False,upload_only=False)
 
-    ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = True)
-    # ionization_sweep_yellow() TODO program!
+    ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = False)
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
     # dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)

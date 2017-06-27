@@ -20,7 +20,7 @@ params_lt3['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 250e-9#1000e-9
+params_lt3['AWG_SP_power']              = 20e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
@@ -28,7 +28,7 @@ params_lt3['MW_repump_distance']		= 1200e-9
 params_lt3['LDE_decouple_time']         = 2.2e-6
 params_lt3['MW_final_delay_offset']		= 0e-9
 params_lt3['first_mw_pulse_is_pi2']     = 0
-params_lt3['LDE_attempts_before_yellow']  = 100
+params_lt3['LDE_attempts_before_yellow']  = 2000
 params_lt3['Yellow_AWG_duration']			= 300e-6
 params_lt3['Yellow_AWG_power']			= 50e-9
 
@@ -60,8 +60,8 @@ params_lt3['master_slave_awg_trigger_delay'] = 9 # times 10ns
 
 # dynamical decoupling
 params_lt3['max_decoupling_reps'] = 200
-params_lt3['dynamic_decoupling_N'] = 4
-params_lt3['dynamic_decoupling_tau'] = 2e-6 #16*2.2e-6 # 16 th larmor revival gives: 200*4*32 = 25.6 ms.
+params_lt3['dynamic_decoupling_N'] = 8
+params_lt3['dynamic_decoupling_tau'] = 36.156e-6-8e-9 # 16 th larmor revival gives: 200*4*32 = 25.6 ms.
 params_lt3['tomography_basis'] = 'Y' ### sets RELATIVE phase and amplitude of the last pi/2 pulse when doing decoupling.
 params_lt3['decoupling_element_duration'] = 2*params_lt3['dynamic_decoupling_tau']*params_lt3['dynamic_decoupling_N']
 
