@@ -83,10 +83,10 @@ class SingleClickEntExpm(DD.MBI_C13):
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
-        if qt.current_setup == 'lt3':
-            self.params['Yellow_voltage_AWG'] = \
-                    self.repump_aom.power_to_voltage( self.params['Yellow_AWG_power'], controller='sec')
-            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['Yellow_voltage_AWG'])
+
+        self.params['Yellow_voltage_AWG'] = \
+                self.repump_aom.power_to_voltage( self.params['Yellow_AWG_power'], controller='sec')
+        qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['Yellow_voltage_AWG'])
         
         ### Adwin LT4 is connected to the plu. Needs to reset it.
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:

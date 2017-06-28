@@ -77,8 +77,8 @@ def _create_laser_pulses(msmt,Gate):
                     aom_risetime            = msmt.params['aom_risetime'],
                     aom_amplitude           = msmt.params['aom_amplitude'])
 
-    if setup == 'lt3':
-        Gate.yellow = pulse.SquarePulse(channel = 'AOM_Yellow',name = 'reionize',length = msmt.params['LDE_SP_duration'],amplitude = 1.)
+
+    Gate.yellow = pulse.SquarePulse(channel = 'AOM_Yellow',name = 'reionize',length = msmt.params['LDE_SP_duration'],amplitude = 1.)
     
 
 
@@ -169,13 +169,13 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # 2a HH sync
     sp_amp = 1.0
     
-    if setup == 'lt3':
-        e.add(pulse.cp( Gate.yellow,
-                        length          = msmt.params['LDE_SP_duration'], 
-                        amplitude       = sp_amp), 
-                        start           = msmt.params['LDE_SP_delay'],
-                        name            = 'spintominus', 
-                        refpulse        = 'initial_delay')
+
+    e.add(pulse.cp( Gate.yellow,
+                    length          = msmt.params['LDE_SP_duration'], 
+                    amplitude       = sp_amp), 
+                    start           = msmt.params['LDE_SP_delay'],
+                    name            = 'spintominus', 
+                    refpulse        = 'initial_delay')
 
     
 
@@ -251,7 +251,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
     ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
     else:
-        pass
+        # pass
         # MW pi pulse
         e.add(pulse.cp(Gate.mw_X,amplitude=0),
             start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),

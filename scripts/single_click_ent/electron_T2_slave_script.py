@@ -23,6 +23,8 @@ def qstop(sleep=2):
     print '--------------------------------'
     qt.msleep(sleep)
     if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return False
+    else:
         return True
 
 def SimpleDecoupling(name,N=4,sweep = 'tau',end=100e-3,nr_list=[1], XY_scheme=8, reps=500,debug=False,larmor_offset = 0):
@@ -55,7 +57,7 @@ def SimpleDecoupling(name,N=4,sweep = 'tau',end=100e-3,nr_list=[1], XY_scheme=8,
         m.params['tau_list']         = tau_list
 
     elif sweep == 'N':
-        tau_list = 36.156e-6*np.ones(len(nr_list)) + larmor_offset
+        tau_list = 40.32e-6*np.ones(len(nr_list)) + larmor_offset
         m.params['Number_of_pulses'] = nr_list
         m.params['tau_list']         = tau_list
 
@@ -91,13 +93,13 @@ def take_DD_Data(larmor_min,larmor_max,N,pts,sweep = 'tau',larmor_step=2,larmor_
         nr_of_runs = np.ceil(total_no_of_elements/7500.) ### we want to load 7500 elements per run into the AWG.
 
     print 'nrofruns', nr_of_runs
-    if qstop(sleep=3):
+    if not qstop(sleep=3):
             Continue_bool = False
     else:
         for n in range(int(nr_of_runs)):
-            if qstop(sleep=3):
+            if not qstop(sleep=3):
                 Continue_bool = False
-                break
+                return False
             print 'n', n
 
             if sweep == 'tau':
@@ -110,7 +112,7 @@ def take_DD_Data(larmor_min,larmor_max,N,pts,sweep = 'tau',larmor_step=2,larmor_
                 sweep_string = '_RepT_XY'+str(XY_scheme)+'_tauoff_'+str(larmor_offset*1e9)+'_part'+str(n+1)
             else:
                 print 'Unknown sweep variable in electron_T2_slave_script.py'
-                break
+                return False
             print 'nr_list', nr_list
 
             SimpleDecoupling(SAMPLE+sweep_string,
@@ -142,7 +144,7 @@ if __name__ == '__main__':
     if n==1 and Cont:
         N = qt.decoupling_parameter_list[0] ### number of pulses
         pts = qt.decoupling_parameter_list[1] ### number of points per loading of the AWG
-        larmor_freq = 1/qt.exp_params['samples']['Pippin']['C1_freq_0']
+        larmor_freq = 1/qt.exp_params['samples'][qt.exp_params['samples']['current']]['C2_freq_0']#1/qt.exp_params['samples']['Pippin']['C1_freq_0']
         larmor_max = qt.decoupling_parameter_list[2] ### the order of the last revival
         larmor_min = qt.decoupling_parameter_list[3]
         larmor_step =  qt.decoupling_parameter_list[4]

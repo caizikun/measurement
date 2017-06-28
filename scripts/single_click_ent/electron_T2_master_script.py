@@ -10,9 +10,9 @@ def optimize():
     print 'Starting to optimize.'
 
     print 'checking for SMB errors'
-    if not(check_smb_errors()):
-        print 'SMB gave errors!!'
-        return False
+    # if not(check_smb_errors()):
+    #     print 'SMB gave errors!!'
+    #     return False
     powers_ok=False
     for i in range(5):
         if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
@@ -47,6 +47,16 @@ def optimize():
     qt.msleep(3)
     
     return True
+
+def qstop(sleep=2):
+    print '--------------------------------'
+    print 'press q to stop measurement loop'
+    print '--------------------------------'
+    qt.msleep(sleep)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return False
+    else:
+        return True
 
 def bell_check_powers():
 
@@ -98,26 +108,26 @@ if __name__ == '__main__':
         '256'     : [256,15,90,2,1,200],
         '512'     : [512,7,60,2,1,200],
         '1024'     : [1024,3,40,2,2,300],
-        'sweepN' : [0,4,512+256,2,120,500] ### first entry could be made the tau that we want to sweep here
+        'sweepN' : [0,4,512+1024,8,80,500] ### first entry could be made the tau that we want to sweep here
     }
 
     success = True
-    tau_offsets =[-8e-9]# [-6e-9,-4e-9,4e-9,10e-9]#[-20e-9,-10e-9,0,10e-9,20e-9]
+    tau_offsets =[-8e-9,-4e-9,0e-9,4e-9,8e-9]
     sweep_Ns = ['1','4','8','16','32','64','128','256','512','1024','sweepN']
+    man_break = True
 
-
-    keys_to_measure = ['sweepN']#['128','256','512','1024']#['1','4','8','16','32'] ## change this to only do parts of the measurement
+    keys_to_measure = ['sweepN']#128','256','512','1024']#'1','4','8','16','32','64', ## change this to only do parts of the measurement
 
 
     last_opt_time = time.time()
     for i in sweep_Ns:
-        if not success:
+        if not success or not man_break:
             break
         for tau_offset in tau_offsets:
             if i in keys_to_measure:
 
 
-                if not success:
+                if not success or not man_break:
                     break
                 
                 qt.decoupling_parameter_list = DD_parameters_dict[i] + [tau_offset]
@@ -126,6 +136,8 @@ if __name__ == '__main__':
                 if time.time() - last_opt_time > 30*60: ### optimiz every 30 mins.
                     print 'Loading CR linescan'
                     execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
-                    qt.instruments['ZPLServo'].move_in()
+                    # qt.instruments['ZPLServo'].move_in()
                     success = optimize()
                     last_opt_time = time.time()
+
+                man_break =  qstop()
