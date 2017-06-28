@@ -81,9 +81,9 @@ def _create_laser_pulses(msmt,Gate):
                     eom_overshoot2          = msmt.params['eom_overshoot2'],
                     aom_risetime            = msmt.params['aom_risetime'],
                     aom_amplitude           = msmt.params['aom_amplitude'])
-    if setup == 'lt3':
-        Gate.yellow = pulse.SquarePulse(channel = 'AOM_Yellow',name = 'reionize',
-                            length = msmt.params['LDE_SP_duration'],amplitude = 1.)
+
+    Gate.yellow = pulse.SquarePulse(channel = 'AOM_Yellow',name = 'reionize',
+                        length = msmt.params['LDE_SP_duration'],amplitude = 1.)
 
 
 
@@ -172,13 +172,13 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
 
-    if setup == 'lt3':
-        e.add(pulse.cp( Gate.yellow,
-                        length          = msmt.params['LDE_SP_duration'], 
-                        amplitude       = sp_amp), 
-                        start           = msmt.params['LDE_SP_delay'],
-                        name            = 'spintominus', 
-                        refpulse        = 'initial_delay')
+
+    e.add(pulse.cp( Gate.yellow,
+                    length          = msmt.params['LDE_SP_duration'], 
+                    amplitude       = sp_amp), 
+                    start           = msmt.params['LDE_SP_delay'],
+                    name            = 'spintominus', 
+                    refpulse        = 'initial_delay')
 
     ### add the option to plug in a yellow laser pulse during spin pumping. not yet considered
 
@@ -392,10 +392,14 @@ def generate_LDE_rephasing_elt(msmt,Gate,**kw):
                 refpoint_new    = 'center',
                 name            = 'MW_RO_rotation')
         else:
+             ### this contains our RO definitions
+            tomo_dict = {
+                'X': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']), #### check this!!!
+                'Y': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']+90),
+                'Z': pulse.cp(Gate.mw_pi2, amplitude = 0)
+            }
 
-            e.add(pulse.cp(Gate.mw_pi2,
-                phase           = msmt.params['LDE_final_mw_phase'],
-                amplitude       = msmt.params['LDE_final_mw_amplitude']),
+            e.add(tomo_dict[msmt.params['tomography_basis']],
                 start           = echo_time,
                 refpulse        = 'initial_delay',
                 refpoint        = 'start',

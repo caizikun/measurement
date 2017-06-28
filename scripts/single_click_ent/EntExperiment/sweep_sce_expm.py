@@ -399,7 +399,7 @@ def ionization_study(name, debug = False, upload_only = False, use_yellow = Fals
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(5,25000,pts)
+    m.params['general_sweep_pts'] = np.linspace(5,2500,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['do_yellow_with_AWG'] = use_yellow

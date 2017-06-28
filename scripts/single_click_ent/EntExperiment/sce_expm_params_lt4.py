@@ -18,7 +18,7 @@ params_lt4['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 150e-9
+params_lt4['AWG_SP_power']              = 100e-9
 params_lt4['LDE_SP_duration']           = 1.5e-6 #1.5e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt4['average_repump_time'] 		= 0.3e-6
@@ -28,6 +28,10 @@ params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 params_lt4['MW_repump_distance']		= 1100e-9
 params_lt4['MW_final_delay_offset']		= 10e-9
 params_lt4['first_mw_pulse_is_pi2']     = 0
+params_lt4['LDE_attempts_before_yellow']  = 2000
+params_lt4['Yellow_AWG_duration']			= 300e-6
+params_lt4['Yellow_AWG_power']			= 1e-9
+
 
 
 #adwin params defs:
@@ -59,8 +63,8 @@ params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
 
 # dynamical decoupling
 params_lt4['max_decoupling_reps'] = 200
-params_lt4['dynamic_decoupling_N'] = 4
-params_lt4['dynamic_decoupling_tau'] = 2.2e-6#round(10/qt.exp_params['samples'][]['C4_freq_0'],9) #16*2.2e-6 # 16 th larmor revival gives: 200*4*32 = 25.6 ms.
+params_lt4['dynamic_decoupling_N'] = 8
+params_lt4['dynamic_decoupling_tau'] =  40.32e-6#round(10/qt.exp_params['samples'][]['C4_freq_0'],9) #16*2.2e-6 # 16 th larmor revival gives: 200*4*32 = 25.6 ms.
 params_lt4['tomography_basis'] = 'Y' ### sets RELATIVE phase and amplitude of the last pi/2 pulse when doing decoupling.
 params_lt4['decoupling_element_duration'] = 2*params_lt4['dynamic_decoupling_tau']*params_lt4['dynamic_decoupling_N']
 
@@ -78,13 +82,13 @@ params_lt4['PLU_4_delay']             = 200e-9
 params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
-params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
+#params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 params_lt4['LDE_final_mw_phase'] 	  = 192.98 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0029145987806443
-params_lt4['sin2_theta_fit_a']		= 2.2914218496828993
-params_lt4['sin2_theta_fit_x0']		= 0.8170234723612475
+params_lt4['sin2_theta_fit_of']		= 1.002090230596659
+params_lt4['sin2_theta_fit_a']		= 4.3363228314215627
+params_lt4['sin2_theta_fit_x0']		= 0.63221653740999639
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -96,10 +100,10 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(2.75e6)/TH_HH_selector #XXXX was 5438*
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(3.1e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 2820e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
-params_lt4['pulse_stop_bin'] = 2832e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_start_bin'] = 2832e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_stop_bin'] = 2860e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['pulse_start_bin'] = 2810e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 2856e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 18e3
 
 params_lt4['measurement_time']    =   24.*60*60 #sec = 24H
