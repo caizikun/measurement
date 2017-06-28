@@ -20,7 +20,7 @@ params_lt3['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 20e-9#1000e-9
+params_lt3['AWG_SP_power']              = 80e-9#1000e-9
 params_lt3['LDE_SP_duration']           = 1.5e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
 params_lt3['MW_opt_puls1_separation']   = 120e-9 #
@@ -30,7 +30,7 @@ params_lt3['MW_final_delay_offset']		= 0e-9
 params_lt3['first_mw_pulse_is_pi2']     = 0
 params_lt3['LDE_attempts_before_yellow']  = 2000
 params_lt3['Yellow_AWG_duration']			= 300e-6
-params_lt3['Yellow_AWG_power']			= 50e-9
+params_lt3['Yellow_AWG_power']			= 20e-9
 
 
 #adwin params defs:
@@ -81,9 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']      = 0.0
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.99290825310801334
-params_lt3['sin2_theta_fit_a']		= 1.7624629794004711
-params_lt3['sin2_theta_fit_x0']		= 0.8893242344254747
+params_lt3['sin2_theta_fit_of']		= 0.99718209460705587
+params_lt3['sin2_theta_fit_a']		= 1.818016117265278
+params_lt3['sin2_theta_fit_x0']		= 0.86955573398202191
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6

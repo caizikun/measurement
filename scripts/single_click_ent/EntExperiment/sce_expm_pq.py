@@ -206,7 +206,7 @@ def do_rejection(name,debug = False, upload_only = False):
     m.params['AWG_SP_power'] = 0.
     m.params['do_general_sweep']    = False
     m.params['MW_during_LDE'] = 0
-
+    m.params['Yellow_AWG_power'] = 0e-9
 
     m.joint_params['opt_pi_pulses'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -932,7 +932,7 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
     # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)

@@ -26,19 +26,16 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
 
 
 # Marker channels
-qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', # TH sync
-    high=2.0, low=0, offset=0., delay=0., active=True)   
+# qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', # TH sync
+#     high=2.0, low=0, offset=0., delay=0., active=True)   
 
-qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Yellow', type='marker', # TH sync
+qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Yellow', type='marker', 
     high=0.6, low=0, offset=0., delay=0., active=True)   
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=269e-9-16e-9, active=True) #269 or SGS100. was a delay of 302 for SMB100
 
 qt.pulsar.define_channel(id='ch2_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0.0, delay=230e-9, active=True) # do not change delay! ASK NK before changing!
-# qt.pulsar.define_channel(id='ch2_marker2', name='mw2_pulsemod', type='marker', 
-    # high=2.0, low=0, offset=0., delay=257e-9, active=True) #247
-
 qt.pulsar.define_channel(id='ch2_marker2', name='mw_switch', type='marker',
     high = 2.0, low=0.0, offset=0.0, delay=230e-9, active=True)
 
