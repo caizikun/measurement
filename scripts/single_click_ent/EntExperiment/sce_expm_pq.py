@@ -536,7 +536,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 100
     pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -773,10 +773,10 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.2
+    m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
-    m.params['measurement_time'] = 8*60 # Eight minutes
+    m.params['measurement_time'] = 2*8*60 # Eight minutes
 
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
@@ -818,7 +818,7 @@ def EntangleSweepTheta(name,debug = False,upload_only=False, tomography_basis = 
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['measurement_time'] = 8*60 # Eight minutes
+    m.params['measurement_time'] = 20*60 # Eight minutes
 
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -841,6 +841,46 @@ def EntangleSweepTheta(name,debug = False,upload_only=False, tomography_basis = 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
+def EntangleSweepEverything(name,debug = False,upload_only=False):
+    """
+    Sweeps the superposition angle of the states
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    pts = 6
+
+    m.params['do_phase_stabilisation'] = 1
+
+    m.params['reps_per_ROsequence'] = 400
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 250
+    m.params['measurement_time'] = 60*60 # Eight minutes
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
+    m.params['tomography_basis'] = tomography_basis
+
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = ['sin2_theta','tomography_basis']
+    m.params['general_sweep_pts'] = [np.linspace(0.05,0.3,pts),['X','Y','Z']]
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'][0])*len(m.params['sweep_pts'][1])
+    m.params['do_phase_stabilisation']  = 1
+    m.params['do_calc_theta']           = 1
+    m.params['do_post_ent_phase_msmt'] = 1
+
+    ### upload and run
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 def Entangle(name,debug = False,upload_only=False):
     """
@@ -870,9 +910,9 @@ def Entangle(name,debug = False,upload_only=False):
 
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'tomography_basis' 
-    m.params['general_sweep_pts'] = ['X']#['X','Y','Z']
+    m.params['general_sweep_pts'] = ['X','Y','Z']
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_pts'] = [1,2,3]#m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
 
     ### upload and run
@@ -898,13 +938,13 @@ def EntangleOnDemand(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     
-    m.params['sin2_theta'] = 0.2
+    m.params['sin2_theta'] = 0.15
     m.params['do_calc_theta'] = 1
 
     if m.params['sin2_theta'] > 0.5:
         raise Exception('What are you doing? sin2 theta is too big!!!')
 
-    m.joint_params['LDE_attempts'] = 16e3  ### calculated from our simulations
+    m.joint_params['LDE_attempts'] = 20e3  ### calculated from our simulations
 
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -922,6 +962,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False):
 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
+
 
 
 if __name__ == '__main__':
@@ -974,8 +1015,8 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
-    # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
+    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

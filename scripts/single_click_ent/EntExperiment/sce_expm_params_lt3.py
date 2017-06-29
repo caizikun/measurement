@@ -45,9 +45,9 @@ params_lt3['MBI_attempts_before_CR'] = 1
 # channels
 #params_lt3['wait_for_AWG_done'] = 1 # not used in adwin script
 params_lt3['PLU_event_di_channel'] = 20 
-params_lt3['PLU_which_di_channel'] = 21 # not used on slave
+params_lt3['PLU_which_di_channel'] = 16 # not used on slave
 params_lt3['wait_for_awg_done_timeout_cycles'] = 1e7  # 10ms
-params_lt3['AWG_repcount_DI_channel'] = 16 
+params_lt3['AWG_repcount_DI_channel'] = 21 
 params_lt3['remote_adwin_di_success_channel'] = 19 
 params_lt3['remote_adwin_di_fail_channel'] = 18
 params_lt3['remote_adwin_do_success_channel'] = 13
@@ -68,7 +68,7 @@ params_lt3['decoupling_element_duration'] = 2*params_lt3['dynamic_decoupling_tau
 params_lt3['sync_during_LDE']           = 1
 
 params_lt3['PLU_during_LDE']          = 1
-params_lt3['PLU_gate_duration']       = 30e-9#70e-9
+params_lt3['PLU_gate_duration']       = 20e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 28e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9
