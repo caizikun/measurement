@@ -190,6 +190,11 @@ class SingleClickEntExpm(DD.MBI_C13):
         self.save_adwin_data(name,toSave)
 
         return
+        
+    def finish(self):
+        DD.MBI_C13.finish(self)
+        if self.current_setup == 'lt4':
+            qt.instruments['PhaseAOM'].turn_off()
 
     
     def _Trigger_element(self,duration = 10e-6, name='Adwin_trigger', outputChannel='adwin_sync'):

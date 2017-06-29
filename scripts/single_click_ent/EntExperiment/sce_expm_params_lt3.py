@@ -68,7 +68,7 @@ params_lt3['decoupling_element_duration'] = 2*params_lt3['dynamic_decoupling_tau
 params_lt3['sync_during_LDE']           = 1
 
 params_lt3['PLU_during_LDE']          = 1
-params_lt3['PLU_gate_duration']       = 100e-9#70e-9
+params_lt3['PLU_gate_duration']       = 30e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 28e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9

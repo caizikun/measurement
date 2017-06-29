@@ -459,7 +459,7 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 3
+    pts = 5
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 200
 
@@ -469,8 +469,8 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
-    m.params['do_dynamical_decoupling_AWG_only'] = 0
-    m.params['do_dynamical_decoupling'] = 1 ### lets the adwin count along!
+    m.params['do_dynamical_decoupling_AWG_only'] = 1
+    m.params['do_dynamical_decoupling'] = 0 ### lets the adwin count along!
 
     m.joint_params['LDE_attempts'] = 1 ## don't put this to 1. will give problems
     m.params['LDE_final_mw_phase'] = 90

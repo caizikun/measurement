@@ -932,7 +932,7 @@ if __name__ == '__main__':
     # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.9, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
@@ -974,7 +974,7 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
 
 
     if hasattr(qt,'master_script_is_running'):
