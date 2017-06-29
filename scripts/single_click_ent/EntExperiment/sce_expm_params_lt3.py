@@ -59,7 +59,7 @@ params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt3['master_slave_awg_trigger_delay'] = 9 # times 10ns
 
 # dynamical decoupling
-params_lt3['max_decoupling_reps'] = 250
+params_lt3['max_decoupling_reps'] = 300
 params_lt3['dynamic_decoupling_N'] = 8
 params_lt3['dynamic_decoupling_tau'] = 36.156e-6-8e-9 # 16 th larmor revival gives: 200*4*32 = 25.6 ms.
 params_lt3['tomography_basis'] = 'Y' ### sets RELATIVE phase and amplitude of the last pi/2 pulse when doing decoupling.

@@ -870,7 +870,7 @@ def EntangleSweepEverything(name,debug = False,upload_only=False):
 
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = ['sin2_theta','tomography_basis']
-    m.params['general_sweep_pts'] = [np.linspace(0.05,0.3,pts),['X','Y','Z']]
+    m.params['general_sweep_pts'] = [np.linspace(0.05,0.5,pts),['X','Y','Z']]
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'][0])*len(m.params['sweep_pts'][1])
@@ -938,13 +938,19 @@ def EntangleOnDemand(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     
-    m.params['sin2_theta'] = 0.15
+    m.params['sin2_theta'] = 0.1
     m.params['do_calc_theta'] = 1
 
     if m.params['sin2_theta'] > 0.5:
         raise Exception('What are you doing? sin2 theta is too big!!!')
 
-    m.joint_params['LDE_attempts'] = 20e3  ### calculated from our simulations
+    LDE_attempt_dict = {
+        '0.1':24.4e3,
+        '0.15':19.794e3,
+        '0.2':16137,
+        '0.25':13443,
+    }
+    m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -1015,8 +1021,8 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
-    EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
