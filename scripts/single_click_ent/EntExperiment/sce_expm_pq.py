@@ -898,7 +898,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     
-    m.params['sin2_theta'] = 0.15
+    m.params['sin2_theta'] = 0.1
     m.params['do_calc_theta'] = 1
 
     if m.params['sin2_theta'] > 0.5:
@@ -974,8 +974,8 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
-    EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
