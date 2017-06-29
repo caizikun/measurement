@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,87,87,174,174,375,375,395,395,764,764,834,835
+' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,845,846
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -135,6 +135,10 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
 DIM max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
 
+
+DIM remaining_time_in_long_CR_check AS LONG
+
+
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
@@ -145,6 +149,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   wait_time           = 0
   digin_this_cycle    = 0
   cumulative_awg_counts   = 0
+  
+  remaining_time_in_long_CR_check  = 0
   
   time_spent_in_state_preparation =0
   time_spent_in_communication =0 
@@ -659,6 +665,7 @@ EVENT:
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
+            remaining_time_in_long_CR_check = 2000
 
           endif
         
@@ -730,114 +737,178 @@ EVENT:
           END
         ENDIF
         
-        if ((cr_result = -1) or (cr_result = 1)) then
-          ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
-          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-            mode = init_mode 
-            timer = -1
-            reset_CR() ' For optimal robustness, reset the CR check variables.
-          else
+        IF (remaining_time_in_long_CR_check > 0) THEN
+          cr_result = 0
+        ENDIF
+        
+          if ((cr_result = -1) or (cr_result = 1)) then
+            ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
+            if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+              mode = init_mode 
+              timer = -1
+              reset_CR() ' For optimal robustness, reset the CR check variables.
+            else
           
-            if ( cr_result > 0 ) then
-              ' In case the result is not positive, the CR check will be repeated/continued
-              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-              timer = -1     
-              IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-                mode = 3 'go to spin pumping directly
-              ELSE ' two setups involved
+              if ( cr_result > 0 ) then
+                ' In case the result is not positive, the CR check will be repeated/continued
+                time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+                timer = -1     
+                IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+                  mode = 3 'go to spin pumping directly
+                ELSE ' two setups involved
             
-                local_flag_1 = 0
-                local_flag_2 = 1  'flag 2 communicates that CR checking
-                mode_flag = 2
-                mode = 100 'go to communication step
-                timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-                fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
-                success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+                  local_flag_1 = 0
+                  local_flag_2 = 1  'flag 2 communicates that CR checking
+                  mode_flag = 2
+                  mode = 100 'go to communication step
+                  timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+                  fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+                  success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
-              ENDIF
+                ENDIF
+              endif
             endif
+          
           endif
           
-        endif
-          
         
-      CASE 3    ' E spin pumping
+        CASE 3    ' E spin pumping
         
-        IF (timer = 0) THEN
-          P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
-          P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
-          P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
-          P2_CNT_ENABLE(CTR_MODULE,counter_pattern)                       ' turn on counter
-          old_counts_1 = 0
-        ELSE
-          counts_1 = P2_CNT_READ(CTR_MODULE,counter_channel)
-          DATA_29[timer] = DATA_29[timer] + counts_1 - old_counts_1    ' for spinpumping arrival time histogram
-          old_counts_1 = counts_1
+          IF (timer = 0) THEN
+            P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_SP_voltage+32768) ' turn on Ex laser
+            P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_SP_voltage+32768) ' or turn on A laser
+            P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
+            P2_CNT_ENABLE(CTR_MODULE,counter_pattern)                       ' turn on counter
+            old_counts_1 = 0
+          ELSE
+            counts_1 = P2_CNT_READ(CTR_MODULE,counter_channel)
+            DATA_29[timer] = DATA_29[timer] + counts_1 - old_counts_1    ' for spinpumping arrival time histogram
+            old_counts_1 = counts_1
                     
-          IF (timer = SP_duration) THEN
-            P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-            P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
-            mode = 4 ' On to entanglement generation
-            wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
-            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-            timer = -1
+            IF (timer = SP_duration) THEN
+              P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
+              P2_DAC(DAC_MODULE, A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser      
+              mode = 4 ' On to entanglement generation
+              wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
+              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+              timer = -1
+            ENDIF
           ENDIF
-        ENDIF
         
-      CASE 4    '  wait and count repetitions of the entanglement AWG sequence
-        ' the awg gives repeated adwin sync pulses, which are counted. In the case of an entanglement event, we get a plu signal.
-        ' In case there's no entanglement event, we get the awg done trigger, a pulse of which we detect the falling edge.
-        ' In case this is a single-setup (e.g. phase calibration) measurement, we go on, 
-        ' otherwise getting a done trigger means failure of the sequence and we go to CR cheking
-        ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
+        CASE 4    '  wait and count repetitions of the entanglement AWG sequence
+          ' the awg gives repeated adwin sync pulses, which are counted. In the case of an entanglement event, we get a plu signal.
+          ' In case there's no entanglement event, we get the awg done trigger, a pulse of which we detect the falling edge.
+          ' In case this is a single-setup (e.g. phase calibration) measurement, we go on, 
+          ' otherwise getting a done trigger means failure of the sequence and we go to CR cheking
+          ' NOTE, if the AWG sequence is to short (close to a us, then it is possible that the time the signal is low is missed.
 
-        IF (timer = 0) THEN ' first run: send triggers
-          if (is_two_setup_experiment = 0) then  ' give AWG trigger
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
-            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-            P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
-          else 
-            IF (is_master > 0) THEN ' trigger own and remote AWG
-              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
-              CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
+          IF (timer = 0) THEN ' first run: send triggers
+            if (is_two_setup_experiment = 0) then  ' give AWG trigger
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
               CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
-              P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
               P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
-            ENDIF
-          endif 
-        ENDIF
-
-        ' monitor inputs
-        digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
-
-        if ((digin_this_cycle AND AWG_repcount_DI_pattern) >0) then 
-          IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
-            inc(AWG_sequence_repetitions_LDE) ' increase the number of attempts counter
+            else 
+              IF (is_master > 0) THEN ' trigger own and remote AWG
+                P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,1)
+                CPU_SLEEP(master_slave_awg_trigger_delay) ' shift the awg trigger such that it occurs at the same time.
+                P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,1)
+                CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
+                P2_DIGOUT(DIO_MODULE, remote_awg_trigger_channel,0)
+                P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0)
+              ENDIF
+            endif 
           ENDIF
-          AWG_repcount_was_low = 0
-        else
-          AWG_repcount_was_low = 1
-        endif
+
+          ' monitor inputs
+          digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)
+
+          if ((digin_this_cycle AND AWG_repcount_DI_pattern) >0) then 
+            IF (AWG_repcount_was_low = 1) THEN ' awg has switched to high. this construction prevents double counts if the awg signal is long
+              inc(AWG_sequence_repetitions_LDE) ' increase the number of attempts counter
+            ENDIF
+            AWG_repcount_was_low = 0
+          else
+            AWG_repcount_was_low = 1
+          endif
         
-        if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
-          DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
-          DATA_109[repetition_counter+1] = store_index_stab
-          time_spent_in_sequence = time_spent_in_sequence + timer
-          timer = -1
-          mode = mode_after_LDE
-        else ' no plu signal. check for timeout or done
-          IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
-            if (awg_done_was_low =1) then
-              time_spent_in_sequence = time_spent_in_sequence + timer
-              timer = -1
-              if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
-                DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
-                DATA_109[repetition_counter+1] = store_index_stab
-                mode = mode_after_LDE
-              else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
-                mode = 8 ' finalize and go to cr check
+          if ((digin_this_cycle AND PLU_event_di_pattern) >0) THEN ' PLU signal received
+            DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+            DATA_109[repetition_counter+1] = store_index_stab
+            time_spent_in_sequence = time_spent_in_sequence + timer
+            timer = -1
+            mode = mode_after_LDE
+          else ' no plu signal. check for timeout or done
+            IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
+              if (awg_done_was_low =1) then
+                time_spent_in_sequence = time_spent_in_sequence + timer
+                timer = -1
+                if ((PLU_during_LDE = 0) or (LDE_is_init = 1)) then ' this is a single-setup measurement. Go on to next mode
+                  DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                  DATA_109[repetition_counter+1] = store_index_stab
+                  mode = mode_after_LDE
+                else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
+                  mode = 8 ' finalize and go to cr check
+                endif
+              endif 
+              awg_done_was_low = 0 ' remember
+            ELSE ' awg done is low.
+              awg_done_was_low = 1
+              if( timer > wait_for_awg_done_timeout_cycles) then
+                inc(PAR_80) ' signal that we have an awg timeout
+                END ' terminate the process
               endif
+            ENDIF  
+          endif
+        
+
+           
+
+        
+        CASE 5 ' Decoupling 
+        
+          ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
+          ' Each adwin will count the number pulses and send a jump once the specified time has been reached.
+          IF (timer =0) THEN 'first go: calculate required repetitions
+            awg_repcount_was_low = 1
+            awg_done_was_low = 1
+          
+            required_DD_repetitions = round((max_sequence_duration - AWG_sequence_repetitions_LDE*LDE_element_duration)/decoupling_element_duration) - 2
+            IF (required_DD_repetitions < 2) THEN
+              required_DD_repetitions = 2
+            ENDIF
+            FPAR_67  = decoupling_repetitions
+          ENDIF 
+        
+        
+          IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
+            if (awg_repcount_was_low = 1) then
+              inc(decoupling_repetitions)  
+            endif
+            awg_repcount_was_low = 0
+          ELSE
+            awg_repcount_was_low = 1
+          ENDIF      
+                          
+          IF (decoupling_repetitions = required_DD_repetitions-1) THEN 'give jump trigger and go to next mode: tomography
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
+            time_spent_in_sequence = time_spent_in_sequence + timer
+            timer = -1
+            mode = 6
+                                          
+          ENDIF
+        
+        
+        CASE 6 ' wait for RO trigger to come in
+          ' monitor inputs 
+
+          IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
+            if (awg_done_was_low =1) then
+              timer = -1
+              mode = 200 'SSRO
+              success_mode_after_SSRO = mode_after_e_msmt
+              fail_mode_after_SSRO = mode_after_e_msmt
             endif 
             awg_done_was_low = 0 ' remember
           ELSE ' awg done is low.
@@ -846,137 +917,80 @@ EVENT:
               inc(PAR_80) ' signal that we have an awg timeout
               END ' terminate the process
             endif
-          ENDIF  
-        endif
-        
-
-           
-
-        
-      CASE 5 ' Decoupling 
-        
-        ' AWG will go to dynamical decoupling, and output a sync pulse to the adwin once in a while
-        ' Each adwin will count the number pulses and send a jump once the specified time has been reached.
-        IF (timer =0) THEN 'first go: calculate required repetitions
-          awg_repcount_was_low = 1
-          awg_done_was_low = 1
-          
-          required_DD_repetitions = round((max_sequence_duration - AWG_sequence_repetitions_LDE*LDE_element_duration)/decoupling_element_duration) - 2
-          IF (required_DD_repetitions < 2) THEN
-            required_DD_repetitions = 2
           ENDIF
-          FPAR_67  = decoupling_repetitions
-        ENDIF 
-        
-        
-        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_repcount_DI_pattern)>0) THEN 'awg has switched to high. this construction prevents double counts if the awg signal is long
-          if (awg_repcount_was_low = 1) then
-            inc(decoupling_repetitions)  
-          endif
-          awg_repcount_was_low = 0
-        ELSE
-          awg_repcount_was_low = 1
-        ENDIF      
-                          
-        IF (decoupling_repetitions = required_DD_repetitions-1) THEN 'give jump trigger and go to next mode: tomography
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
-          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
-          P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
-          time_spent_in_sequence = time_spent_in_sequence + timer
-          timer = -1
-          mode = 6
-                                          
-        ENDIF
-        
-        
-      CASE 6 ' wait for RO trigger to come in
-        ' monitor inputs 
-
-        IF ((P2_DIGIN_LONG(DIO_MODULE) AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
-          if (awg_done_was_low =1) then
-            timer = -1
-            mode = 200 'SSRO
-            success_mode_after_SSRO = mode_after_e_msmt
-            fail_mode_after_SSRO = mode_after_e_msmt
-          endif 
-          awg_done_was_low = 0 ' remember
-        ELSE ' awg done is low.
-          awg_done_was_low = 1
-          if( timer > wait_for_awg_done_timeout_cycles) then
-            inc(PAR_80) ' signal that we have an awg timeout
-            END ' terminate the process
-          endif
-        ENDIF
         
           
       
-      CASE 9 ' Phase msmt after success
-        IF (timer = 0) THEN 
+        CASE 9 ' Phase msmt after success
+          IF (timer = 0) THEN 
           
-          P2_CNT_ENABLE(CTR_MODULE, 0000b)
-          P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter 'zpl1_counter_pattern
-          P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
-          P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
-          index = 0  
-        ELSE
+            P2_CNT_ENABLE(CTR_MODULE, 0000b)
+            P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'clear counter 'zpl1_counter_pattern
+            P2_CNT_ENABLE(CTR_MODULE, zpl1_counter_pattern+zpl2_counter_pattern)    'turn on counter
+            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_voltage+32768) ' turn on phase msmt laser (Phase_msmt_laser_DAC_channel, Phase_Msmt_voltage)
+            index = 0  
+          ELSE
                        
-          if (index = count_int_cycles_meas) then ' Only reads apds every count int cycles
-            counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) 
-            counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel)
-            DATA_106[repetition_counter+1] = counts_1
-            DATA_107[repetition_counter+1] = counts_2
+            if (index = count_int_cycles_meas) then ' Only reads apds every count int cycles
+              counts_1 = P2_CNT_READ(CTR_MODULE, zpl1_counter_channel) 
+              counts_2 = P2_CNT_READ(CTR_MODULE, zpl2_counter_channel)
+              DATA_106[repetition_counter+1] = counts_1
+              DATA_107[repetition_counter+1] = counts_2
              
-            mode = 7 ' Finish the things
-            timer = -1
-            P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
+              mode = 7 ' Finish the things
+              timer = -1
+              P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser ( Phase_msmt_laser_DAC_channel, Phase_Msmt_off_voltage)
 
-          endif
+            endif
           
             
           
-        endif
+          endif
         
-        inc(index)
+          inc(index)
           
-      CASE 7 'store the result of the e measurement and the sync number counter
-        DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
-        DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
-        DATA_100[repetition_counter+1] = decoupling_repetitions
+        CASE 7 'store the result of the e measurement and the sync number counter
+          DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
+          DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
+          DATA_100[repetition_counter+1] = decoupling_repetitions
         
-        mode = 8 'go to reinit and CR check
-        INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
-        first_CR=1 ' we want to store the CR after result in the next run
-        inc(success_event_counter)
-        PAR_77 = success_event_counter ' for the LabView live update
+          mode = 8 'go to reinit and CR check
+          INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
+          first_CR=1 ' we want to store the CR after result in the next run
+          inc(success_event_counter)
+          PAR_77 = success_event_counter ' for the LabView live update
         
                               
-      CASE 8 ' reinit all variables and go to cr check
-        Par_73 = repetition_counter ' write to PAR
-        cumulative_awg_counts = cumulative_awg_counts + AWG_sequence_repetitions_LDE 'remember sync counts, independent of success or failure
-        'forget all parameters of previous runs
-        AWG_repcount_was_low = 1
-        AWG_done_was_low = 1  
-        AWG_sequence_repetitions_LDE = 0
-        decoupling_repetitions = 0
+        CASE 8 ' reinit all variables and go to cr check
+          Par_73 = repetition_counter ' write to PAR
+          cumulative_awg_counts = cumulative_awg_counts + AWG_sequence_repetitions_LDE 'remember sync counts, independent of success or failure
+          'forget all parameters of previous runs
+          AWG_repcount_was_low = 1
+          AWG_done_was_low = 1  
+          AWG_sequence_repetitions_LDE = 0
+          decoupling_repetitions = 0
+          remaining_time_in_long_CR_check = 0
         
-        P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
-        P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
-        mode = mode_after_expm ' go to CR check or to relevant starting mode.
-        time_spent_in_sequence = time_spent_in_sequence + timer
-        timer = -1        
-        duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
-        FPAR_58 = duty_cycle
-        if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
-          time_spent_in_state_preparation = 0
-          time_spent_in_sequence = 0 
-          time_spent_in_communication = 0
-        endif
-    endselect
+        
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
+          P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
+          mode = mode_after_expm ' go to CR check or to relevant starting mode.
+          time_spent_in_sequence = time_spent_in_sequence + timer
+          timer = -1        
+          duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
+          FPAR_58 = duty_cycle
+        
+          if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
+            time_spent_in_state_preparation = 0
+            time_spent_in_sequence = 0 
+            time_spent_in_communication = 0
+          endif
+      endselect
     
-    INC(timer)
-    INC(elapsed_cycles_since_phase_stab)
-    
-  endif
+      INC(timer)
+      INC(elapsed_cycles_since_phase_stab)
+      DEC(remaining_time_in_long_CR_check)
+    endif
 
     
 FINISH:
