@@ -459,9 +459,9 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 4
+    pts = 5
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 300
 
 
     ### sequence specific parameters
@@ -480,7 +480,7 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'max_decoupling_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.round(np.linspace(2,5,pts))
+    m.params['general_sweep_pts'] = np.round(np.linspace(2,200,pts))
     m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['decoupling_element_duration']*m.params['general_sweep_pts']*1e3
 
@@ -520,7 +520,7 @@ def dynamical_decoupling_sweep_tau(name, debug = False, upload_only = False):
     m.params['dynamic_decoupling_N'] = 4
     m.params['tomography_basis'] = 'X'
     m.params['first_mw_pulse_is_pi2'] = True
-
+    m.params['LDE_final_mw_phase'] = 0
 
     ### sweep
     m.params['do_general_sweep']    = True
@@ -540,8 +540,8 @@ if __name__ == '__main__':
     # lastpi2_phase_action_compressed_BK(name,debug=False,upload_only=False)
     # LDE_decouple_time_compressed_BK(name,debug=False,upload_only=False)
 
-    ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = False)
+    # ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = True)
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
-    # dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
+    dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
     # dynamical_decoupling_sweep_tau(name,debug = False, upload_only = False)

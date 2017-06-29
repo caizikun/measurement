@@ -141,8 +141,8 @@ def measure_interferometer(plot_fit = True):
     est_vis = 1.0/(np.abs(fit_result1['params_dict']['A'] / fit_result1['params_dict']['a']))
     print 'Estimated vis ', 1/est_vis
 
-    write_to_msmt_params('Phase_Msmt_Vis', est_vis)
-    write_to_msmt_params('stretcher_V_2pi', est_V_2pi)
+    # write_to_msmt_params('Phase_Msmt_Vis', est_vis)
+    # write_to_msmt_params('stretcher_V_2pi', est_V_2pi)
 
 
 def write_to_msmt_params(search_string,val):

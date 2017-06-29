@@ -22,14 +22,14 @@ filename=d.get_filepath()[:-4]
 
 # variables
 int_time = 1000                   #                    [us]
-max_steps = 1000                #                    [us]
+max_steps = 500                #                    [us]
 t = 0                           
 i = 0
 
 # plot
 xf = np.linspace(0, 1.0/(int_time*10**(-6)), max_steps/2)
 x_time = np.arange(max_steps)
-fig, (ax1, ax2) = plt.subplots(2,1)
+fig, (ax1, ax2,ax3) = plt.subplots(3,1)
 
 plt.ion()
 
@@ -42,7 +42,6 @@ import sce_expm_params_lt4 as params_lt4
 
 g_0 = params_lt4.params_lt4['Phase_Msmt_g_0']
 visibility =  params_lt4.params_lt4['Phase_Msmt_Vis']
-
 while True:
     cur_time = time.time()
 
@@ -61,21 +60,25 @@ while True:
     yf = scipy.fftpack.fft(counts_1)
     yf = np.abs(yf[:len(yf)/2])
 
-    cosvals = [2*(float(n0)/(float(n0)+float(n1)*g_0)-0.5)*visibility for n0,n1 in zip(counts_1,counts_2)]
+
+    cosvals = [(0 if (float(n0)+float(n1)*g_0) == 0 else 2*(float(n0)/(float(n0)+float(n1)*g_0)-0.5)*visibility) for n0,n1 in zip(counts_1,counts_2)]
     cosvals = [cosval if np.abs(cosval) < 1 else (1.0 * np.sign(cosval)) for cosval in cosvals]
     angle = 180*np.arccos(cosvals)/np.pi
 
     plt.sca(ax1)
     plt.cla()
-    plt.ylim([0,190])
-    plt.plot(x_time*int_time/1000.0, angle)
-    # plt.plot(x_time*int_time/1000.0, counts_1, 'b')
-    # plt.plot(x_time*int_time/1000.0, counts_2, 'r')
+    plt.ylim([0,100])
+    plt.plot(x_time*int_time/1000.0, counts_1, 'b')
+    plt.plot(x_time*int_time/1000.0, counts_2, 'r')
     plt.show()
     plt.draw()
     plt.xlabel('Time (ms)')
     
     plt.sca(ax2)
+    plt.cla()
+    plt.plot(x_time*int_time/1000.0, angle)
+    plt.ylim([0,180])
+    plt.sca(ax3)
     plt.cla()
     plt.plot(xf,yf)
     ymax = 1.2*np.max(yf[10:])
