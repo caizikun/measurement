@@ -13,14 +13,16 @@ import analysis.lib.single_click_ent.SCE_spin_spin_correlators as sce_ssc
 def calibrate_MW_phase(plot_corrs = True):
 
     # run our msmst
-    sce.EntangleXcalibrateMWPhase('MWPhaseCalibration')
+    # sce.EntangleXcalibrateMWPhase('MWPhaseCalibration')
+    if qt.current_setup == 'lt4':
+        qt.msleep(1)
+    
+        phi,phi_u = sce_ssc.calc_MW_phases('MWPhaseCalibration',single_file = True, plot_corrs = plot_corrs)
 
-    phi,phi_u = sce_ssc.calc_MW_phases('MWPhaseCalibration',single_file = True, plot_corrs = plot_corrs)
+        if phi_u > 10:
+            print 'Phase uncertainty greater than 10 degrees!!!'
 
-    if phi_u > 10:
-        print 'Phase uncertainty greater than 10 degrees!!!'
-
-    write_to_msmt_params('LDE_final_mw_phase', phi)
+        write_to_msmt_params('LDE_final_mw_phase', phi)
 
 
 def write_to_msmt_params(search_string,val):
