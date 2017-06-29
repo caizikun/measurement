@@ -459,9 +459,9 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 4
+    pts = 3
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
 
 
     ### sequence specific parameters
@@ -469,18 +469,19 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['first_mw_pulse_is_pi2'] = True
-    m.params['do_dynamical_decoupling_AWG_only'] = 1
-    m.params['do_dynamical_decoupling'] = 0 ### lets the adwin count along!
+    m.params['do_dynamical_decoupling_AWG_only'] = 0
+    m.params['do_dynamical_decoupling'] = 1 ### lets the adwin count along!
 
     m.joint_params['LDE_attempts'] = 1 ## don't put this to 1. will give problems
     m.params['LDE_final_mw_phase'] = 90
+    m.joint_params['opt_pi_pulses'] = 0
     m.params['tomography_basis'] = 'X'
     m.params['dynamic_decoupling_tau'] = m.params['dynamic_decoupling_tau']
     ### sweep
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'max_decoupling_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.round(np.linspace(2,5,pts))
+    m.params['general_sweep_pts'] = np.round(np.linspace(2,220,pts))
     m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['decoupling_element_duration']*m.params['general_sweep_pts']*1e3
 
@@ -501,7 +502,7 @@ def dynamical_decoupling_sweep_tau(name, debug = False, upload_only = False):
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 250
 
-
+    m.joint_params['opt_pi_pulses'] = 0
 
 
 
@@ -540,8 +541,8 @@ if __name__ == '__main__':
     # lastpi2_phase_action_compressed_BK(name,debug=False,upload_only=False)
     # LDE_decouple_time_compressed_BK(name,debug=False,upload_only=False)
 
-    ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = False)
+    # ionization_study(name+'_ionization_study',debug=False, upload_only = False,use_yellow = False)
     # ionization_non_local(name+'ionization_opt_pi',debug=False, upload_only = False)
     
-    # dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
+    dynamical_decoupling_after_LDE(name,debug = False,upload_only=False)
     # dynamical_decoupling_sweep_tau(name,debug = False, upload_only = False)

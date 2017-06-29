@@ -108,15 +108,17 @@ if __name__ == '__main__':
         '256'     : [256,15,90,2,1,200],
         '512'     : [512,7,60,2,1,200],
         '1024'     : [1024,3,40,2,2,300],
-        'sweepN' : [0,4,512+1024,8,80,500] ### first entry could be made the tau that we want to sweep here
+        'sweepN' : [0,4,1024,8,100,500] ### first entry could be made the tau that we want to sweep here
     }
 
     success = True
-    tau_offsets =[-8e-9,-4e-9,0e-9,4e-9,8e-9]
+    tau_offsets = [] #[-8e-9,-4e-9,0e-9,4e-9,8e-9]
     sweep_Ns = ['1','4','8','16','32','64','128','256','512','1024','sweepN']
     man_break = True
 
     keys_to_measure = ['sweepN']#128','256','512','1024']#'1','4','8','16','32','64', ## change this to only do parts of the measurement
+
+
 
 
     last_opt_time = time.time()
@@ -131,6 +133,11 @@ if __name__ == '__main__':
                     break
                 
                 qt.decoupling_parameter_list = DD_parameters_dict[i] + [tau_offset]
+
+                if qt.current_setup == 'lt3':
+                    qt.decoupling_parameter_list = qt.decoupling_parameter_list + [36.156e-6-8e-9]
+                else:
+                    qt.decoupling_parameter_list = qt.decoupling_parameter_list + [40.32e-6]
                 execfile(r'electron_T2_slave_script.py')
 
                 if time.time() - last_opt_time > 30*60: ### optimiz every 30 mins.

@@ -57,7 +57,7 @@ def SimpleDecoupling(name,N=4,sweep = 'tau',end=100e-3,nr_list=[1], XY_scheme=8,
         m.params['tau_list']         = tau_list
 
     elif sweep == 'N':
-        tau_list = 40.32e-6*np.ones(len(nr_list)) + larmor_offset
+        tau_list = N*np.ones(len(nr_list)) + larmor_offset ### note that N is overwritten with the timing from the master script.
         m.params['Number_of_pulses'] = nr_list
         m.params['tau_list']         = tau_list
 
@@ -151,6 +151,8 @@ if __name__ == '__main__':
         reps =  qt.decoupling_parameter_list[5]
         tau_larmor_offset =  qt.decoupling_parameter_list[6]
 
+        tau_for_sweep_N = qt.decoupling_parameter_list[7]
+
         Number_of_pulses = N
         nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))
         Total_time += reps*sum(np.linspace(2*Number_of_pulses*larmor_freq*larmor_min,2*Number_of_pulses*larmor_freq*larmor_max,nr_of_runs)) /3600.
@@ -158,9 +160,17 @@ if __name__ == '__main__':
         print Total_time
         #### need to start and stop the babysitter here.
         if Run_Msmt:
-            Cont = take_DD_Data(larmor_min,larmor_max,N,pts,
-                larmor_step=larmor_step,
-                reps=reps,sweep = 'N',
-                debug=debug,
-                larmor_offset = tau_larmor_offset)
+
+            if N == 0:
+                Cont = take_DD_Data(larmor_min,larmor_max,tau_for_sweep_N,pts,
+                    larmor_step=larmor_step,
+                    reps=reps,sweep = 'N',
+                    debug=debug,
+                    larmor_offset = tau_larmor_offset)
+            else: 
+                Cont = take_DD_Data(larmor_min,larmor_max,N,pts,
+                    larmor_step=larmor_step,
+                    reps=reps,sweep = 'tau',
+                    debug=debug,
+                    larmor_offset = tau_larmor_offset)
     qt.instruments['purification_optimizer'].stop_babysit()

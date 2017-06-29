@@ -208,7 +208,7 @@ def do_rejection(name,debug = False, upload_only = False):
     m.params['MW_during_LDE'] = 0
     m.params['Yellow_AWG_power'] = 0e-9
 
-    m.params['Yellow_AWG_power'] = 0e-9
+
     m.joint_params['opt_pi_pulses'] = 1
     m.params['PLU_during_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
@@ -328,7 +328,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts = 10
+    pts = 5
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -767,13 +767,13 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] =  100
+    m.params['reps_per_ROsequence'] =  300
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.1
+    m.params['sin2_theta'] = 0.2
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
     m.params['measurement_time'] = 8*60 # Eight minutes
@@ -880,6 +880,48 @@ def Entangle(name,debug = False,upload_only=False):
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
+def EntangleOnDemand(name,debug = False,upload_only=False):
+    """
+    Run a msmt at a fixed theta, can measure in different bases
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
+    m.params['do_dynamical_decoupling'] = 1
+    m.params['reps_per_ROsequence'] = 2000
+    m.params['measurement_time'] = 8*60 # Eight minutes
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    
+    m.params['sin2_theta'] = 0.25
+    m.params['do_calc_theta'] = 1
+
+    if m.params['sin2_theta'] > 0.5:
+        raise Exception('What are you doing? sin2 theta is too big!!!')
+
+    m.joint_params['LDE_attempts'] = m.params['sin2_theta']*(-50e3)+30.5e3 ### calculated from our simulations
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'tomography_basis' 
+    m.params['general_sweep_pts'] = ['X','Y','Z']
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
+    ### upload and run
+
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
 if __name__ == '__main__':
@@ -887,10 +929,10 @@ if __name__ == '__main__':
 
     ########### local measurements
     # phase_stability(name+'_phase_stab',upload_only=False)
-    do_rejection(name+'_rejection',upload_only=False)
+    # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.2, maxval=0.9, local=False)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')

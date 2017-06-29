@@ -242,7 +242,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   ' DD on demand stuff init
   max_sequence_duration = LDE_element_duration*max_LDE_attempts
   required_DD_repetitions = 0
-  
+  decoupling_repetitions = 0
   
   
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
@@ -865,6 +865,7 @@ EVENT:
           IF (required_DD_repetitions < 2) THEN
             required_DD_repetitions = 2
           ENDIF
+          FPAR_67  = decoupling_repetitions
         ENDIF 
         
         
