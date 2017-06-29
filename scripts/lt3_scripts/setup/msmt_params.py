@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 144e-9#100e-9 
-	hermite_pi_amp = 0.928#0.394
+	hermite_pi_amp = 0.921#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.475#0.157
+	hermite_pi2_amp = 0.470#0.157
 
 	square_pi_length = 10e-9
 	square_pi_amp = 0.79 
@@ -484,7 +484,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
         'aom_risetime':						16e-9,#16e-9,
-        'aom_amplitude':					0.6,#0.2
+        'aom_amplitude':					0.9,#0.2
 }
 
 

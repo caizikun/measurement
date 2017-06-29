@@ -192,7 +192,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             pass
             # e.add(Gate.HHsync, refpulse = 'initial_delay')
         ### one awg has to sync all time-tagging devices.
-        if setup == 'lt3' and msmt.params['is_two_setup_experiment'] > 0:
+        if setup == 'lt3':# and msmt.params['is_two_setup_experiment'] > 0:
             e.add(Gate.LT3HHsync,refpulse = 'initial_delay')
 
     # 2b adwin syncronization
@@ -319,7 +319,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
             e.add(Gate.adwin_trigger_pulse, ### insert the trigger right at the start
                     start = 0,
                     refpulse = 'count_pulse',
-                    refpoint = 'start',
+                    refpoint = 'end',
                     refpoint_new = 'start')
 
         else:
