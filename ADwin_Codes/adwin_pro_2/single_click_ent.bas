@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,87,87,174,174,375,375,395,395,764,764,834,835
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,845,846
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -135,6 +135,10 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
 DIM max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
 
+
+DIM remaining_time_in_long_CR_check AS LONG
+
+
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_CR()
@@ -145,6 +149,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   wait_time           = 0
   digin_this_cycle    = 0
   cumulative_awg_counts   = 0
+  
+  remaining_time_in_long_CR_check  = 0
   
   time_spent_in_state_preparation =0
   time_spent_in_communication =0 
@@ -659,6 +665,7 @@ EVENT:
             elapsed_cycles_since_phase_stab = 0 ' Set the elapsed time to zero
             mode = mode_after_phase_stab 'crack on
             timer = -1
+            remaining_time_in_long_CR_check = 2000
 
           endif
         
@@ -728,6 +735,10 @@ EVENT:
         'check for break put after such that the last run records a CR_after result
         IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
+        ENDIF
+        
+        IF (remaining_time_in_long_CR_check > 0) THEN
+          cr_result = 0
         ENDIF
         
         if ((cr_result = -1) or (cr_result = 1)) then
@@ -958,6 +969,8 @@ EVENT:
         AWG_done_was_low = 1  
         AWG_sequence_repetitions_LDE = 0
         decoupling_repetitions = 0
+        remaining_time_in_long_CR_check = 0
+        
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
@@ -966,6 +979,7 @@ EVENT:
         timer = -1        
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
         FPAR_58 = duty_cycle
+        
         if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
           time_spent_in_state_preparation = 0
           time_spent_in_sequence = 0 
@@ -975,7 +989,7 @@ EVENT:
     
     INC(timer)
     INC(elapsed_cycles_since_phase_stab)
-    
+    DEC(remaining_time_in_long_CR_check)
   endif
 
     

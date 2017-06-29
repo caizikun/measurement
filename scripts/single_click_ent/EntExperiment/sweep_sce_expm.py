@@ -481,7 +481,7 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'max_decoupling_reps'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.round(np.linspace(2,220,pts))
+    m.params['general_sweep_pts'] = np.round(np.linspace(2,200,pts))
     m.params['sweep_name'] = 'Decoupling time (ms)'#m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['decoupling_element_duration']*m.params['general_sweep_pts']*1e3
 

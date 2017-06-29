@@ -13,10 +13,8 @@ import analysis.lib.single_click_ent.SCE_spin_spin_correlators as sce_ssc
 def calibrate_MW_phase(plot_corrs = True):
 
     # run our msmst
-    # sce.EntangleXcalibrateMWPhase('MWPhaseCalibration')
+    sce.EntangleXcalibrateMWPhase('MWPhaseCalibration')
     if qt.current_setup == 'lt4':
-        qt.msleep(1)
-    
         phi,phi_u = sce_ssc.calc_MW_phases('MWPhaseCalibration',single_file = True, plot_corrs = plot_corrs)
 
         if phi_u > 10:
