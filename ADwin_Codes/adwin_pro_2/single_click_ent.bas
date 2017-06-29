@@ -738,7 +738,7 @@ EVENT:
         ENDIF
         
         IF (remaining_time_in_long_CR_check > 0) THEN
-          cr_result = 0
+          cr_result = -1
         ENDIF
         
         if ((cr_result = -1) or (cr_result = 1)) then

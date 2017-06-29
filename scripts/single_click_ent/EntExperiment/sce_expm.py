@@ -16,7 +16,7 @@ import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
 import sce_expm_LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
 import copy
-
+from itertools import product
 class SingleClickEntExpm(DD.MBI_C13):
 
     """
@@ -292,7 +292,15 @@ class SingleClickEntExpm(DD.MBI_C13):
             self.pt = pt
             #sweep parameter
             if self.params['do_general_sweep'] == 1:      
-                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
+                if type(self.params['general_sweep_name']) == list:
+                        x0 = self.params['general_sweep_pts'][0]
+                        x1 = self.params['general_sweep_pts'][1]
+                        sweept_pts = list(product(x0,x1))
+                        self.params[self.params['general_sweep_name'][0]] = self.params['general_sweep_pts'][pt][0]
+                        self.params[self.params['general_sweep_name'][1]] = self.params['general_sweep_pts'][pt][1]
+                        self.params['sweep_pts'] = range(len(sweept_pts))
+                else:
+                    self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
             else:
                 self.params['general_sweep_name'] = 'no_sweep'
 
