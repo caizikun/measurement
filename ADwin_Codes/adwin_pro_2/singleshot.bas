@@ -25,9 +25,9 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-'#INCLUDE .\cr_mod_Bell.inc
+#INCLUDE .\cr_mod_Bell.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      500000

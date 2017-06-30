@@ -23,7 +23,8 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr_mod_bell.inc
 
 #DEFINE max_SP_bins        500
 #DEFINE max_stat            10
