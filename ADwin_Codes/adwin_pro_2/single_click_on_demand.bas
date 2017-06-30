@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277459  DASTUD\tud277459
-' Bookmarks                      = 3,3,87,87,181,181,390,390,410,410,802,802,889,890
+' Bookmarks                      = 3,3,87,87,181,181,390,390,410,410,807,807,894,895
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -450,6 +450,11 @@ EVENT:
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
+          
+          if (mode_flag = 2) then 'XXX 'we were in cr and have to count the communication time towards the sequence time
+            time_in_cr = time_in_cr + timer
+          endif
+          
         ELSE
           'previous communication was not successful
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
@@ -777,7 +782,7 @@ EVENT:
             if ( cr_result > 0) and (cr_passed_once > 0) then 'second part of the if statement gort added. 'XXX
               ' In case the result is not positive, the CR check will be repeated/continued
               time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-              time_in_cr = timer
+              time_in_cr = time_in_cr +  timer
               timer = -1     
               IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
                 mode = 3 'go to spin pumping directly
