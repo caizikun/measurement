@@ -56,7 +56,7 @@ params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 
 # timing and communication
 params_lt4['adwin_comm_safety_cycles'] = 15
-params_lt4['adwin_comm_timeout_cycles'] = 50000 # 10 ms
+params_lt4['adwin_comm_timeout_cycles'] = 50000 # 50 ms
 params_lt4['wait_for_awg_done_timeout_cycles'] = 1000000  # 10ms
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
 
@@ -135,9 +135,9 @@ params_lt4['phase_setpoint'] = np.pi/2
 
 # Relevant to PID/ ent expm
 params_lt4['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds for phase stab
-params_lt4['pid_points'] = 3 # How many points to sample the phase at during the PID loop
-params_lt4['pid_points_to_store'] = 3 # How many points to store
-params_lt4['phase_stab_max_time'] = 200000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt4['pid_points'] = 2 # How many points to sample the phase at during the PID loop
+params_lt4['pid_points_to_store'] = 2 # How many points to store
+params_lt4['phase_stab_max_time'] = 140000 # How long in microseconds to run the expm for after phase stabilisation
 
 # Relevant to phase stability studies
 params_lt4['sample_points'] = 10 # How many points to sample the phase at during the expm part
