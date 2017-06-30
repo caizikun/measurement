@@ -213,14 +213,14 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
 
         # waiting element        
-        empty_pulse = pulse.SquarePulse(channel='self_trigger', name='delay',
+        empty_pulse = pulse.SquarePulse(channel='sync', name='delay',
             length = 1000e-9, amplitude = 0.)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
             amplitude = 2)
 
-        self_trigger = pulse.SquarePulse(channel='self_trigger',
+        self_trigger = pulse.SquarePulse(channel='sync',
             length = self.params['self_trigger_duration'],
             amplitude = 2)
 

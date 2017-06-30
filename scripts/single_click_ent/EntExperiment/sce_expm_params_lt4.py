@@ -62,7 +62,7 @@ params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
 
 
 # dynamical decoupling
-params_lt4['max_decoupling_reps'] = 200
+params_lt4['max_decoupling_reps'] = 300
 params_lt4['dynamic_decoupling_N'] = 8
 params_lt4['dynamic_decoupling_tau'] =  40.32e-6
 params_lt4['tomography_basis'] = 'Y' ### sets RELATIVE phase and amplitude of the last pi/2 pulse when doing decoupling.
@@ -83,12 +83,12 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 #params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase'] 	  = 192.98 #qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_phase'] 	  = 78.5 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0174554579875932
-params_lt4['sin2_theta_fit_a']		= 4.5460216004003176
-params_lt4['sin2_theta_fit_x0']		= 0.63141977826312468
+params_lt4['sin2_theta_fit_of']		= 1.0257901389000696
+params_lt4['sin2_theta_fit_a']		= 3.8435131716000273
+params_lt4['sin2_theta_fit_x0']		= 0.65660631777495981
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH

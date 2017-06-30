@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,845,846
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Bookmarks                      = 3,3,87,87,181,181,390,390,410,410,807,807,894,895
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -133,10 +133,10 @@ DIM stretcher_V_2pi,stretcher_V_correct, stretcher_V_max, Phase_Msmt_g_0, Phase_
 
 ' On-demand decoupling stuff
 DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FLOAT
-DIM max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
+DIM max_LDE_attempts0,max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
 
 
-DIM remaining_time_in_long_CR_check AS LONG
+DIM remaining_time_in_long_CR_check,time_in_cr,cr_passed_once,max_time_in_cr AS LONG ' XXX timing and logic for on demand stuff
 
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -151,6 +151,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   cumulative_awg_counts   = 0
   
   remaining_time_in_long_CR_check  = 0
+
   
   time_spent_in_state_preparation =0
   time_spent_in_communication =0 
@@ -222,8 +223,15 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   raw_count_int_time_meas     = DATA_20[38]
   raw_phase_stab_max_time     = DATA_20[39]
   modulate_stretcher_during_phase_msmt = DATA_20[40]
-  max_LDE_attempts                = DATA_20[41]
+  max_LDE_attempts0                = DATA_20[41]
   do_post_ent_phase_msmt      = DATA_20[42]
+  
+  
+  'XXXX
+  max_LDE_attempts = max_LDE_attempts0
+  time_in_cr = 0
+  cr_passed_once = 0
+  
   
   ' float params from python
   E_SP_voltage                 = DATA_21[1] 'E spin pumping before MBI
@@ -246,7 +254,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   
   ' DD on demand stuff init
-  max_sequence_duration = LDE_element_duration*max_LDE_attempts
+  max_sequence_duration = LDE_element_duration*max_LDE_attempts0
   required_DD_repetitions = 0
   decoupling_repetitions = 0
   
@@ -367,7 +375,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     
   else
     mode_after_phase_stab = 2 ' Go to CR check
-    mode_after_expm = 2 ' Go back to CR check until phase stabilisation needed
+    mode_after_expm = 0 'XXX ' Go back to CR check until phase stabilisation needed
   endif
 
   if (do_phase_stabilisation = 1) then
@@ -378,6 +386,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
  
   mode = init_mode
   
+  max_time_in_cr = round(max_LDE_attempts*LDE_element_duration) 'XXX
 '''''''''''''''''''''''''''
   ' define channels etc
 '''''''''''''''''''''''''''
@@ -441,6 +450,11 @@ EVENT:
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
+          
+          if (mode_flag = 2) then 'XXX 'we were in cr and have to count the communication time towards the sequence time
+            time_in_cr = time_in_cr + timer
+          endif
+          
         ELSE
           'previous communication was not successful
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
@@ -737,9 +751,25 @@ EVENT:
           END
         ENDIF
         
+        
+        'XXX this got added!!!
+        IF (cr_result > 0) and (cr_passed_once = 0) THEN 'the clock starts running!!!
+          cr_passed_once = 1
+          time_in_cr = 0
+          timer = -1
+          mode = init_mode
+        endif
+        
+        'XXX
         IF (remaining_time_in_long_CR_check > 0) THEN
           cr_result = -1
         ENDIF
+        
+        'XXX this can also cause a desync between the two adwins if the timing was unfortunate.
+        if (timer > max_time_in_cr) and (cr_passed_once = 1) then
+          mode = 6 ' you spent too much time in decoupling!!!! time to go to ssro and store a result.
+          timer = -1
+        endif
         
         if ((cr_result = -1) or (cr_result = 1)) then
           ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
@@ -749,9 +779,10 @@ EVENT:
             reset_CR() ' For optimal robustness, reset the CR check variables.
           else
           
-            if ( cr_result > 0 ) then
+            if ( cr_result > 0) and (cr_passed_once > 0) then 'second part of the if statement gort added. 'XXX
               ' In case the result is not positive, the CR check will be repeated/continued
               time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+              time_in_cr = time_in_cr +  timer
               timer = -1     
               IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
                 mode = 3 'go to spin pumping directly
@@ -780,6 +811,7 @@ EVENT:
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)                        ' clear counter
           P2_CNT_ENABLE(CTR_MODULE,counter_pattern)                       ' turn on counter
           old_counts_1 = 0
+          
         ELSE
           counts_1 = P2_CNT_READ(CTR_MODULE,counter_channel)
           DATA_29[timer] = DATA_29[timer] + counts_1 - old_counts_1    ' for spinpumping arrival time histogram
@@ -792,6 +824,12 @@ EVENT:
             wait_time = wait_after_pulse_duration 'wait a certain number of cycles to make sure the lasers are really off
             time_spent_in_state_preparation = time_spent_in_state_preparation + timer
             timer = -1
+            
+            
+            'new line that calculates the numbesr of allowed LDE attempts 'XXX note that decoupling attempts are deliberately ignored out of adwin sync reasons! (they are very different.)
+            max_LDE_attempts = max_LDE_attempts0 - round(time_in_cr*LDE_element_duration) 'for jumping out of case 4 
+            max_sequence_duration = LDE_element_duration*max_LDE_attempts 'for case 5       
+            
           ENDIF
         ENDIF
         
@@ -838,6 +876,17 @@ EVENT:
           timer = -1
           mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
+          
+          ' too many lde attempts have to jump to decoupling
+          IF (AWG_sequence_repetitions_LDE = max_LDE_attempts)THEN 'XXX
+            timer = -1
+            mode = 5 'decouple
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
+            CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
+            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0)      
+          ENDIF
+          
+          
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
             if (awg_done_was_low =1) then
               time_spent_in_sequence = time_spent_in_sequence + timer
@@ -888,8 +937,10 @@ EVENT:
         ELSE
           awg_repcount_was_low = 1
         ENDIF      
-                          
-        IF (decoupling_repetitions = required_DD_repetitions-1) THEN 'give jump trigger and go to next mode: tomography
+        
+        
+        'XXX i changed it such that we minimally require 3 DD repetitions! (this avoids fighting against late jumps of the LDE element and running out of sync                  
+        IF (decoupling_repetitions = required_DD_repetitions) THEN 'give jump trigger and go to next mode: tomography
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
@@ -970,7 +1021,9 @@ EVENT:
         AWG_sequence_repetitions_LDE = 0
         decoupling_repetitions = 0
         remaining_time_in_long_CR_check = 0
-        
+        max_LDE_attempts = max_LDE_attempts0 'XXX
+        time_in_cr = 0 'XXX
+
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 

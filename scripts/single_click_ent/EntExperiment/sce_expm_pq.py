@@ -115,6 +115,12 @@ class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # p
                 self.physical_adwin.Set_FPar(57, Pulse_counts)
 
 
+class EntangleOnDemand(PQSingleClickEntExpm):
+    """ need to change adwin script for this one"""
+    mprefix = 'PQ_single_click_on_demand'
+    adwin_process = 'single_click_on_demand'
+
+
 def load_TH_params(m):
     pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
     m.params['MAX_DATA_LEN'] =       int(100e6) ## used to be 100e6
@@ -918,11 +924,14 @@ def Entangle(name,debug = False,upload_only=False):
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
-def EntangleOnDemand(name,debug = False,upload_only=False):
+def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     """
     Run a msmt at a fixed theta, can measure in different bases
     """
-    m = PQSingleClickEntExpm(name)
+    if include_CR:
+        m = EntangleOnDemand(name)
+    else:
+        m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
    
     sweep_sce_expm.turn_all_sequence_elements_off(m)
