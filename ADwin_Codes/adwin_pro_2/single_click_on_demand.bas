@@ -9,7 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,181,181,391,391,411,411,810,810,897,898
+' Bookmarks                      = 3,3,87,87,181,181,391,391,411,411,813,813,900,901
+' Foldings                       = 419,521
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -137,7 +138,7 @@ DIM max_LDE_attempts0,max_LDE_attempts,decoupling_repetitions,required_DD_repeti
 
 
 DIM remaining_time_in_long_CR_check,time_in_cr,cr_passed_once,max_time_in_cr AS LONG ' XXX timing and logic for on demand stuff
-
+DIM first_time_phase_stab AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -176,7 +177,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   success_event_counter = 0
   SSRO_result = 0
-  
+  first_time_phase_stab = 0
   mode = 0
   timer = 0
   
@@ -673,7 +674,7 @@ EVENT:
           
           inc(index)
           
-          if (store_index>=pid_points) then
+          if (store_index>=pid_points+first_time_phase_stab*5) then
             if (is_master > 0) then
               P2_DAC_2(Phase_msmt_laser_DAC_channel, 3277*Phase_Msmt_off_voltage+32768) ' turn off phase msmt laser
             endif
@@ -681,7 +682,10 @@ EVENT:
             mode = mode_after_phase_stab 'crack on
             timer = -1
             remaining_time_in_long_CR_check = 2000
-
+            if (first_time_phase_stab = 1) THEN
+              dec(first_time_phase_stab)
+            endif
+            
           endif
         
           
@@ -759,6 +763,7 @@ EVENT:
           time_in_cr = 0
           timer = -1
           mode = init_mode
+          first_time_phase_stab = 1
         endif
         
         'XXX
@@ -776,33 +781,32 @@ EVENT:
         
         if ((cr_result = -1) or (cr_result = 1)) then
           ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
-          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-            mode = init_mode 
-            timer = -1
-            reset_CR() ' For optimal robustness, reset the CR check variables.
-          else
+          '          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
+          '            mode = init_mode 
+          '            timer = -1
+          '            reset_CR() ' For optimal robustness, reset the CR check variables.
+          '          else
           
-            if (( cr_result > 0) and (cr_passed_once > 0)) then 'second part of the if statement gort added. 'XXX
-              ' In case the result is not positive, the CR check will be repeated/continued
-              time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-              time_in_cr = time_in_cr +  timer
-              timer = -1     
-              IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-                mode = 3 'go to spin pumping directly
-              ELSE ' two setups involved
+          if (( cr_result > 0) and (cr_passed_once > 0)) then 'second part of the if statement gort added. 'XXX
+            ' In case the result is not positive, the CR check will be repeated/continued
+            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+            time_in_cr = time_in_cr +  timer
+            timer = -1     
+            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+              mode = 3 'go to spin pumping directly
+            ELSE ' two setups involved
             
-                local_flag_1 = 0
-                local_flag_2 = 1  'flag 2 communicates that CR checking
-                mode_flag = 2
-                mode = 100 'go to communication step
-                timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-                fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
-                success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+              local_flag_1 = 0
+              local_flag_2 = 1  'flag 2 communicates that CR checking
+              mode_flag = 2
+              mode = 100 'go to communication step
+              timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+              fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+              success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
-              ENDIF
+              '            ENDIF
             endif
           endif
-          
         endif
           
         

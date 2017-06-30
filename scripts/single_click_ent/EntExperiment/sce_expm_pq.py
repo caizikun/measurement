@@ -119,11 +119,11 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
     """ need to change adwin script for this one"""
     mprefix = 'PQ_single_click_on_demand'
     adwin_process = 'single_click_on_demand'
-    
+
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         stab_reps = self.adwin_var('store_index_stab')
-        # print 'stab_reps, ', stab_reps
+
         sample_points = self.params['sample_points']
 
         toSave =   [   ('CR_before',1, reps),
@@ -137,18 +137,11 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
                     ('DD_repetitions'                        ,1,reps),
                     ('time_in_cr_and_comm'                   ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
+                    ('time_in_cr_and_comm'                   ,1,reps),
                     'completed_reps',
                     'store_index_stab'
                     ]
 
-        # if self.params['record_expm_params']::
-        #     toSave.extend(
-        #             [('expm_mon_taper_freq'          ,1,reps), 
-        #              ('expm_mon_nf_freq'             ,1,reps), 
-        #              ('expm_mon_yellow_freq'         ,1,reps), 
-        #              ('expm_mon_gate_voltage'        ,1,reps), 
-        #              ('expm_mon_cr_counts'           ,1,reps), 
-        #              ('expm_mon_repump_counts'       ,1,reps)]) 
             
         if self.params['do_phase_stabilisation'] and stab_reps != 0:
             toSave.append(('pid_counts_1',1,stab_reps))
