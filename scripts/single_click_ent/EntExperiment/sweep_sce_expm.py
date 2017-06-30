@@ -47,6 +47,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     '''
     loads all necessary msmt parameters
     '''
+
     m.params['setup']=setup
     sample_name = qt.exp_params['samples']['current']
     name = qt.exp_params['protocols']['current']

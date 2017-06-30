@@ -135,8 +135,8 @@ params_lt4['phase_setpoint'] = np.pi/2
 
 # Relevant to PID/ ent expm
 params_lt4['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds for phase stab
-params_lt4['pid_points'] = 4 # How many points to sample the phase at during the PID loop
-params_lt4['pid_points_to_store'] = 4 # How many points to store
+params_lt4['pid_points'] = 3 # How many points to sample the phase at during the PID loop
+params_lt4['pid_points_to_store'] = 3 # How many points to store
 params_lt4['phase_stab_max_time'] = 200000 # How long in microseconds to run the expm for after phase stabilisation
 
 # Relevant to phase stability studies
