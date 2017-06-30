@@ -944,9 +944,12 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
-    
+
+
+
     m.params['sin2_theta'] = 0.1
-    m.params['do_calc_theta'] = 1
+    m.params['do_calc_theta'] = 1 
+    
 
     if m.params['sin2_theta'] > 0.5:
         raise Exception('What are you doing? sin2 theta is too big!!!')
@@ -956,6 +959,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.15':19.794e3,
         '0.2':16137,
         '0.25':13443,
+        '0.4':11e3,
     }
     m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
 
@@ -1031,7 +1035,7 @@ if __name__ == '__main__':
     EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
 
-    # EntangleSweepEverything(name+'_EntangleSweepEverything',debug =False, upload_only = False)
+    # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

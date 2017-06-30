@@ -175,7 +175,7 @@ class SingleClickEntExpm(DD.MBI_C13):
         if self.params['do_phase_stabilisation'] and stab_reps != 0:
             toSave.append(('pid_counts_1',1,stab_reps))
             toSave.append(('pid_counts_2',1,stab_reps))
-            toSave.append(('calculated_phase',1,stab_reps))
+            # toSave.append(('calculated_phase',1,stab_reps))
             
         
         if self.params['only_meas_phase']: 

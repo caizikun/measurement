@@ -59,7 +59,7 @@ else:
 	hermite_pi_length = 144e-9#100e-9 
 	hermite_pi_amp = 0.931#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.481#0.157
+	hermite_pi2_amp = 0.483#0.157
 
 	square_pi_length = 10e-9
 	square_pi_amp = 0.79 
