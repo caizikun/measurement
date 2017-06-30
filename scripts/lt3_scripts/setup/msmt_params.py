@@ -18,7 +18,7 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.719319e9#1.716736e9#1.706e9 + 0.001e9 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msm1_cntr = 1.719319e9-100e3 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
 f_msp1_cntr = 4.037144e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
@@ -32,7 +32,7 @@ C_split  = 0.847e6
 
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
-electron_transition = '+1'
+electron_transition = '-1'
 multiple_source = False
 
 mw1_source = ''
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.8467  # 28-02
-	hermite_pi2_length = 70e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.387  # 28-02 
+	hermite_pi_length = 280e-9#106e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp =  0.934#0.8467  # 28-02
+	hermite_pi2_length = 150e-9 # 46e-9 # even
+	hermite_pi2_amp = 0.626 #  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -56,12 +56,12 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.394
+	hermite_pi_length = 144e-9#100e-9 
+	hermite_pi_amp = 0.931#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.157
+	hermite_pi2_amp = 0.481#0.157
 
-	square_pi_length = 30e-9
+	square_pi_length = 10e-9
 	square_pi_amp = 0.79 
 	square_pi2_length = 16e-9
 	square_pi2_amp = 0.88 
@@ -135,7 +135,7 @@ else:
 ### General settings for AdwinSSRO+espin ###
 ############################################
 
-# mw_frq = 2.78e9
+
 cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_frq':                                  mw_frq, 
 		'mw_power':                                mw_power,
@@ -439,8 +439,8 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
-		'MW_switch_risetime'	:	1e-9,
-		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
+		'MW_switch_risetime'	:	450e-9,
+		'MW_switch_channel'		:	'mw_switch', ### usually 'none' if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
     	'CORPSE_pi2_amp':			0.543,
@@ -463,7 +463,7 @@ cfg['protocols'][name]['pulses'] = {
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
     	'DESR_pulse_duration' :		4.5e-6,
-    	'DESR_pulse_amplitude' :	0.0016,#0.194,
+    	'DESR_pulse_amplitude' :	0.016,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,
@@ -483,7 +483,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot1':					-0.025, # calibration from 29-05-2017# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						16e-9,#40e-9
+        'aom_risetime':						16e-9,#16e-9,
         'aom_amplitude':					0.9,#0.2
 }
 

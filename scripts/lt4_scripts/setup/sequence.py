@@ -33,8 +33,8 @@ qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker',
 qt.pulsar.define_channel(id='ch1_marker2', name='sync', type='marker', # HydraHarp Sync
     high=2.0, low=0, offset=0., delay=102e-9, active=True) #XX plug in/ calibrate delay
 
-# qt.pulsar.define_channel(id='ch2_marker1', name='plu_sync', type='marker', 
-#    high=2.0, low=0, offset=0, delay=182e-9, active=True)
+qt.pulsar.define_channel(id='ch2_marker1', name='mw_switch', type='marker', 
+   high=2.0, low=0, offset=0, delay=200e-9+MW_parallel_shift, active=True)
 qt.pulsar.define_channel(id='ch2_marker2', name='self_trigger', type='marker', 
    high=2.0, low=0.0, offset=0.0, delay=0., active=True)
 qt.pulsar.define_channel(id='ch3_marker1', name='adwin_sync', type='marker', 
@@ -45,8 +45,8 @@ qt.pulsar.define_channel(id='ch3_marker2', name='adwin_count', type='marker',
 qt.pulsar.define_channel(id='ch4_marker1', name='AOM_Newfocus', type='marker',
     high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
 
-qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Matisse', type='marker',
-    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) #Do not change delay w.r.t. MWs! NK
+qt.pulsar.define_channel(id='ch4_marker2', name='AOM_Yellow', type='marker',
+    high=0.4, low=0.0, offset=0.0, delay=200e-9, active=True) 
 
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
@@ -54,8 +54,8 @@ qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].g
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 # qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.3)
 
-qt.pulsar.set_channel_opt('AOM_Matisse','high', qt.instruments['MatisseAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('AOM_Matisse','low',  qt.instruments['MatisseAOM'].get_sec_V_off())
+qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Yellow','low',  qt.instruments['YellowAOM'].get_sec_V_off())
 
 # qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.1)
 

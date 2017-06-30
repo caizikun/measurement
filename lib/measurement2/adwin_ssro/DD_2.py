@@ -54,6 +54,8 @@ class Gate(object):
         self.wait_time  = kw.pop('wait_time',None)
         self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements or RF elements
         self.dec_duration = kw.pop('dec_duration', None)  # can be specified if a custom dec duration is desired
+        self.dec_pulse_sequence = kw.pop('dec_pulse_sequence', None)
+        self.feedback_add_triggers = kw.pop('feedback_add_triggers', True)
 
 
         self.specific_transition = kw.pop('specific_transition',None) # used to specify the mw transition 
@@ -387,6 +389,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
+
         if outputChannel == 'adwin_sync':
             Trig = pulse.SquarePulse(channel = outputChannel,
                 length = duration, amplitude = 2)
@@ -1147,7 +1150,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         adds trigger element to Gate object
         '''
         Gate.scheme ='trigger'
-
         #implement output of the awg on a laser channel.
         if hasattr(Gate,'channel'):
             Gate.elements = [self._Trigger_element(Gate.elements_duration,Gate.prefix,outputChannel=Gate.channel)]
@@ -3014,8 +3016,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         """
         Gate.scheme = 'single_element'
 
-        Gate.dec_pulse_sequence = self.params['feedback_adwin_trigger_dec_pulse_seq']
-        Gate.dec_duration = self.params['feedback_adwin_trigger_dec_duration']
+        if Gate.dec_duration is None:
+            Gate.dec_duration = self.params['feedback_adwin_trigger_dec_duration']
+
+        if Gate.dec_pulse_sequence is None:
+            Gate.dec_pulse_sequence = self.params['feedback_adwin_trigger_dec_pulse_seq']
+
 
         Gate.N = len(Gate.dec_pulse_sequence)
         Gate.tau = Gate.dec_duration/(2.*Gate.N)
@@ -3026,7 +3032,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         mY = self._mY_elt()
 
         ftd_element = element.Element('%s' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
-        T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block', length=Gate.dec_duration - Gate.tau_cut_before, amplitude=0.)
+        element_length = Gate.dec_duration - Gate.tau_cut_before - Gate.tau_cut_after
+        T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block',
+                                        length=element_length, amplitude=0.)
         feedback_trigger = pulse.SquarePulse(
             channel=self.params['feedback_adwin_trigger_channel'],
             length=self.params['feedback_adwin_trigger_length'],
@@ -3034,19 +3042,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         )
 
         anchor_element = ftd_element.append(T_dec_block)
-        ftd_element.add(feedback_trigger,
-                        refpulse=anchor_element,
-                        refpoint='start',
-                        refpoint_new='start',
-                        start=self.params['feedback_adwin_trigger_delay'])
-        
-        if (self.params['feedback_HHsync_include']):
-            HHsync = pulse.SquarePulse(channel = 'sync', length = self.params['feedback_HHsync_duration'], amplitude = 1.0)
-            ftd_element.add(HHsync,
+        if Gate.feedback_add_triggers:
+            ftd_element.add(feedback_trigger,
                             refpulse=anchor_element,
                             refpoint='start',
                             refpoint_new='start',
-                            start=self.params['feedback_HHsync_delay'])
+                            start=self.params['feedback_adwin_trigger_delay'])
+
+            if self.params['feedback_HHsync_include']:
+                HHsync = pulse.SquarePulse(channel = 'sync', length = self.params['feedback_HHsync_duration'], amplitude = 1.0)
+                ftd_element.add(HHsync,
+                                refpulse=anchor_element,
+                                refpoint='start',
+                                refpoint_new='start',
+                                start=self.params['feedback_HHsync_delay'])
 
         current_t = Gate.tau - Gate.tau_cut_before
         for pulse_type in Gate.dec_pulse_sequence:

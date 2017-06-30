@@ -206,6 +206,7 @@ def do_rejection(name,debug = False, upload_only = False):
     m.params['AWG_SP_power'] = 0.
     m.params['do_general_sweep']    = False
     m.params['MW_during_LDE'] = 0
+    m.params['Yellow_AWG_power'] = 0e-9
 
 
     m.joint_params['opt_pi_pulses'] = 1
@@ -307,7 +308,7 @@ def phase_stability(name,debug = False,upload_only=False):
     sweep_sce_expm.prepare(m)
 
     pts = 1
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 5
     
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -327,9 +328,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts = 10
+    pts = 5
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 1000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -535,7 +536,7 @@ def SPCorrs_ZPL_sweep_theta(name, debug = False, upload_only = False,MW_pi_durin
     sweep_sce_expm.prepare(m)
 
     ### general params
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 100
     pts = 7
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -656,52 +657,6 @@ def Do_BK_XX_compressedSeq(name, debug = False, upload_only = False):
     sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
 
 
-def Determine_eta(name, debug = False, upload_only = False):
-    """
-    Performs a Spin-photon correlation measurement including the PLU.
-    This msmt is effectively the same as a SPCorr msmt in the ZPL. 
-    Actual work is done by the analysis script.
-    """
-
-    if qt.current_setup == 'lt3':
-        hist_only = True
-    else:
-        hist_only = False
-    m = PQSingleClickEntExpm(name)    
-
-    sweep_sce_expm.prepare(m)
-
-    ### general params
-    m.params['reps_per_ROsequence'] = 2000
-    pts = 6
-
-    sweep_sce_expm.turn_all_sequence_elements_off(m)
-    ### which parts of the sequence do you want to incorporate.
-    m.params['MW_pi_during_LDE'] = 1 ## turn pi pulse on or off for spcorrs
-    m.params['do_general_sweep']    = True
-    m.params['general_sweep_name'] = 'sin2_theta' 
-    m.params['general_sweep_pts'] = np.linspace(0.05,0.3,pts)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    m.params['pts'] = len(m.params['sweep_pts'])
-    m.params['do_phase_stabilisation'] = 1
-    m.params['do_calc_theta']           = 1
-
-
-
-    m.params['is_two_setup_experiment'] = 1
-    m.params['PLU_during_LDE'] = 1
-    m.joint_params['do_final_mw_LDE'] = 0
-
-    m.joint_params['opt_pi_pulses'] = 1
-    m.joint_params['LDE_attempts'] = 250
-
-    ### upload
-
-    sweep_sce_expm.run_sweep(m, debug = debug, upload_only = upload_only,hist_only = hist_only)
-
-
-
 def TPQI(name,debug = False,upload_only=False):
     
     m = PQSingleClickEntExpm(name)
@@ -757,6 +712,47 @@ def TPQI(name,debug = False,upload_only=False):
 
 
 
+def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
+    """
+    Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
+    stabilized phase of the entangled state.
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
+
+    m.params['reps_per_ROsequence'] = 400
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 250
+    m.params['sin2_theta'] = 0.4
+    m.params['do_calc_theta'] = 1
+    m.params['do_post_ent_phase_msmt'] = 1
+
+    ### only one setup is allowed to sweep the phase.
+    if qt.current_setup == 'lt3':
+        hist_only = True
+        m.params['general_sweep_pts'] = np.array([0]*4)
+    else:
+        hist_only = False
+        m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase'],m.params['LDE_final_mw_phase']+90,m.params['LDE_final_mw_phase']+180,m.params['LDE_final_mw_phase']+270])
+
+    
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
+    ### upload and run
+
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
 def EntangleXsweepY(name,debug = False,upload_only=False):
@@ -771,15 +767,16 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] =  300
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.1
+    m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
+    m.params['measurement_time'] = 2*8*60 # Eight minutes
 
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
@@ -787,7 +784,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
         m.params['general_sweep_pts'] = np.array([0]*10)
     else:
         hist_only = False
-        m.params['general_sweep_pts'] = np.linspace(0,360,10) 
+        m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
 
     
     m.params['do_general_sweep'] = 1
@@ -803,8 +800,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
 
 
-
-def EntangleSweepTheta(name,debug = False,upload_only=False):
+def EntangleSweepTheta(name,debug = False,upload_only=False, tomography_basis = 'Y'):
     """
     Sweeps the superposition angle of the states
     """
@@ -816,18 +812,20 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 400
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    
+    m.params['measurement_time'] = 20*60 # Eight minutes
 
     if qt.current_setup == 'lt3':
         hist_only = True
     else:
         hist_only = False
+
+    m.params['tomography_basis'] = tomography_basis
 
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'sin2_theta' 
@@ -843,11 +841,50 @@ def EntangleSweepTheta(name,debug = False,upload_only=False):
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
-
-def EntangleXX(name,debug = False,upload_only=False):
+def EntangleSweepEverything(name,debug = False,upload_only=False):
     """
-    Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
-    stabilized phase of the entangled state.
+    Sweeps the superposition angle of the states
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+    pts = 6
+
+    m.params['do_phase_stabilisation'] = 1
+
+    m.params['reps_per_ROsequence'] = 400
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['LDE_attempts'] = 250
+    m.params['measurement_time'] = 60*60 # Eight minutes
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
+    m.params['tomography_basis'] = tomography_basis
+
+    m.params['do_general_sweep']    = True
+    m.params['general_sweep_name'] = ['sin2_theta','tomography_basis']
+    m.params['general_sweep_pts'] = [np.linspace(0.05,0.5,pts),['X','Y','Z']]
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'][0])*len(m.params['sweep_pts'][1])
+    m.params['do_phase_stabilisation']  = 1
+    m.params['do_calc_theta']           = 1
+    m.params['do_post_ent_phase_msmt'] = 1
+
+    ### upload and run
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
+
+def Entangle(name,debug = False,upload_only=False):
+    """
+    Run a msmt at a fixed theta, can measure in different bases
     """
     m = PQSingleClickEntExpm(name)
     sweep_sce_expm.prepare(m)
@@ -856,13 +893,14 @@ def EntangleXX(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 10000
+    m.params['reps_per_ROsequence'] = 2000
+    m.params['measurement_time'] = 8*60 # Eight minutes
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.05
+    m.params['sin2_theta'] = 0.2
     m.params['do_calc_theta'] = 1
 
     if qt.current_setup == 'lt3':
@@ -870,12 +908,60 @@ def EntangleXX(name,debug = False,upload_only=False):
     else:
         hist_only = False
 
-    ### only one setup is allowed to sweep the phase.
     m.params['do_general_sweep'] = 1
-    m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
-    m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase']])
+    m.params['general_sweep_name'] = 'tomography_basis' 
+    m.params['general_sweep_pts'] = ['X','Y','Z']
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_pts'] = [1,2,3]#m.params['general_sweep_pts']
+    m.params['pts'] = len(m.params['sweep_pts'])
+
+    ### upload and run
+
+
+    sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
+
+def EntangleOnDemand(name,debug = False,upload_only=False):
+    """
+    Run a msmt at a fixed theta, can measure in different bases
+    """
+    m = PQSingleClickEntExpm(name)
+    sweep_sce_expm.prepare(m)
+   
+    sweep_sce_expm.turn_all_sequence_elements_off(m)
+
+    m.params['do_phase_stabilisation'] = 1
+    m.params['do_dynamical_decoupling'] = 1
+    m.params['reps_per_ROsequence'] = 2000
+    m.params['measurement_time'] = 20*60 # Eight minutes
+    m.params['MW_during_LDE'] = 1
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['is_two_setup_experiment'] = 1
+    m.params['PLU_during_LDE'] = 1
+    
+    m.params['sin2_theta'] = 0.1
+    m.params['do_calc_theta'] = 1
+
+    if m.params['sin2_theta'] > 0.5:
+        raise Exception('What are you doing? sin2 theta is too big!!!')
+
+    LDE_attempt_dict = {
+        '0.1':24.4e3,
+        '0.15':19.794e3,
+        '0.2':16137,
+        '0.25':13443,
+    }
+    m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
+
+    if qt.current_setup == 'lt3':
+        hist_only = True
+    else:
+        hist_only = False
+
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'tomography_basis' 
+    m.params['general_sweep_pts'] = ['X','Y','Z']
+    m.params['sweep_name'] = m.params['general_sweep_name'] 
+    m.params['sweep_pts'] = [1,2,3]#m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'])
 
     ### upload and run
@@ -889,11 +975,11 @@ if __name__ == '__main__':
 
 
     ########### local measurements
-    phase_stability(name+'_phase_stab',upload_only=False)
+    # phase_stability(name+'_phase_stab',upload_only=False)
     # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.2, maxval=0.9, local=False)
+    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.9, local=False)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
@@ -929,20 +1015,14 @@ if __name__ == '__main__':
     # SPCorrs_ZPL_sweep_theta(name+'_SPCorrs_sweep_theta_LT4_w_Pi',debug=False,upload_only=False,MW_pi_during_LDE=1)
     # qt.instruments['ZPLServo'].move_out()
 
-    # Determine_eta(name+'_eta_from_theta_sweep',debug = False,upload_only=False) ### this just a spcorr msmt on both setups
-
     # TPQI(name+'_TPQI',debug = False,upload_only=False)
-
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only=False)
-
-    # EntangleXX(name+'_EntangleXX',debug = False,upload_only=False)
-
-    # EntangleSweepTheta(name+'_Entangle_SweepTheta',debug = False,upload_only=False)
-
     # Do_BK_XX(name+'_BK_XX',debug = False, upload_only = False)
-
     # Do_BK_XX_compressedSeq(name+'_BK_XX',debug = False, upload_only = False)
 
+    # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
+    # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

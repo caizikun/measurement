@@ -28,13 +28,18 @@ params_lt4['do_phase_correction']       = 1
 params_lt4['do_purifying_gate']         = 1
 params_lt4['do_carbon_readout']         = 1 #if 0 then RO of the electron via an adwin trigger.
 params_lt4['do_sweep_delay_cycles'] 	= 0
+params_lt4['do_dd_phase_correction_calibration'] = 0
+params_lt4['do_phase_offset_sweep'] = 0
+
+params_lt4['LDE1_attempts'] = 10
+params_lt4['LDE2_attempts'] = 10
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
 params_lt4['AWG_SP_power']              = 950e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 570e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9 
+params_lt4['average_repump_time'] 		= 560e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -103,14 +108,15 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt4['carbons']                       = [2]
+params_lt4['carbons']                       = [2,4]
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
 # carbon_encoding: serial_swap or MBE
 params_lt4['carbon_encoding']               = 'serial_swap'
+params_lt4['sequence_type']                 = params_lt4['carbon_encoding']
 params_lt4['dps_MBE_bases']                 = ['Y','Y']
 params_lt4['dps_MBE_readout_orientation']   = 'positive'
-params_lt4['delay_feedback_N']              = 6
+params_lt4['delay_feedback_N']              = 2
 params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
 params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 

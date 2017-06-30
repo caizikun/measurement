@@ -130,9 +130,7 @@ if __name__ == '__main__':
             execfile(r'D:/measuring/measurement/scripts/testing/load_cr_linescan.py') #change name!
             qt.instruments['ZPLServo'].move_in()
             lt4_succes = optimize()
-            #qt.msleep(5)
-            #execfile(r'D:/measuring/measurement/scripts/ssro/ssro_calibration.py')
-            #qt.msleep(5)
+
             while lt3_helper.get_is_running():
                 qt.msleep(1)
                 print 'waiting for LT3',lt3_helper.get_is_running()

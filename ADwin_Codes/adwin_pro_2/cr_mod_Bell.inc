@@ -270,7 +270,7 @@ ENDFUNCTION
 SUB reset_CR()
   cr_timer = 0  
   cr_mode = 0 ' I think that in principle we only need to reset the mode. But this makes me happier.
-  cr_counts = 0
+  cr_counts = CR_repump + 1
   cr_r_old_counts = 0
   cr_i = 0
   cr_old_counts = 0

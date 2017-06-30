@@ -31,7 +31,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [2,4]
+carbons = [2,4]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -41,8 +41,8 @@ The measured values are directly written into msmt_params.py
 use_queue = False
 
 f_ms0 = True
-
 f_ms1 = True
+update_average_freq = True
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False
@@ -51,6 +51,8 @@ check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
 cross_phase_calibration = True
 cross_phase_steps       = 1
+
+
 
 # Note that you wont save to msmt params if debug is on.
 debug = False 
@@ -314,6 +316,8 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_pha
     Takes a list of carbons as input and the booleans which decode which calibrations have been done.
     """
 
+    calibrated_params = qt.exp_params['samples'][SAMPLE]
+
     if not debug:
         with open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','r') as param_file:
             data = param_file.readlines()
@@ -328,6 +332,15 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_pha
 
                 search_string = 'C'+str(c)+'_freq_1'+electron_transition_string
                 data = write_to_file_subroutine(data,search_string)
+
+            if update_average_freq and f_ms0 and f_ms1:
+
+                Cf0_string = 'C'+str(c)+'_freq_0'
+                Cf1_string = 'C'+str(c)+'_freq_1'+electron_transition_string
+
+                search_string = 'C'+str(c)+'_freq'+electron_transition_string
+                param_string = "(%.2f + %.2f)/2" % (calibrated_params[Cf0_string], calibrated_params[Cf1_string])
+                data = write_to_file_subroutine(data,search_string,param_string_override=param_string)
 
             if self_phase or cross_phase:
 
@@ -348,7 +361,7 @@ def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_pha
         f.close()
 
 
-def write_to_file_subroutine(data,search_string):
+def write_to_file_subroutine(data,search_string,param_string_override=None):
     """
     Takes a list of read file lines and a search string.
     Scans the file for uncommented lines with this specific string in it.
@@ -370,13 +383,14 @@ def write_to_file_subroutine(data,search_string):
         if 'samples' in x and (SAMPLE in x or 'name' in x): ## 'name added for the msmt params of lt3'
             correct_pos = True
         elif 'samples' in x and (not SAMPLE in x or not 'name' in x): ## 'name added for the msmt params of lt3'
-            corrrect_pos = False
+            correct_pos = False
 
         ### write params to sample
         if search_string in x and not '#' in x[:5] and correct_pos:
-
+            if not param_string_override is None:
+                array_string = param_string_override+',\n'
             ### detect if we must write a list to the msmt_params or an integer
-            if type(params) == list or type(params) == np.ndarray:
+            elif type(params) == list or type(params) == np.ndarray:
                 array_string = 'np.array('
 
                 for i,phi in enumerate(params):

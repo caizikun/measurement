@@ -3304,6 +3304,7 @@ config['adwin_pro_processes'] = {
                     ['number_of_C_init_ROs'            ,   0],
                     ['number_of_C_encoding_ROs'        ,   0],
                     ['do_LDE_1'                        ,   0],
+                    ['do_phase_offset_sweep'           ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3354,6 +3355,7 @@ config['adwin_pro_processes'] = {
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
                     'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
+                    'nuclear_phases_offset_sweep'   : 124, # array that holds the offsets in case we want to sweep
                     },
                 },
 
