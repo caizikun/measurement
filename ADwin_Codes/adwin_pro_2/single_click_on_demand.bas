@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 ' Bookmarks                      = 3,3,87,87,181,181,390,390,410,410,807,807,894,895
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
@@ -753,7 +753,7 @@ EVENT:
         
         
         'XXX this got added!!!
-        IF (cr_result > 0) and (cr_passed_once = 0) THEN 'the clock starts running!!!
+        IF ((cr_result > 0) and (cr_passed_once = 0)) THEN 'the clock starts running!!!
           cr_passed_once = 1
           time_in_cr = 0
           timer = -1
@@ -766,7 +766,7 @@ EVENT:
         ENDIF
         
         'XXX this can also cause a desync between the two adwins if the timing was unfortunate.
-        if (timer > max_time_in_cr) and (cr_passed_once = 1) then
+        if ((timer > max_time_in_cr) and (cr_passed_once = 1)) then
           mode = 6 ' you spent too much time in decoupling!!!! time to go to ssro and store a result.
           timer = -1
         endif
@@ -779,7 +779,7 @@ EVENT:
             reset_CR() ' For optimal robustness, reset the CR check variables.
           else
           
-            if ( cr_result > 0) and (cr_passed_once > 0) then 'second part of the if statement gort added. 'XXX
+            if (( cr_result > 0) and (cr_passed_once > 0)) then 'second part of the if statement gort added. 'XXX
               ' In case the result is not positive, the CR check will be repeated/continued
               time_spent_in_state_preparation = time_spent_in_state_preparation + timer
               time_in_cr = time_in_cr +  timer
