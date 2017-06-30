@@ -119,7 +119,55 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
     """ need to change adwin script for this one"""
     mprefix = 'PQ_single_click_on_demand'
     adwin_process = 'single_click_on_demand'
+    
+    def save(self, name='adwindata'):
+        reps = self.adwin_var('completed_reps')
+        stab_reps = self.adwin_var('store_index_stab')
+        # print 'stab_reps, ', stab_reps
+        sample_points = self.params['sample_points']
 
+        toSave =   [   ('CR_before',1, reps),
+                    ('CR_after',1, reps),
+                    ('statistics', 10),
+                    ('adwin_communication_time'              ,1,reps),  
+                    ('counted_awg_reps'                      ,1,reps), 
+                    ('elapsed_since_phase_stab'              ,1,reps),
+                    ('last_phase_stab_index'                 ,1,reps),
+                    ('ssro_results'                          ,1,reps), 
+                    ('DD_repetitions'                        ,1,reps),
+                    ('invalid_data_markers'                  ,1,reps),  
+                    'completed_reps',
+                    'store_index_stab'
+                    ]
+
+        # if self.params['record_expm_params']::
+        #     toSave.extend(
+        #             [('expm_mon_taper_freq'          ,1,reps), 
+        #              ('expm_mon_nf_freq'             ,1,reps), 
+        #              ('expm_mon_yellow_freq'         ,1,reps), 
+        #              ('expm_mon_gate_voltage'        ,1,reps), 
+        #              ('expm_mon_cr_counts'           ,1,reps), 
+        #              ('expm_mon_repump_counts'       ,1,reps)]) 
+            
+        if self.params['do_phase_stabilisation'] and stab_reps != 0:
+            toSave.append(('pid_counts_1',1,stab_reps))
+            toSave.append(('pid_counts_2',1,stab_reps))
+            # toSave.append(('calculated_phase',1,stab_reps))
+            
+        
+        if self.params['only_meas_phase']: 
+            toSave.append(('sampling_counts_1',1,reps*sample_points))
+            toSave.append(('sampling_counts_2',1,reps*sample_points))
+
+
+        elif self.params['do_post_ent_phase_msmt']: 
+            toSave.append(('sampling_counts_1',1,reps))
+            toSave.append(('sampling_counts_2',1,reps))
+
+        
+        self.save_adwin_data(name,toSave)
+
+        return
 
 def load_TH_params(m):
     pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400

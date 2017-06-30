@@ -3562,6 +3562,7 @@ config['adwin_pro_processes'] = {
                             'elapsed_since_phase_stab'  : 108, #
                             'last_phase_stab_index'     : 109, #
                             'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                            'time_in_cr_and_comm'       : 113,
                             },
                         'data_float' : {
                             'expm_mon_taper_freq'       : 40,

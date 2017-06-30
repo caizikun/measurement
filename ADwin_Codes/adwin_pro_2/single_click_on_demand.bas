@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,181,181,390,390,410,410,809,809,896,897
+' Bookmarks                      = 3,3,87,87,181,181,391,391,411,411,810,810,897,898
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -74,7 +74,7 @@ DIM DATA_108[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save elap
 DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last phase stab index when succes ent.
 DIM DATA_110[max_pid] AS FLOAT at DRAM_Extern 'Hold the calculated phase during phase stabilisation
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
-
+DIM DATA_113[max_single_click_ent_repetitions] AS Long at DRAM_extern
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM Float_Initializer[100] as Float AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -312,6 +312,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_103[array_step],100)
     MemCpy(Initializer[1],DATA_108[array_step],100)
     MemCpy(Initializer[1],DATA_109[array_step],100)
+    MemCpy(Initializer[1],DATA_113[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
     array_step = array_step + 100
   NEXT i
@@ -766,7 +767,7 @@ EVENT:
         ENDIF
         
         'XXX this can also cause a desync between the two adwins if the timing was unfortunate.
-        if ((timer > max_time_in_cr) and (cr_passed_once = 1)) then
+        if (((time_in_cr+timer) > max_time_in_cr) and (cr_passed_once = 1)) then
           timer = -1
           mode = 200 'SSRO
           success_mode_after_SSRO = mode_after_e_msmt
@@ -1006,7 +1007,7 @@ EVENT:
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         DATA_100[repetition_counter+1] = decoupling_repetitions
-        
+        DATA_113[repetition_counter+1] = time_in_cr
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
@@ -1024,6 +1025,7 @@ EVENT:
         decoupling_repetitions = 0
         remaining_time_in_long_CR_check = 0
         max_LDE_attempts = max_LDE_attempts0 'XXX
+        
         time_in_cr = 0 'XXX
 
         
