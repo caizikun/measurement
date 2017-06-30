@@ -11,7 +11,7 @@ try:
 except:
     pass
 qt.pulsar = pulsar.Pulsar()
-# qt.pulsar.AWG_type = 'opt09' This is no longer correct. NK
+qt.pulsar.AWG_type = 'opt09'
 qt.pulsar.clock = 1e9
 
 

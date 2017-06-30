@@ -11,7 +11,7 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -49,6 +49,7 @@
 #DEFINE Awake                 Par_19
 
 #DEFINE Output_Duration   2 ' 40 ns
+' Actual output duration: ~90 ns (depending on pulse shape) + cycles * 20 ns
 
 ' Dim current_time, time_past, cycles_past AS LONG
 ' Dim detected_bit_pattern, detected_time AS LONG
@@ -60,6 +61,7 @@
 #DEFINE detected_bit_pattern Par_33
 #DEFINE detected_time Par_34
 #DEFINE corrected_delay Par_35
+
 
 INIT:
   Dig_Fifo_Mode(0)
@@ -79,6 +81,8 @@ INIT:
 
 EVENT:  
   ' we caught a trigger
+  Inc(Par_20)
+  
   IF (Enable > 0) THEN
     current_time = Digin_Fifo_Read_Timer()
     Digin_Fifo_Read(detected_bit_pattern, detected_time)
