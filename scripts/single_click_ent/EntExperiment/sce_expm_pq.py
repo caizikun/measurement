@@ -135,6 +135,7 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
                     ('last_phase_stab_index'                 ,1,reps),
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
+                    ('time_in_cr_and_comm'                   ,1,reps),
                     ('invalid_data_markers'                  ,1,reps),  
                     ('time_in_cr_and_comm'                   ,1,reps),
                     'completed_reps',
