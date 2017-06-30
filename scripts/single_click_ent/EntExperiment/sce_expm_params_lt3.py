@@ -133,10 +133,10 @@ params_lt3['phase_setpoint'] = np.pi/2
 
 params_lt3['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds
 params_lt3['count_int_time_meas'] = 1000 # How long to integrate counts for in microseconds
-params_lt3['pid_points'] = 4 # How many points to sample the phase at during the PID loop
-params_lt3['pid_points_to_store'] = 4 # How many points to store
+params_lt3['pid_points'] = 2 # How many points to sample the phase at during the PID loop
+params_lt3['pid_points_to_store'] = 2 # How many points to store
 params_lt3['sample_points'] = 10 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_time'] = 200000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt3['phase_stab_max_time'] = 140000 # How long in microseconds to run the expm for after phase stabilisation
 
 
 
