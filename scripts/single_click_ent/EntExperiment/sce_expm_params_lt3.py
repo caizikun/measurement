@@ -81,9 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']      = 0.0
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.9980960133947977
-params_lt3['sin2_theta_fit_a']		= 1.9167313584853258
-params_lt3['sin2_theta_fit_x0']		= 0.85683751975640254
+params_lt3['sin2_theta_fit_of']		= 0.99214090556679346
+params_lt3['sin2_theta_fit_a']		= 1.8187325859132948
+params_lt3['sin2_theta_fit_x0']		= 0.86440089280448973
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
