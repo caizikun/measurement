@@ -447,8 +447,8 @@ def generate_tomography_mw_pulse(msmt,Gate,**kw):
 
     ### this contains our RO definitions
     tomo_dict = {
-        'X': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']), #### check this!!!
-        'Y': pulse.cp(Gate.mw_pi2,phase = msmt.params['LDE_final_mw_phase']+90),
+        'X': pulse.cp(Gate.mw_pi2,phase = -msmt.params['LDE_final_mw_phase']), #### minus sign for extra pi pulse in DD
+        'Y': pulse.cp(Gate.mw_pi2,phase = -msmt.params['LDE_final_mw_phase']+90), ### minus for extra pi pulse in DD
         'Z': pulse.cp(Gate.mw_pi2, amplitude = 0)
     }
 

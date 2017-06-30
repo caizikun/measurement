@@ -286,19 +286,25 @@ class SingleClickEntExpm(DD.MBI_C13):
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('SingleClickEnt')
-
+        if self.params['do_general_sweep'] == 1:
+            if type(self.params['general_sweep_name']) == list:
+                x0 = self.params['general_sweep_pts'][0]
+                x1 = self.params['general_sweep_pts'][1]
+                self.params['general_sweep_pts1'] = x0
+                self.params['general_sweep_pts2'] = x1
+                self.params['general_sweep_pts'] = []
+                
+                sweep_pts = list(product(x0,x1))
+                
         ### create a list of gates according to the current sweep.
         for pt in range(self.params['pts']):
             self.pt = pt
             #sweep parameter
-            if self.params['do_general_sweep'] == 1:      
+            if self.params['do_general_sweep'] == 1:    
                 if type(self.params['general_sweep_name']) == list:
-                        x0 = self.params['general_sweep_pts'][0]
-                        x1 = self.params['general_sweep_pts'][1]
-                        sweept_pts = list(product(x0,x1))
-                        self.params[self.params['general_sweep_name'][0]] = self.params['general_sweep_pts'][pt][0]
-                        self.params[self.params['general_sweep_name'][1]] = self.params['general_sweep_pts'][pt][1]
-                        self.params['sweep_pts'] = range(len(sweept_pts))
+                    self.params[self.params['general_sweep_name'][0]] = sweep_pts[pt][0]
+                    self.params[self.params['general_sweep_name'][1]] = sweep_pts[pt][1]
+                    self.params['sweep_pts'] = range(len(sweep_pts))
                 else:
                     self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
             else:

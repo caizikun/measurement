@@ -767,13 +767,13 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] =  300
+    m.params['reps_per_ROsequence'] =  200
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.4
+    m.params['sin2_theta'] = 0.05
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
     m.params['measurement_time'] = 2*8*60 # Eight minutes
@@ -853,7 +853,7 @@ def EntangleSweepEverything(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 100
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -866,11 +866,9 @@ def EntangleSweepEverything(name,debug = False,upload_only=False):
     else:
         hist_only = False
 
-    m.params['tomography_basis'] = tomography_basis
-
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = ['sin2_theta','tomography_basis']
-    m.params['general_sweep_pts'] = [np.linspace(0.05,0.5,pts),['X','Y','Z']]
+    m.params['general_sweep_pts'] = [np.array([0.03,0.05,0.1,0.2,0.3,0.5]),['X','Y','Z']]
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']
     m.params['pts'] = len(m.params['sweep_pts'][0])*len(m.params['sweep_pts'][1])
@@ -931,7 +929,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
     m.params['do_dynamical_decoupling'] = 1
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 500
     m.params['measurement_time'] = 20*60 # Eight minutes
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
@@ -1023,6 +1021,8 @@ if __name__ == '__main__':
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
     EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
+
+    # EntangleSweepEverything(name+'_EntangleSweepEverything',debug =False, upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

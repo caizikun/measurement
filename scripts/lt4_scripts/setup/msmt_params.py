@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.641 #0.889 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.629 #0.889 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =  0.548 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp =   0.538# 0.638 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -121,7 +121,7 @@ cfg['protocols']['AdwinSSRO+espin'] = {
 		'MW_pulse_mod_risetime':                   10e-9,
 		'send_AWG_start':                          1,
 		'MW_pulse_mod_frequency' : 				   43e6,
-		'MW_switch_risetime':						450e-9, # 500e-9
+		'MW_switch_risetime':					   450e-9, # 500e-9
 	}
 
 ##########################################

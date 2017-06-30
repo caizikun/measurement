@@ -83,12 +83,12 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 #params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase'] 	  = 78.5 #qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_phase'] 	  = 156.58 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0257901389000696
-params_lt4['sin2_theta_fit_a']		= 3.8435131716000273
-params_lt4['sin2_theta_fit_x0']		= 0.65660631777495981
+params_lt4['sin2_theta_fit_of']		= 1.0027848887892157
+params_lt4['sin2_theta_fit_a']		= 4.121792975939262
+params_lt4['sin2_theta_fit_x0']		= 0.63526931363756001
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -114,7 +114,7 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 1.5#3.5 # 3.0 V = approx. 200 nW seems okay
+params_lt4['Phase_Msmt_voltage'] = 2.0#3.5 # 3.0 V = approx. 200 nW seems okay
 params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2

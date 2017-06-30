@@ -473,7 +473,7 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     m.params['do_dynamical_decoupling'] = 0 ### lets the adwin count along!
 
     m.joint_params['LDE_attempts'] = 1 ## don't put this to 1. will give problems
-    m.params['LDE_final_mw_phase'] = 90
+    m.params['LDE_final_mw_phase'] = -90
     m.joint_params['opt_pi_pulses'] = 0
     m.params['tomography_basis'] = 'X'
     m.params['dynamic_decoupling_tau'] = m.params['dynamic_decoupling_tau']
