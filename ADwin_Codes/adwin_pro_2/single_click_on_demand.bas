@@ -8,9 +8,9 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,181,181,391,391,411,411,813,813,900,901
-' Foldings                       = 419,521
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Bookmarks                      = 3,3,87,87,181,181,390,390,412,412,813,813,900,901
+' Foldings                       = 420,519
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -137,7 +137,7 @@ DIM LDE_element_duration,max_sequence_duration,decoupling_element_duration AS FL
 DIM max_LDE_attempts0,max_LDE_attempts,decoupling_repetitions,required_DD_repetitions AS LONG
 
 
-DIM remaining_time_in_long_CR_check,time_in_cr,cr_passed_once,max_time_in_cr AS LONG ' XXX timing and logic for on demand stuff
+DIM remaining_time_in_long_CR_check,cr_passed_once,max_time_from_phase AS LONG ' XXX timing and logic for on demand stuff
 DIM first_time_phase_stab AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -230,7 +230,6 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   'XXXX
   max_LDE_attempts = max_LDE_attempts0
-  time_in_cr = 0
   cr_passed_once = 0
   
   
@@ -386,9 +385,9 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     init_mode = mode_after_phase_stab
   endif
  
-  mode = init_mode
+  mode = 20
 
-  max_time_in_cr = round(max_LDE_attempts*LDE_element_duration*1E6) 'XXX
+  max_time_from_phase = round(max_LDE_attempts*LDE_element_duration*1E6) 'XXX
 '''''''''''''''''''''''''''
   ' define channels etc
 '''''''''''''''''''''''''''
@@ -415,6 +414,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   P2_CNT_MODE(CTR_MODULE, zpl1_counter_channel,000010000b) ' Configure the ZPL counter
   P2_CNT_CLEAR(CTR_MODULE, zpl1_counter_pattern)
     
+  wait_time = 1000
+  
 EVENT:
   
   'write information to parse for live monitoring
@@ -453,9 +454,6 @@ EVENT:
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
           
-          if (mode_flag = 2) then 'XXX 'we were in cr and have to count the communication time towards the sequence time
-            time_in_cr = time_in_cr + timer
-          endif
           
         ELSE
           'previous communication was not successful
@@ -582,7 +580,6 @@ EVENT:
           mode = 10 'crack on with phase stab.
           timer = -1
         ELSE ' two setups involved
-              
           local_flag_1 = 1 'flag 1 communicates that phase stabilising
           local_flag_2 = 0
           mode_flag = 1
@@ -684,6 +681,7 @@ EVENT:
             remaining_time_in_long_CR_check = 2000
             if (first_time_phase_stab = 1) THEN
               dec(first_time_phase_stab)
+              
             endif
             
           endif
@@ -752,19 +750,9 @@ EVENT:
         '        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
-        IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
+        IF ((Par_63 > 0) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
-        
-        
-        'XXX this got added!!!
-        IF ((cr_result > 0) and (cr_passed_once = 0)) THEN 'the clock starts running!!!
-          cr_passed_once = 1
-          time_in_cr = 0
-          timer = -1
-          mode = init_mode
-          first_time_phase_stab = 1
-        endif
         
         'XXX
         IF (remaining_time_in_long_CR_check > 0) THEN
@@ -772,44 +760,56 @@ EVENT:
         ENDIF
         
         'XXX this can also cause a desync between the two adwins if the timing was unfortunate.
-        if (((time_in_cr+timer) > max_time_in_cr) and (cr_passed_once = 1)) then
+        if (elapsed_cycles_since_phase_stab > max_time_from_phase) then
           timer = -1
           mode = 200 'SSRO
           success_mode_after_SSRO = mode_after_e_msmt
           fail_mode_after_SSRO = mode_after_e_msmt
-        endif
         
-        if ((cr_result = -1) or (cr_result = 1)) then
-          ' Need to wait until a full CR check cycle has finished before jumping out, otherwise things get messy
-          '          if ((elapsed_cycles_since_phase_stab > phase_stab_max_cycles) and (do_phase_stabilisation > 0)) then
-          '            mode = init_mode 
-          '            timer = -1
-          '            reset_CR() ' For optimal robustness, reset the CR check variables.
-          '          else
-          
-          if (( cr_result > 0) and (cr_passed_once > 0)) then 'second part of the if statement gort added. 'XXX
-            ' In case the result is not positive, the CR check will be repeated/continued
-            time_spent_in_state_preparation = time_spent_in_state_preparation + timer
-            time_in_cr = time_in_cr +  timer
-            timer = -1     
-            IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
-              mode = 3 'go to spin pumping directly
-            ELSE ' two setups involved
+        endif
+                  
+        if  (cr_result > 0) then 'second part of the if statement gort added. 'XXX
+          ' In case the result is not positive, the CR check will be repeated/continued
+          time_spent_in_state_preparation = time_spent_in_state_preparation + timer
+          timer = -1     
+          IF (is_two_setup_experiment = 0) THEN 'only one setup involved. Skip communication step
+            mode = 3 'go to spin pumping directly
+          ELSE ' two setups involved
             
-              local_flag_1 = 0
-              local_flag_2 = 1  'flag 2 communicates that CR checking
-              mode_flag = 2
-              mode = 100 'go to communication step
-              timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
-              fail_mode_after_adwin_comm = init_mode ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
-              success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
+            local_flag_1 = 0
+            local_flag_2 = 1  'flag 2 communicates that CR checking
+            mode_flag = 2
+            mode = 100 'go to communication step
+            timeout_mode_after_adwin_comm = 2 ' Keeps waiting until gets confirmation that CR check succeeded.
+            fail_mode_after_adwin_comm = 2 ' If wrong mode,  go back to phase stabilistation or CR check if not phase stabilising!
+            success_mode_after_adwin_comm = 3 ' After communication, ' go to spin pumping 
           
-              '            ENDIF
-            endif
+            '            ENDIF
           endif
         endif
-          
+      
         
+        
+       
+      CASE 20 'Initial CR check     
+        
+        cr_result = CR_check(first_CR,repetition_counter) ' do CR check.  if first_CR is high, the result will be saved as CR_after. 
+        '        record_cr_counts()
+        
+        'check for break put after such that the last run records a CR_after result
+        IF ((Par_63 > 0) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
+          END
+        ENDIF
+        
+        
+        'XXX this got added!!!
+        IF (cr_result > 0) THEN 'the clock starts running!!!
+          timer = -1
+          mode = init_mode
+          first_time_phase_stab = 1
+        ENDIF
+        
+       
       CASE 3    ' E spin pumping
         
         IF (timer = 0) THEN
@@ -834,7 +834,7 @@ EVENT:
             
             
             'new line that calculates the numbesr of allowed LDE attempts 'XXX note that decoupling attempts are deliberately ignored out of adwin sync reasons! (they are very different.)
-            max_LDE_attempts = max_LDE_attempts0 - round((time_in_cr*1E-6)/LDE_element_duration) 'for jumping out of case 4 
+            max_LDE_attempts = max_LDE_attempts0 - round((elapsed_cycles_since_phase_stab*1E-6)/LDE_element_duration) 'for jumping out of case 4 
             max_sequence_duration = LDE_element_duration*max_LDE_attempts 'for case 5       
             
           ENDIF
@@ -1011,7 +1011,7 @@ EVENT:
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         DATA_100[repetition_counter+1] = decoupling_repetitions
-        DATA_113[repetition_counter+1] = time_in_cr
+        DATA_113[repetition_counter+1] = max_LDE_attempts
         mode = 8 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 7, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run
@@ -1030,8 +1030,6 @@ EVENT:
         remaining_time_in_long_CR_check = 0
         max_LDE_attempts = max_LDE_attempts0 'XXX
         
-        time_in_cr = 0 'XXX
-
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
