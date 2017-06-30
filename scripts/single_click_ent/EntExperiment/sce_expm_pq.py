@@ -115,7 +115,7 @@ class PQSingleClickEntExpm(sce_expm.SingleClickEntExpm,  pq.PQMeasurement ): # p
                 self.physical_adwin.Set_FPar(57, Pulse_counts)
 
 
-class EntangleOnDemand(PQSingleClickEntExpm):
+class EntangleOnDemandExp(PQSingleClickEntExpm):
     """ need to change adwin script for this one"""
     mprefix = 'PQ_single_click_on_demand'
     adwin_process = 'single_click_on_demand'
@@ -929,9 +929,11 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     Run a msmt at a fixed theta, can measure in different bases
     """
     if include_CR:
-        m = EntangleOnDemand(name)
+        m = EntangleOnDemandExp(name)
     else:
         m = PQSingleClickEntExpm(name)
+
+    
     sweep_sce_expm.prepare(m)
    
     sweep_sce_expm.turn_all_sequence_elements_off(m)
@@ -945,9 +947,10 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
 
+    if include_CR:
+        m.params['reps_per_ROsequence'] = 35
 
-
-    m.params['sin2_theta'] = 0.1
+    m.params['sin2_theta'] = 0.2
     m.params['do_calc_theta'] = 1 
     
 
@@ -961,7 +964,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.25':13443,
         '0.4':11e3,
     }
-    m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
+    m.joint_params['LDE_attempts'] = 22e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -979,7 +982,6 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
-
 
 
 if __name__ == '__main__':
@@ -1032,8 +1034,9 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
+    EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
 
     # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
 
