@@ -2043,6 +2043,30 @@ config['adwin_lt2_processes'] = {
                 'fpar': {}
                 },
 
+        'dynamic_jump' : {
+                    'index' : 9,
+                    'file' : 'dynamic_jump.TB9',
+                    'par' : {
+                    },
+                    'params_long' : [
+                        ['cycle_duration'           ,   1000],
+                        ['AWG_start_DO_channel'     ,   16  ],
+                        ['AWG_done_DI_channel'      ,   18  ],
+                        ['delay_trigger_DI_channel' ,   20  ],
+                        ['delay_trigger_DO_channel' ,   12  ],
+                    ],
+                    'params_long_index'  : 20,
+                    'params_long_length' : 100,
+                    'params_float' : [
+                    ],
+                    'params_float_index' : 21,
+                    'data_long' : {
+                        'jump_table' :   10,
+                        'delay_cycles'  :   11,
+                        'next_seq_table'    :   12,
+                    },
+                },
+
         ###########################
         ### QEC Carbon Control ####
         ###########################
@@ -3442,6 +3466,112 @@ config['adwin_pro_processes'] = {
                     },
                 },
 
+                'single_click_on_demand' : {
+                        'index' : 9,
+                        'file' : 'single_click_on_demand.TB9',
+                        'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                        'params_long' : [           # keep order!!!!!!!!!!!!!
+                            ['cycle_duration'                  ,   1],
+                            ['SP_duration'                     ,   5],
+                            ['wait_after_pulse_duration'       ,   100],
+                            ['Dynamical_stop_ssro_threshold'   ,   1], 
+                            ['Dynamical_stop_ssro_duration'    ,   20], 
+                            ['is_master'                       ,   1], 
+                            ['is_two_setup_experiment'         ,   1], 
+                            ['PLU_event_di_channel'            ,   0], 
+                            ['PLU_which_di_channel'            ,   0], 
+                            ['AWG_start_DO_channel'            ,   0], 
+                            ['AWG_done_DI_channel'             ,   0],
+                            ['wait_for_awg_done_timeout_cycles',   0], 
+                            ['AWG_event_jump_DO_channel'       ,   0], 
+                            ['AWG_repcount_DI_channel'         ,   0], 
+                            ['remote_adwin_di_success_channel' ,   1], 
+                            ['remote_adwin_di_fail_channel'    ,   1], 
+                            ['remote_adwin_do_success_channel' ,   1], 
+                            ['remote_adwin_do_fail_channel'    ,   1], 
+                            ['adwin_comm_safety_cycles'        ,   1], 
+                            ['adwin_comm_timeout_cycles'       ,   1], 
+                            ['remote_awg_trigger_channel'      ,   1],
+                            ['invalid_data_marker_do_channel'  ,   1],  
+                            ['repetitions'                     ,   0],  
+                            ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                            ['PLU_during_LDE'                  ,   1],
+                            ['LDE_is_init'                     ,   1],
+                            ['do_phase_stabilisation'          ,   1],
+                            ['only_meas_phase'                 ,   1],
+                            ['do_dynamical_decoupling'         ,   1],
+                            ['Phase_msmt_DAC_channel'          ,   2],
+                            ['Phase_stab_DAC_channel'          ,   2],
+                            ['zpl1_counter_channel'            ,   2],
+                            ['zpl2_counter_channel'            ,   3],
+                            ['pid_points'                      ,   10],
+                            ['pid_points_to_store'             ,   10],
+                            ['sample_points'                   ,   100],
+                            ['count_int_time_stab'             ,   1000], # units of us
+                            ['count_int_time_meas'             , 1000], # units of us
+                            ['phase_stab_max_time'             ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                            ['modulate_stretcher_during_phase_msmt' , 0],
+                            ['LDE_attempts'                     ,  1],
+                            ['do_post_ent_phase_msmt'           ,  0]
+                            ],
+                        'params_long_index'  : 20,
+                        'params_long_length' : 100,
+                        'params_float' : [
+                            ['Ex_SP_voltage'        , 0.8],
+                            ['A_SP_voltage'         , 0.8],
+                            ['Ex_RO_voltage'        , 0.8],
+                            ['A_RO_voltage'         , 0.8],
+                            ['Phase_Msmt_voltage'         , 2.0],
+                            ['Phase_Msmt_off_voltage'         , 0.0],
+                            ['PID_GAIN'       , 1.0],
+                            ['PID_Kp'         , 0.000],
+                            ['PID_Ki'         , 0.0],
+                            ['PID_Kd'         , 0.0],
+                            ['phase_setpoint', 3.14/2],
+                            ['stretcher_V_2pi', 11],
+                            ['stretcher_V_max', 9.5],
+                            ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
+                            ['Phase_Msmt_Vis', 1], # Vis of interference'
+                            ['LDE_element_length', 2.2e-6],
+                            ['decoupling_element_duration', 8.8e-6]
+                            ],
+                        'params_float_index'  : 21,
+                        'params_float_length' : 100,
+                        'par' : {
+                            'remote_mode': 60, # PH This is the timer?
+                            'local_mode': 61,
+                            'timeout_events': 62,
+                            'stop_flag': 63,
+                            'completed_reps' : 73,
+                            'store_index_stab' : 74, #amount of phase stabilization points (array length)
+                            'entanglement_events': 77,
+                            'invalid_data_marker': 55,
+                            },
+                        'data_long' : {
+                            'CR_before'      : 22,
+                            'CR_after'       : 23,
+                            'SP_hist'                   : 29,    #SP histogram
+                            'DD_repetitions'            : 100, # Not used yet (PH) but eventually the number of reps needed for DD
+                            'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                            'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                            'ssro_results'              : 103,  # electron readout
+                            'pid_counts_1'                : 104, # Counts measured during the PID process
+                            'pid_counts_2'                : 105, # Counts measured during the PID process
+                            'sampling_counts_1'           : 106, # Counts during the sample process
+                            'sampling_counts_2'           : 107, # Counts during the sample process
+                            'elapsed_since_phase_stab'  : 108, #
+                            'last_phase_stab_index'     : 109, #
+                            'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                            },
+                        'data_float' : {
+                            'expm_mon_taper_freq'       : 40,
+                            'expm_mon_nf_freq'          : 41,
+                            'expm_mon_yellow_freq'      : 42,
+                            'expm_mon_gate_voltage'     : 43,
+                            'expm_mon_cr_counts'        : 44,
+                            'expm_mon_repump_counts'    : 45, 
+                            },
+                        },
                 'test_sin_scan' : {
                 'index' : 8,
                 'file' : 'test_sin_scan_wavelength.TB8',
