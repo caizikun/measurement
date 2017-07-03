@@ -361,16 +361,19 @@ cfg['samples'][sample_name] = {
     ###############
     # C2(A ~ -26)  #
     ###############
-    'C2_freq_m1'        : (443015.21+475444.0)/2,
-    'C2_freq_0'         : 443002.18,
-    'C2_freq_1_m1'      : 475430.27,
+    'C2_freq_m1'        : (442999.99 + 475435.82)/2,
+    'C2_freq_0'         : 442999.99,
+    'C2_freq_1_m1'      : 475435.82,
 
-    'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
-    'C2_Ren_N_m1'      :   [48], #36
-    'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [201.26] + [20.11] + [19.47] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+    'C2_Ren_tau_m1'    :   [4.900e-06], #3.87
+    'C2_Ren_N_m1'      :   [38], #36
+    'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [0.97] + [20.11] + [-2.71] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-    'C2_phase_per_LDE_sequence_m1'  :   30.0,
+    'C2_phase_per_LDE_sequence_m1'  : 60.074, #360-160.818,  #61.357, #61.124, #299.431,
     'C2_init_phase_correction_m1': 0.0,
+    'C2_init_phase_correction_serial_swap_m1': 182.740, # C2,C4 serial swap sequence offset
+    # 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
+    # offsets for the LDE calibration, not really interesting #178.552, #184.075, #181.041, # 185.919, #270.0,
     
     ###############
     # C3 (A ~ -55)#
@@ -389,29 +392,30 @@ cfg['samples'][sample_name] = {
     ###############
     # C4 (A ~ 33) #
     ###############
-    'C4_freq_m1'        : (442773.49 + 416024.45)/2,
-    'C4_freq_0'         : 442822.02,
-    'C4_freq_1_m1'      : 416228.08,
+    'C4_freq_m1'        : (442806.88 + 416218.72)/2,
+    'C4_freq_0'         : 442806.88,
+    'C4_freq_1_m1'      : 416218.72,
     # 'C4_freq_1_p1'        : 416427.2,
 
-    'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
-    'C4_Ren_N_m1'      :   [24],#[56], #28
-    'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.91] + [0.0] + [-1.1] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C4_Ren_tau_m1'    :   [6.404e-6],#[1.745e-6],##[6.386e-6],
+    'C4_Ren_N_m1'      :   [28],#[56], #28
+    'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.17] + [0.0] + [19.89] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-    'C4_phase_per_LDE_sequence_m1'  :   37.0,
-    'C4_init_phase_correction_m1': 0.0,
+    'C4_phase_per_LDE_sequence_m1'  : 16.684, #344.723,
+    'C4_init_phase_correction_m1'   : 0.0,
+    'C4_init_phase_correction_serial_swap_m1': 276.585, # C2,C4 serial swap sequence offset
 
 
     ###############
     # C5 (A ~ 26) #
     ###############
-    'C5_freq_m1'        : (443741.6+422796.72)/2,
-    'C5_freq_0'         : 443691.58,
-    'C5_freq_1_m1'      : 422786.11,
+    'C5_freq_m1'        : (443752.27+422804.48)/2,
+    'C5_freq_0'         : 443752.27,
+    'C5_freq_1_m1'      : 422804.48,
 
     'C5_Ren_tau_m1'    :   [10.964e-6], #8.826
     'C5_Ren_N_m1'      :   [48], 
-    'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.82] + [0.0] + [0.0] + [0.0] + [0.0]),
+    'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.22] + [0.0] + [0.0] + [0.0] + [0.0]),
 
     'C5_phase_per_LDE_sequence_m1'  :   0.0,
     'C5_init_phase_correction_m1': 0.0,

@@ -126,11 +126,17 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
     elif setup == 'lt2' :
         prepare_LT2_dummy_stuff(m)
         print "WARNING: LT2 has only been used as a debugging setup, all parameters currently only haves dummy values"
-        import params_lt2
-        reload(params_lt2)
+        import params_lt4
+        reload(params_lt4)
         m.AWG_RO_AOM = qt.instruments['PulseAOM']
-        for k in params_lt2.params_lt2:
-            m.params[k] = params_lt2.params_lt2[k]
+        for k in params_lt4.params_lt4:
+            m.params[k] = params_lt4.params_lt4[k]
+
+        # import params_lt2
+        # reload(params_lt2)
+        # m.AWG_RO_AOM = qt.instruments['PulseAOM']
+        # for k in params_lt2.params_lt2:
+        #     m.params[k] = params_lt2.params_lt2[k]
 
     else:
         print 'Sweep_purification.py: invalid setup:', setup
@@ -178,6 +184,15 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
 
     m.generate_sequence(simplify_wfnames=simplify_wfnames)
     m.dump_AWG_seq()
+
+    if (m.params['do_phase_fb_delayline'] > 0
+        and m.params['delay_feedback_use_calculated_phase_offsets'] > 0):
+        stddev = np.std(m.calculated_phase_offsets, axis=1)
+        if np.max(stddev) > 0.1:
+            print "Warning: phase offset differs per sweep point!"
+        print m.calculated_phase_offsets
+        m.params['nuclear_phases_offset'] = m.calculated_phase_offsets[0,:]
+        m.adwin_set_var('nuclear_phases_offset', m.params['nuclear_phases_offset'])
     
     if upload_only:
         return
@@ -1587,10 +1602,10 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
     apply_dynamic_phase_correction_delayline(
         name + '_phase_offset_fb_delayline',
-        upload_only=False,
-        dry_run=False,
+        upload_only=True,
+        dry_run=True,
         input_state='Z',
-        do_phase_offset_sweep=True
+        do_phase_offset_sweep=False
     )
     # apply_dynamic_phase_correction_delayline(
     #     name + '_phase_fb_delayline',
