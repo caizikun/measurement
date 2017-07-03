@@ -210,6 +210,9 @@ class purify_single_setup(DD.MBI_C13):
             ('overlong_cycles_per_mode'              ,1,255),
             ('mode_flowchart'                        ,1,200),
             ('mode_flowchart_cycles'                 ,1,200),
+            ('nuclear_frequencies'                   ,1,6),
+            ('nuclear_phases_per_seqrep'             ,1,6),
+            ('nuclear_phases_offset'                 ,1,6),
             'flowchart_index',
         ]
 
@@ -835,123 +838,15 @@ class purify_single_setup(DD.MBI_C13):
             if self.params['do_phase_fb_delayline'] > 0 or self.params['do_delay_fb_pulses']:
                 #generate gates g1,g2,g3
 
-                carbons = self.params['carbons']
-                carbon_ro_connection_sequence = ['start']
-                carbon_gates = []
-
-                for i in range(len(carbons)):
-                    if self.params['Tomography_bases'][i] != 'I':
-                        carbon_gate = 'C%d' % carbons[i]
-                        carbon_ro_connection_sequence += [carbon_gate]
-                        carbon_gates += [carbon_gate]
-                    else:
-                        carbon_ro_connection_sequence += ['feedback']
-
-                # check if the last tomo basis does indeed apply a gate or that we skip to the end
-                if self.params['Tomography_bases'][-1] == 'I':
-                    carbon_ro_connection_sequence[-1] = 'end'
-
-                carbon_ro_connections = [carbon_ro_connection_sequence[i:i+2] for i in range(len(carbons))]
-
-                # we need list comprehesion here to create a seperate list for each carbon
-                dynamic_phase_correct_list_per_carbon = [[] for i in range(self.params['number_of_carbons'])]
+                self.dynamic_phase_correct_list_per_carbon = [[] for i in range(self.params['number_of_carbons'])]
 
                 for i in range(self.params['number_of_carbons']):
                     c_id = self.params['carbons'][i]
-                    surrounding_elements = carbon_ro_connections[i]
 
-                    start_fb_gate = DD.Gate(
-                        'C%d_delayfb%d_ADwin_pt%d' % (c_id, i, pt),
-                        'feedback_trigger_decoupling',
-                        no_connection_elt=True,
-                    )
+                    # the generation of this gate is taken care of by DD_2
+                    delay_feedback_gate = DD.Gate('C%d_delayfb%d_' % (c_id, i), 'carbon_delay_phase_feedback')
 
-                    # start_fb_gate.tau_cut_before = self.get_carbon_gate_initial_tau_cut(c_id)
-                    if surrounding_elements[0] == 'start':
-                        # select the second character from Cx string with x = carbon number
-                        first_gate_carbon = int(carbon_gates[0][1])
-                        start_fb_gate.tau_cut_before = self.get_carbon_gate_initial_tau_cut(first_gate_carbon)
-                    elif surrounding_elements[0] == 'feedback':
-                        start_fb_gate.tau_cut_before = 0.0e-6
-                    else:
-                        # get the previous gate carbon
-                        prev_gate_carbon = int(surrounding_elements[0][1])
-                        # note the minus sign here!
-                        start_fb_gate.tau_cut_before = -self.get_carbon_gate_initial_tau_cut(prev_gate_carbon)
-
-                    start_fb_gate.tau_cut_after = 0.0e-6
-
-
-                    dynamic_phase_correct_list_per_carbon[i].append(start_fb_gate)
-
-                    for pulse_i in range(self.params['delay_feedback_N']):
-                        g1 = DD.Gate(
-                            'C%d_delayfb%d_init_N%d_pt%d' % (c_id, i, pulse_i, pt),
-                            'single_element',
-                            no_connection_elt = True
-                            )
-                        g1.scheme = 'single_element'
-
-                        g2 = DD.Gate(
-                            'C%d_delayfb%d_pi_N%d_pt%d' % (c_id, i, pulse_i, pt),
-                            'single_element',
-                            no_connection_elt = True,
-                            wait_for_trigger = True
-                            )
-                        g2.scheme = 'single_element'
-
-                        g3 = DD.Gate(
-                            'C%d_delayfb%d_final_N%d_pt%d' % (c_id, i, pulse_i, pt),
-                            'single_element',
-                            no_connection_elt = True,
-                            wait_for_trigger = True
-                            )
-                        g3.scheme = 'single_element'
-
-                        fb_pulse_name = self.params['delay_feedback_pulse_seq'][pulse_i % len(self.params['delay_feedback_pulse_seq'])]
-                        if fb_pulse_name == 'X':
-                            fb_pulse = ps.X_pulse(self)
-                        elif fb_pulse_name == 'mX':
-                            fb_pulse = ps.mX_pulse(self)
-                        elif fb_pulse_name == 'Y':
-                            fb_pulse = ps.Y_pulse(self)
-                        elif fb_pulse_name == 'mY':
-                            fb_pulse = ps.mY_pulse(self)
-                        else:
-                            raise Exception("Unknown pulse selected for delay feedback: " + fb_pulse_name)
-
-                        self.generate_delayline_phase_correction_elements(g1,g2,g3,pulse_pi=fb_pulse)
-                        dynamic_phase_correct_list_per_carbon[i].extend([g1,g2,g3])
-
-                    if surrounding_elements[1] == 'end':
-                        # in this case we're actually kinda fucked
-                        # the next pulse has some tau_cut added to it, but at the end of the feedback sequence
-                        # we don't have the space to correct for that.
-                        # so we insert a decoupling sequence to gain some space
-
-                        # I abuse the the feedback trigger decoupling block for that
-                        last_gate_carbon = int(carbon_gates[-1][1])
-                        final_tau_cut_gate = DD.Gate(
-                            'C%d_delayfb%d_tau_cut_pt%d' % (c_id, i, pt),
-                            'feedback_trigger_decoupling',
-                            no_connection_elt=True,
-                            feedback_add_triggers=False
-                        )
-                        final_tau_cut_gate.tau_cut_before = 0.0e-6
-                        final_tau_cut_gate.tau_cut_after = self.get_carbon_gate_initial_tau_cut(last_gate_carbon)
-                        dynamic_phase_correct_list_per_carbon[i].append(final_tau_cut_gate)
-                    elif surrounding_elements[1] == 'feedback':
-                        pass
-                    else:
-                        next_gate_carbon = int(surrounding_elements[1][1])
-                        final_tau_cut_gate = DD.Gate(
-                            'C%d_delayfb%d_tau_cut_pt%d' % (c_id, i, pt),
-                            'single_element',
-                            no_connection_elt=True
-                        )
-                        final_tau_cut_gate.scheme = 'single_element'
-                        self.generate_delayline_tau_cut_element(final_tau_cut_gate,addressed_carbon=next_gate_carbon)
-                        dynamic_phase_correct_list_per_carbon[i].append(final_tau_cut_gate)
+                    self.dynamic_phase_correct_list_per_carbon[i].append(delay_feedback_gate)
             else:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
@@ -1285,7 +1180,7 @@ class purify_single_setup(DD.MBI_C13):
                         RO_basis_list               = self.params['Tomography_bases'],
                         readout_orientation         = self.params['carbon_readout_orientation'],
                         # by supplying a list of feedback sequences, they are interleaved between the tomo gates
-                        phase_feedback_sequences    = dynamic_phase_correct_list_per_carbon,
+                        phase_feedback_sequences    = self.dynamic_phase_correct_list_per_carbon,
                     )
 
                     gate_seq.extend(carbon_fb_tomo_seq)
@@ -1325,6 +1220,19 @@ class purify_single_setup(DD.MBI_C13):
 
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
+
+            if (self.params['do_phase_fb_delayline'] > 0
+                and self.params['delay_feedback_use_calculated_phase_offsets'] > 0):
+                # after sequence generation by DD_2, the gate objects should have been update with phase information
+                # let's try to extract that and put it to our own use
+                accumulated_phases = np.zeros(self.params['number_of_carbons'])
+                calculated_phase_offsets = np.zeros(self.params['number_of_carbons'])
+                for i in range(self.params['number_of_carbons']):
+                    g = self.dynamic_phase_correct_list_per_carbon[i][0]
+                    accumulated_phases += (np.array(g.C_phases_before_gate)[self.params['number_of_carbons']]
+                                           / np.pi * 360.0)
+                    calculated_phase_offsets[i] = accumulated_phases[i]
+                self.calculated_phase_offsets = calculated_phase_offsets
 
         if upload:
             print ' uploading sequence'
