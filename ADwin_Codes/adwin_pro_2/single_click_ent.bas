@@ -733,7 +733,7 @@ EVENT:
         '        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
-        IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
+        IF (((Par_63 > 0) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
         
