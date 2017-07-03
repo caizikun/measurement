@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,87,87,181,181,390,390,412,412,813,813,900,901
-' Foldings                       = 420,519
+' Bookmarks                      = 3,3,87,87,181,181,390,390,412,412,812,812,897,898
+' Foldings                       = 420
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -138,7 +138,7 @@ DIM max_LDE_attempts0,max_LDE_attempts,decoupling_repetitions,required_DD_repeti
 
 
 DIM remaining_time_in_long_CR_check,cr_passed_once,max_time_from_phase AS LONG ' XXX timing and logic for on demand stuff
-DIM first_time_phase_stab AS LONG
+DIM first_time_phase_stab,PLU_time_out_DO_channel AS LONG
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
@@ -258,7 +258,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   required_DD_repetitions = 0
   decoupling_repetitions = 0
   
-  
+  PLU_time_out_DO_channel = 10 '' hard coded for this experiment
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
   AWG_repcount_DI_pattern = 2 ^ AWG_repcount_DI_channel
   PLU_event_di_pattern = 2 ^ PLU_event_di_channel
@@ -538,8 +538,7 @@ EVENT:
           counts_1 = P2_CNT_READ(CTR_MODULE, counter_channel) 'read counter
           IF (counts_1 >= Dynamical_stop_ssro_threshold) THEN ' photon detected
             P2_DAC(DAC_MODULE, E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
-            wait_time = dynamical_stop_SSRO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase xxx to do: is this still accurate to the us?
-            time_spent_in_sequence = time_spent_in_sequence + timer
+            wait_time = dynamical_stop_SSRO_duration - timer ' make sure the SSRO element always has the same length (even in success case) to keep track of the carbon phase 
             timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
             SSRO_result = 1
             DATA_103[repetition_counter+1] = SSRO_result 'save as last electron readout
@@ -555,7 +554,7 @@ EVENT:
           ELSE 'no photon detected
             SSRO_result = 0
             DATA_103[repetition_counter+1] = SSRO_result 'save as last electron readout
-            if (timer = dynamical_stop_SSRO_duration) then ' no count after ssro duration -> failed  xxx to do: is this still accurate to the us?
+            if (timer = dynamical_stop_SSRO_duration) then ' no count after ssro duration -> failed 
               P2_DAC(DAC_MODULE,E_laser_DAC_channel,3277*E_off_voltage+32768) ' turn off Ex laser
               time_spent_in_sequence = time_spent_in_sequence + timer
               timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
@@ -885,12 +884,10 @@ EVENT:
         else ' no plu signal. check for timeout or done
           
           ' too many lde attempts have to jump to decoupling
-          IF (AWG_sequence_repetitions_LDE = max_LDE_attempts)THEN 'XXX
-            timer = -1
-            mode = 5 'decouple
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
+          IF ((AWG_sequence_repetitions_LDE = max_LDE_attempts) and is_master > 0)THEN 'XXX
+            P2_DIGOUT(DIO_MODULE, PLU_time_out_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
             CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
-            P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0)      
+            P2_DIGOUT(DIO_MODULE, PLU_time_out_DO_channel,0)      
           ENDIF
           
           

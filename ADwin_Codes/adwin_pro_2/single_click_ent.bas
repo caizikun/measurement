@@ -8,8 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,845,846
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,846,847
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -733,7 +733,7 @@ EVENT:
         '        record_cr_counts()
         
         'check for break put after such that the last run records a CR_after result
-        IF (((Par_63 > 0) or (repetition_counter >= max_repetitions)) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
+        IF ((Par_63 > 0) or (repetition_counter >= No_of_sequence_repetitions)) THEN ' stop signal received: stop the process
           END
         ENDIF
         
@@ -838,6 +838,7 @@ EVENT:
           timer = -1
           mode = mode_after_LDE
         else ' no plu signal. check for timeout or done
+          
           IF ((digin_this_cycle AND AWG_done_DI_pattern) > 0) THEN  'awg trigger tells us it is done with the entanglement sequence.
             if (awg_done_was_low =1) then
               time_spent_in_sequence = time_spent_in_sequence + timer

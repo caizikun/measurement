@@ -803,7 +803,7 @@ def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
 
 
-def EntangleXsweepY(name,debug = False,upload_only=False):
+def EntangleXsweepY(name,sweepXY = False,debug = False,upload_only=False):
     """
     Sweeps the phase of the last pi/2 pulse on one of the two setups to measure the 
     stabilized phase of the entangled state.
@@ -821,7 +821,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.4
+    m.params['sin2_theta'] = 0.05
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
     m.params['measurement_time'] = 2*8*60 # Eight minutes
@@ -834,6 +834,15 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
         hist_only = False
         m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
 
+    if sweepXY:
+        ### only one setup is allowed to sweep the phase.
+        if qt.current_setup == 'lt3':
+            hist_only = True
+            m.params['general_sweep_pts'] = [np.array([0]*10),['X','Y']]
+        else:
+            hist_only = False
+            m.params['general_sweep_pts'] = [m.params['LDE_final_mw_phase'] + np.linspace(0,360,10),['X','Y']]
+
     
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
@@ -845,8 +854,6 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
 
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only = hist_only)
-
-
 
 def EntangleSweepTheta(name,debug = False,upload_only=False, tomography_basis = 'Y'):
     """
