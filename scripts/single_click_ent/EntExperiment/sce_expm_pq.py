@@ -821,7 +821,7 @@ def EntangleXsweepY(name,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.05
+    m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
     m.params['measurement_time'] = 2*8*60 # Eight minutes
@@ -1076,9 +1076,9 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    # EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
+    EntangleXsweepY(name+'_EntangleXsweepY',debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
-    EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
+    # EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
 
     # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
 
