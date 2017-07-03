@@ -2334,6 +2334,7 @@ config['adwin_lt2_processes'] = {
                     ['number_of_C_init_ROs'            ,   0],
                     ['number_of_C_encoding_ROs'        ,   0],
                     ['do_LDE_1'                        ,   0],
+                    ['do_phase_offset_sweep'           ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -2345,7 +2346,7 @@ config['adwin_lt2_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
-                    ['feedback_adwin_trigger_dec_duration', 0.0],
+                    ['delay_feedback_static_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,
@@ -2379,11 +2380,12 @@ config['adwin_lt2_processes'] = {
                     'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
-                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon 
+                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
                     'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
                     'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
                     'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
                     'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
+                    'nuclear_phases_offset_sweep'   : 124, # array that holds the offsets in case we want to sweep
                     },
                 },
         }
@@ -3316,7 +3318,7 @@ config['adwin_pro_processes'] = {
                     ['A_RO_voltage'         , 0.8],
                     ['delay_time_offset'    , 0.0],
                     ['delay_feedback_target_phase'  , 1800.0],
-                    ['feedback_adwin_trigger_dec_duration', 0.0],
+                    ['delay_feedback_static_dec_duration', 0.0],
                     ],
                 'params_float_index'  : 21,
                 'params_float_length' : 10,

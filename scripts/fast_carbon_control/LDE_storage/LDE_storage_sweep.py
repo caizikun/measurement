@@ -187,7 +187,11 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
 
     if (m.params['do_phase_fb_delayline'] > 0
         and m.params['delay_feedback_use_calculated_phase_offsets'] > 0):
-        m.params['nuclear_phases_offset'] = m.calculated_phase_offsets
+        stddev = np.std(m.calculated_phase_offsets, axis=1)
+        if np.max(stddev) > 0.1:
+            print "Warning: phase offset differs per sweep point!"
+        print m.calculated_phase_offsets
+        m.params['nuclear_phases_offset'] = m.calculated_phase_offsets[0,:]
         m.adwin_set_var('nuclear_phases_offset', m.params['nuclear_phases_offset'])
     
     if upload_only:
@@ -1598,10 +1602,10 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
     apply_dynamic_phase_correction_delayline(
         name + '_phase_offset_fb_delayline',
-        upload_only=False,
-        dry_run=False,
+        upload_only=True,
+        dry_run=True,
         input_state='Z',
-        do_phase_offset_sweep=True
+        do_phase_offset_sweep=False
     )
     # apply_dynamic_phase_correction_delayline(
     #     name + '_phase_fb_delayline',

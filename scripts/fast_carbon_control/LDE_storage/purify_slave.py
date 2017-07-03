@@ -706,6 +706,8 @@ class purify_single_setup(DD.MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('Purification')
 
+        self.calculated_phase_offsets = np.zeros((self.params['pts'], self.params['number_of_carbons']))
+
         ### create a list of gates according to the current sweep.
         for pt in range(self.params['pts']):
 
@@ -1232,7 +1234,7 @@ class purify_single_setup(DD.MBI_C13):
                     accumulated_phases += (np.array(g.C_phases_before_gate)[self.params['number_of_carbons']]
                                            / np.pi * 360.0)
                     calculated_phase_offsets[i] = accumulated_phases[i]
-                self.calculated_phase_offsets = calculated_phase_offsets
+                self.calculated_phase_offsets[pt] = calculated_phase_offsets % 360.0
 
         if upload:
             print ' uploading sequence'

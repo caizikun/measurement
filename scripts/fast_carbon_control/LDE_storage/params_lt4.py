@@ -123,11 +123,12 @@ params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 params_lt4['delay_feedback_use_calculated_phase_offsets'] = 1
 params_lt4['delay_feedback_static_dec_block_pulse_seq'] = ['X', 'Y', 'X', 'Y']
 params_lt4['delay_feedback_static_dec_block_duration'] = 20e-6
+params_lt4['delay_feedback_static_dec_duration'] = 2.0*params_lt4['delay_feedback_static_dec_block_duration']
 params_lt4['delay_feedback_adwin_trigger_channel'] = 'adwin_count'
 params_lt4['delay_feedback_adwin_trigger_length'] = 3e-6
 params_lt4['delay_feedback_adwin_trigger_delay'] = 1e-6
 params_lt4['delay_feedback_HHsync_include'] = 0
-params_lt4['delay_feedback_HHsync_delay'] = params_lt4['feedback_adwin_trigger_dec_duration'] - 1e-6
+params_lt4['delay_feedback_HHsync_delay'] = params_lt4['delay_feedback_static_dec_block_duration'] - 1e-6
 params_lt4['delay_feedback_HHsync_duration'] = 50e-9
 
 # we don't want the old feedback crap

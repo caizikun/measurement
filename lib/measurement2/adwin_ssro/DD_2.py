@@ -1059,7 +1059,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         #print 'C_phases_before_gate', g.C_phases_before_gate
                         #print 'dec_duration', g.dec_duration
                         #print 'C_freq', C_freq
-                        #print 'iC',iC
+                        #print 'iC',
                         if g.el_state_before_gate == '0':
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC]+ g.dec_duration*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
@@ -3123,15 +3123,13 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         :param Gate:
         :return:
         """
-        if Gate.dec_duration is None:
-            Gate.dec_duration = self.params['delay_feedback_static_dec_block_duration'] * 2.0 # we insert the decoupling block twice
-
+     
         if Gate.dec_pulse_sequence is None:
             Gate.dec_pulse_sequence = self.params['delay_feedback_static_dec_block_pulse_seq']
 
-
+        static_dec_block_duration = self.params['delay_feedback_static_dec_block_duration']
         static_dec_N = len(Gate.dec_pulse_sequence)
-        static_dec_tau = Gate.dec_duration/(2.*Gate.N)
+        static_dec_tau = static_dec_block_duration/(2.*static_dec_N)
 
         Gate.tau_cut = 1.0e-6 # JS 07-2017: I just set this to a static value here, I hope that's good enough
 

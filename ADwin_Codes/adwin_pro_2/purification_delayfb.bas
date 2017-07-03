@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 ' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,423,423,663,663,664,664,708,708,843,843,909,909,1075,1076,1077,1080,1081
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -189,7 +189,7 @@ DIM number_of_dps_nuclei, current_feedback_nucleus AS LONG
 DIM nuclear_feedback_angle, nuclear_feedback_time, nuclear_offset_sweep_value AS FLOAT
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
 DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
-DIM delay_time_offset, delay_feedback_target_phase, feedback_adwin_trigger_dec_duration AS FLOAT
+DIM delay_time_offset, delay_feedback_target_phase, delay_feedback_static_dec_duration AS FLOAT
 DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 DIM do_phase_offset_sweep AS LONG
 
@@ -484,7 +484,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   A_RO_voltage                              = DATA_21[5]
   delay_time_offset                         = DATA_21[6]
   delay_feedback_target_phase               = DATA_21[7]
-  feedback_adwin_trigger_dec_duration       = DATA_21[8]
+  delay_feedback_static_dec_duration       = DATA_21[8]
   
   ' phase_per_sequence_repetition     = DATA_21[6] ' how much phase do we acquire per repetition
   ' phase_per_compensation_repetition = DATA_21[7] '
@@ -1104,7 +1104,7 @@ EVENT:
                    
           IF (do_phase_fb_delayline > 0) THEN
             if ((timer=0) AND (do_sweep_delay_cycles=0)) THEN
-              nuclear_feedback_time = feedback_adwin_trigger_dec_duration
+              nuclear_feedback_time = delay_feedback_static_dec_duration
               dedicate_next_cycle_to_calculations = 1
               requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
             ELSE
