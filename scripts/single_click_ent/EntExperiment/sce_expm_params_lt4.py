@@ -86,9 +86,9 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_phase'] 	  = 156.58 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0027848887892157
-params_lt4['sin2_theta_fit_a']		= 4.121792975939262
-params_lt4['sin2_theta_fit_x0']		= 0.63526931363756001
+params_lt4['sin2_theta_fit_of']		= 1.0111787340681671
+params_lt4['sin2_theta_fit_a']		= 4.7217855704376799
+params_lt4['sin2_theta_fit_x0']		= 0.61440230643190374
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
