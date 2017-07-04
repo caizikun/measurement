@@ -8,9 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,88,88,182,182,391,391,413,413,809,809,895,896
-' Foldings                       = 520,680
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Bookmarks                      = 3,3,87,87,181,181,390,390,412,412,811,811,899,900
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -451,6 +450,7 @@ EVENT:
           endselect
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           time_spent_in_communication = time_spent_in_communication + timer
+          DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel, 0) ' set the channels low
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel, 0) ' set the channels low
@@ -458,7 +458,6 @@ EVENT:
           
         ELSE
           'previous communication was not successful
-          
           digin_this_cycle = P2_DIGIN_LONG(DIO_MODULE)   ' read remote input channels
           if ( (digin_this_cycle AND remote_adwin_di_success_pattern) > 0) then
             remote_flag_1 = 1
@@ -590,6 +589,9 @@ EVENT:
           timer = -1
         endif
         
+      CASE 101 'Wait mode
+        mode = 10  
+        timer = -1
         
       CASE 10 'Phase stabilisation
         
@@ -761,7 +763,7 @@ EVENT:
         
         'XXX this can also cause a desync between the two adwins if the timing was unfortunate.
         if ((cr_result = -1) and (elapsed_cycles_since_phase_stab > max_time_from_phase)) then
-          cr_result = 1
+          cr_result = 1        
         endif
                   
         if  (cr_result > 0) then 'second part of the if statement gort added. 'XXX
@@ -831,7 +833,9 @@ EVENT:
             
             'new line that calculates the numbesr of allowed LDE attempts 'XXX note that decoupling attempts are deliberately ignored out of adwin sync reasons! (they are very different.)
             max_LDE_attempts = max_LDE_attempts0 - round((elapsed_cycles_since_phase_stab*1E-6)/LDE_element_duration) 'for jumping out of case 4 
-            
+            if (max_LDE_attempts < 20) then
+              max_LDE_attempts = 20
+            endif 
             max_sequence_duration = LDE_element_duration*max_LDE_attempts 'for case 5       
             
           ENDIF
@@ -1003,9 +1007,10 @@ EVENT:
         inc(index)
           
       CASE 7 'store the result of the e measurement and the sync number counter
-        finish_CR()
+        
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
-        DATA_114[repetition_counter+1] = DATA_26[1] 'PAR_55 'what was the state of the invalid data marker?
+        finish_CR()
+        DATA_114[repetition_counter+1] = DATA_26[1] 'what was the state of the invalid data marker?
         DATA_100[repetition_counter+1] = decoupling_repetitions
         DATA_113[repetition_counter+1] = max_LDE_attempts
         mode = 8 'go to reinit and CR check
@@ -1030,6 +1035,8 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = mode_after_expm ' go to CR check or to relevant starting mode.
+        
+        
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)

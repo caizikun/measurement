@@ -56,7 +56,7 @@ params_lt4['invalid_data_marker_do_channel'] = 1 # currently not used
 
 # timing and communication
 params_lt4['adwin_comm_safety_cycles'] = 15
-params_lt4['adwin_comm_timeout_cycles'] = 50000 # 50 ms
+params_lt4['adwin_comm_timeout_cycles'] = 1000 # 50 ms
 params_lt4['wait_for_awg_done_timeout_cycles'] = 1000000  # 10ms
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
 
@@ -83,7 +83,7 @@ params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
 #params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase'] 	  = 55.83 #qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_phase'] 	  = 54.148 #qt.exp_params['protocols'][name]['pulses']['X_phase']
 
 params_lt4['sin2_theta']			= 0.5
 params_lt4['sin2_theta_fit_of']		= 1.0111787340681671
@@ -114,7 +114,7 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 2.0#3.5 # 3.0 V = approx. 200 nW seems okay
+params_lt4['Phase_Msmt_voltage'] = 1.0#3.5 # 3.0 V = approx. 200 nW seems okay
 params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2

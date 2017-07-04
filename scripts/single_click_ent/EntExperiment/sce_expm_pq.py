@@ -848,6 +848,7 @@ def EntangleXsweepY(name,sweepXY = False,debug = False,upload_only=False):
             hist_only = False
             m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
         m.params['sweep_pts'] = m.params['general_sweep_pts']
+    
         m.params['pts'] = len(m.params['sweep_pts'])
         m.params['general_sweep_name'] ='LDE_final_mw_phase'
         
@@ -1019,7 +1020,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.25':13443,
         '0.4':11e3,
     }
-    m.joint_params['LDE_attempts'] = 25e3#22e3  ### calculated from our simulations ####
+    m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True
