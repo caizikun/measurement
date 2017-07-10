@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 ' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,423,423,663,663,664,664,708,708,843,843,909,909,1075,1076,1077,1080,1081
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
@@ -139,8 +139,8 @@ DIM nuclear_phases_offset_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 
 DIM excess_phase_360s AS LONG AT DM_LOCAL
 
-DIM phase_compensation_delay_cycles[2160] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
-DIM phase_compensation_feedback_times[2160]  AS FLOAT AT DM_LOCAL
+DIM phase_compensation_delay_cycles[phase_feedback_resolution_steps][max_nuclei] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
+DIM phase_compensation_feedback_times[phase_feedback_resolution_steps][max_nuclei]  AS FLOAT AT DM_LOCAL
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -1046,8 +1046,8 @@ EVENT:
             mode = mode_after_swap 'see flow control
             timer = -1
           ELSE
-            ' we still have some encoding to do, jumping back to LDE counting + swap
-            mode = 4
+            ' we still have some encoding to do, jumping back to either LDE counting or swap directly
+            mode = mode_after_init
             timer = 1
           ENDIF
           

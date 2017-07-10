@@ -63,11 +63,17 @@ def ssro_MWInit(name, multiplicity=[0], debug=False, mw2=[False], el_states = ['
 
     for mult, mw2, s in zip(multiplicity, mw2, el_states):
         #selecting correct parameters
-        if s == 'msm1':
+        if s == 'msm1' and qt.current_setup == 'lt3':
             m.params['Hermite_pi_length'] = 144e-9
             m.params['Hermite_pi_amp'] = 0.939
             m.params['electron_transition'] = '_m1'
             m.params['mw_frq'] = 1.719319e9-100e3
+        if s == 'msm1' and qt.current_setup == 'lt4':
+            m.params['Hermite_pi_length'] = 104e-9
+            m.params['Hermite_pi_amp'] = 0.622
+            m.params['electron_transition'] = '_m1'
+            m.params['mw_frq'] = 1.717521e9
+
 
         m.params['multiplicity'] = mult
         ### need to select the correct frequency

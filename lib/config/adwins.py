@@ -2849,6 +2849,8 @@ config['adwin_pro_processes'] = {
                     ['do_tico_delay_control'       ,   0],
                     ['delay_trigger_DI_channel'    ,  20],
                     ['delay_trigger_DO_channel'    ,  12],
+                    ['delay_HH_trigger_DO_channel' ,   0],
+                    ['do_delay_HH_trigger'         ,   0]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,

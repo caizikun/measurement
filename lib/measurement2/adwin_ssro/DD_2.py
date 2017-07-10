@@ -84,6 +84,8 @@ class Gate(object):
         self.event_jump         = kw.pop('event_jump',None)
         self.go_to              = kw.pop('go_to',None)
 
+        self.phase_tracked_by_adwin = kw.pop('phase_tracked_by_adwin', False)
+        self.track_single_element_phase = kw.pop('track_single_element_phase', False)
         # Empty list of C_phases before gate
         self.C_phases_before_gate   = [None]*10
         self.C_phases_after_gate    = [None]*10
@@ -99,13 +101,12 @@ class Gate(object):
             # reset all carbon phases after delay feedback
             # the adwin will take care of them
             self.phase = 'reset'
-            self.C_phases_after_gate = ['reset']*10
+            # self.C_phases_after_gate = ['reset']*10
 
 
         ### In case a gate adds phases to other Carbon spins that cannot be corrected by the precession frq alone
         ### this parameter can add an extra phase correction to each Carbon spin, default is 0.
         self.extra_phase_correction_list = [0.0]*10
-
 
         '''
         Description of other attributes that get added by functions
@@ -946,12 +947,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #print 'this gate does not have a carbon ind or spec freq',g.name
                     C_freq_0, C_freq_1, C_freq = self.load_C_freqs_in_radians_sec()       
 
-            
+            if g.phase_tracked_by_adwin:
+                # just transfer over the phase before the gate to after the gate
+                # the phases added by this element are tracked by the adwin
+                g.C_phases_after_gate = g.C_phases_before_gate
             ###########################
             ### Decoupling elements ###
             ###########################
             # print 'Gate type', g.Gate_type
-            if g.Gate_type == 'Carbon_Gate':
+            elif g.Gate_type == 'Carbon_Gate':
 
                 ### load the extra phase corrections for specific C13 crosstalks
                 ### (note that this could in principle be done with a list of frequencies
@@ -977,7 +981,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     #if (iC==1) and (g.C_phases_before_gate[iC] != None):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
 
-            if g.Gate_type == 'carbon_delay_phase_feedback':
+            elif g.Gate_type == 'carbon_delay_phase_feedback':
                 # reset all carbon phases
                 # actually, during the feedback gate only one carbon phase is really reset to zero.
                 # however, the adwin keeps track of the phases for the other carbons as well and will
@@ -985,7 +989,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 # phase of the other carbons as well after the feedback sequence, so this effectively
                 # sets a new reference point relative to which the phases are tracked
                 for iC in range(len(g.C_phases_before_gate)):
-                    g.C_phases_after_gate[iC] = 0.0
+                    if g.C_phases_before_gate[iC] is not None:
+                        g.C_phases_after_gate[iC] = 0.0
                         
             elif g.Gate_type =='electron_decoupling' or g.Gate_type == 'feedback_trigger_decoupling':
 
@@ -1140,6 +1145,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
+
+            # print("%s: %s" % (g.name, g.Gate_type))
+            # print("\t%s" % g.C_phases_before_gate[0:5])
+            # print("\t%s" % g.C_phases_after_gate[0:5])
         
         # for g in Gate_sequence:
         #     if 'inal' in g.name:
@@ -2386,6 +2395,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 eP = self._comp_pi2_pi_pi2_elt()
             elif Gate.Gate_operation == 'general':      ### Added to make possible electron pulses with different amplitudes and phases
                 eP = self._electron_pulse_elt(length = Gate.length, amplitude = Gate.amplitude)
+            elif Gate.Gate_operation == 'no_pulse':
+                eP = self._X_elt()
+                eP.amplitude = 0.0
             eP.phase = Gate.phase
 
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
@@ -3149,6 +3161,18 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             amplitude=2
         )
 
+        HHsync = pulse.SquarePulse(
+            channel='sync',
+            length=self.params['delay_HH_sync_duration'],
+            amplitude=2.0
+        )
+
+        HHtrigger = pulse.SquarePulse(
+            channel='self_trigger_sync',
+            length=self.params['delay_HH_trigger_duration'],
+            amplitude=2.0
+        )
+
         anchor_element = dft_element.append(pulse.cp(T_dec_block))
         if Gate.delayfb_add_triggers:
             dft_element.add(pulse.cp(feedback_trigger),
@@ -3157,13 +3181,12 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                             refpoint_new='start',
                             start=self.params['delay_feedback_adwin_trigger_delay'])
 
-            if self.params['delay_feedback_HHsync_include']:
-                HHsync = pulse.SquarePulse(channel = 'sync', length = self.params['delay_feedback_HHsync_duration'], amplitude = 1.0)
+            if self.params['delay_feedback_HHsync_include'] > 0:
                 dft_element.add(HHsync,
                                 refpulse=anchor_element,
                                 refpoint='start',
                                 refpoint_new='start',
-                                start=self.params['delay_feedback_HHsync_delay'])
+                                start=self.params['delay_feedback_HHsync_delay'] - Gate.tau_cut)
 
         current_t = static_dec_tau - Gate.tau_cut
         for pulse_type in Gate.dec_pulse_sequence:
@@ -3223,8 +3246,16 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # we need a minimal amount of ~250 samples to be able to use the AWG in "hardware sequencer" mode
             g1_elt = element.Element('%s_init_N%d' % (Gate.prefix, i), pulsar=qt.pulsar, global_time=True,
                                      min_samples=256)
-            g1_elt.append(pulse.cp(self_trigger))
+            g1_self_trigger_id = g1_elt.append(pulse.cp(self_trigger))
             g1_elt.append(pulse.cp(self_trigger, length=1e-9, amplitude=0.0))
+            if self.params['delay_feedback_HHsync_include'] > 0:
+                g1_elt.add(
+                    pulse.cp(HHtrigger),
+                    refpulse=g1_self_trigger_id,
+                    refpoint='start',
+                    refpoint_new='start',
+                    start=0.0
+                )
 
             # second element contains a pi-pulse after a fixed run-up time (such that possible channel delays may be taken into account)
             # in addition it outputs a self-trigger pulse again after the run-up-time
@@ -3243,6 +3274,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                             refpoint_new='start',
                                             start=self.params['delayed_element_run_up_time']
                                             )
+            if self.params['delay_feedback_HHsync_include'] > 0:
+                g2_elt.add(
+                    pulse.cp(HHtrigger),
+                    refpulse=g2_self_trigger_id,
+                    refpoint='start',
+                    refpoint_new='start',
+                    start=0.0
+                )
             g2_elt.add(pulse.cp(self_trigger, length=1e-9, amplitude=0.0),
                        refpulse=g2_self_trigger_id,
                        refpoint='end',

@@ -258,11 +258,11 @@ class Measurement(object):
             if isinstance(params[k],dict): # Added by PH to deal with dicts
                 for key, val in params[k].iteritems():
                     if grp.get(k+ '_' + key,None) != None:
-                        print logging.warning('Duplicate parameter in params dict')
+                        print logging.warning('Duplicate parameter in params dict: ' + k+ '_' + key)
                     grp.attrs[k+ '_' + key] = val
             else:
                 if grp.get(k,None) != None:
-                    print logging.warning('Duplicate parameter in params dict')
+                    print logging.warning('Duplicate parameter in params dict: ' + k)
                 grp.attrs[k] = params[k]
         
         self.h5data.flush()

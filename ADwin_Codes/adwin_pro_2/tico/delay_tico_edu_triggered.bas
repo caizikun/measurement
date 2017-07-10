@@ -11,7 +11,7 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -48,7 +48,11 @@
 #DEFINE Started               Par_18
 #DEFINE Awake                 Par_19
 
+#DEFINE Do_HH_Trigger         Par_20
+#DEFINE HH_Trigger_Out        Par_21
+
 #DEFINE Output_Duration   2 ' 40 ns
+#DEFINE HH_Output_Duration  2 ' 40 ns?
 ' Actual output duration: ~90 ns (depending on pulse shape) + cycles * 20 ns
 
 ' Dim current_time, time_past, cycles_past AS LONG
@@ -79,10 +83,7 @@ INIT:
   Awake = 1
 
 
-EVENT:  
-  ' we caught a trigger
-  Inc(Par_20)
-  
+EVENT:    
   IF (Enable > 0) THEN
     current_time = Digin_Fifo_Read_Timer()
     Digin_Fifo_Read(detected_bit_pattern, detected_time)
@@ -102,6 +103,12 @@ EVENT:
         
         INC(Trigger_Count)
         
+        IF (Do_HH_Trigger > 0) THEN
+          Digout(HH_Trigger_Out, 1)
+          ' NOPS(HH_Output_Duration) ' we probably want this pulse to be as short as possible
+          Digout(HH_Trigger_Out, 0)
+        ENDIF
+                
       ELSE
         INC(ShortDelayErrors)
         ' this probably means that we are receiving pulses more quickly than we can handle

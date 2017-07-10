@@ -1034,6 +1034,11 @@ EVENT:
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
         mode = mode_after_expm ' go to CR check or to relevant starting mode.
         
+        if (is_master > 0) then
+          P2_DIGOUT(DIO_MODULE, 11,1) ' tell the PLU to reset
+          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
+          P2_DIGOUT(DIO_MODULE, 11,0)   
+        endif
         
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
