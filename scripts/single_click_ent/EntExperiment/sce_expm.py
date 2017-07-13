@@ -34,11 +34,11 @@ class SingleClickEntExpm(DD.MBI_C13):
     
 
     def reset_plu(self): 
-        self.adwin.start_set_dio(dio_no=0, dio_val=0)
+        self.adwin.start_set_dio(dio_no=11, dio_val=0)
         qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=0, dio_val=1)
+        self.adwin.start_set_dio(dio_no=11, dio_val=1)
         qt.msleep(0.1)
-        self.adwin.start_set_dio(dio_no=0, dio_val=0)
+        self.adwin.start_set_dio(dio_no=11, dio_val=0)
         qt.msleep(0.1)
 
     def autoconfig(self):
@@ -443,7 +443,11 @@ class SingleClickEntExpm(DD.MBI_C13):
                 wait_time = 10e-6)]
             Fail_done =  DD.Gate('Fail_done'+str(pt),'Trigger',
                 wait_time = 10e-6)
-            Fail_done.go_to = 'wait_for_adwin_'+str(pt)
+            
+            if self.params['do_dynamical_decoupling'] + self.params['do_dynamical_decoupling_AWG_only'] > 0:
+                Fail_done.go_to = 'dd_'+str(pt)
+            else:
+                Fail_done.go_to = 'wait_for_adwin_'+str(pt)
 
 
             #######################################################################

@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,846,847
+' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,854,855
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -848,7 +848,15 @@ EVENT:
                 DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
-                mode = 8 ' finalize and go to cr check
+                '                mode = 8 ' finalize and go to cr check
+                if (do_dynamical_decoupling > 0) THEN
+                  DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                  DATA_109[repetition_counter+1] = store_index_stab
+                  mode = mode_after_LDE
+                else
+                  mode = 8
+                endif
+                
               endif
             endif 
             awg_done_was_low = 0 ' remember
@@ -981,11 +989,19 @@ EVENT:
         duty_cycle = time_spent_in_sequence / (time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication)
         FPAR_58 = duty_cycle
         
+        if (is_master > 0) then
+          P2_DIGOUT(DIO_MODULE, 11,1) ' tell the PLU to reset
+          CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*3ns
+          P2_DIGOUT(DIO_MODULE, 11,0)   
+        endif
+        
         if ((time_spent_in_state_preparation+time_spent_in_sequence+time_spent_in_communication) > 200E6) then 'prevent overflows: duty cycle is reset after 2000 sec, data type long can hold a little more
           time_spent_in_state_preparation = 0
           time_spent_in_sequence = 0 
           time_spent_in_communication = 0
         endif
+        
+        
     endselect
     
     INC(timer)

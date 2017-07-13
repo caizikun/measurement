@@ -13,6 +13,8 @@
 #DEFINE TiCoDL_ShortDelayErrors     17
 #DEFINE TiCoDL_Started              18
 #DEFINE TiCoDL_Awake                19
+#DEFINE TiCoDL_Do_HH_Trigger        20
+#DEFINE TiCoDL_HH_Trigger_Out       21
 
 #DEFINE dl_cycle_duration           20.0e-9
 
@@ -32,6 +34,8 @@ SUB tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Trigger_In_Pattern, delay_trigger_DI_pattern)
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Trigger_Out, delay_trigger_DO_channel)
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Awake, 0)
+  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Do_HH_Trigger, 0)
+  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_HH_Trigger_Out, 0)
   P2_TiCo_Start_Process(tdrv_datatable, 1)
   
   ' Wait until the TiCo is done initializing
@@ -39,6 +43,12 @@ SUB tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_
     CPU_SLEEP(100)
   UNTIL (P2_Get_Par(TiCo_DIO_MODULE, 1, TiCoDL_Awake) > 0)
 ENDSUB
+
+SUB tico_delay_line_init_HH_trigger(do_HH_trigger, delay_HH_trigger_DO_channel)
+  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Do_HH_Trigger, do_HH_trigger)
+  P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_HH_Trigger_Out, delay_HH_trigger_DO_channel)
+ENDSUB
+
 
 SUB tico_delay_line_finish()
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_Enable, 0)

@@ -136,7 +136,7 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('time_in_cr_and_comm'                   ,1,reps),
-                    ('invalid_data_markers'                  ,1,reps),  
+                    ('invalid_data_markers'                  ,1,reps),  ### is actually yellow repump cycles
                     ('time_in_cr_and_comm'                   ,1,reps),
                     'completed_reps',
                     'store_index_stab'
@@ -821,7 +821,7 @@ def EntangleXsweepY(name,sweepXY = False,debug = False,upload_only=False):
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
     m.joint_params['LDE_attempts'] = 250
-    m.params['sin2_theta'] = 0.05
+    m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
     m.params['measurement_time'] = 2*8*60 # Eight minutes
@@ -846,14 +846,14 @@ def EntangleXsweepY(name,sweepXY = False,debug = False,upload_only=False):
         else:
             hist_only = False
             m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
-
+        m.params['sweep_pts'] = m.params['general_sweep_pts']
+    
         m.params['pts'] = len(m.params['sweep_pts'])
         m.params['general_sweep_name'] ='LDE_final_mw_phase'
         
     
     m.params['do_general_sweep'] = 1
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
     
 
     ### upload and run
@@ -995,7 +995,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
 
     m.params['do_phase_stabilisation'] = 1
     m.params['do_dynamical_decoupling'] = 1
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 2000
     m.params['measurement_time'] = 20*60 # Eight minutes
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
@@ -1003,11 +1003,11 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     m.params['PLU_during_LDE'] = 1
 
     if include_CR:
-        m.params['reps_per_ROsequence'] = 35
+        m.params['reps_per_ROsequence'] = 250
 
-    m.params['sin2_theta'] = 0.2
+    m.params['sin2_theta'] = 0.15
     m.params['do_calc_theta'] = 1 
-    
+
 
     if m.params['sin2_theta'] > 0.5:
         raise Exception('What are you doing? sin2 theta is too big!!!')
@@ -1019,7 +1019,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.25':13443,
         '0.4':11e3,
     }
-    m.joint_params['LDE_attempts'] = 22e3  ### calculated from our simulations ####
+    m.joint_params['LDE_attempts'] = 14e3 + 1.818e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True
@@ -1089,9 +1089,9 @@ if __name__ == '__main__':
 
     # EntangleSweepTheta(name+'_EntangleZZ_SweepTheta',tomography_basis = 'Z',debug = False,upload_only=False)
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
-    EntangleXsweepY(name+'_EntangleXsweepY',sweepXY=True,debug = False,upload_only = False)
+    # EntangleXsweepY(name+'_EntangleXsweepY',sweepXY=False,debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
-    # EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
+    EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
 
     # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
 

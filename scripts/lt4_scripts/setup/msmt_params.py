@@ -35,8 +35,8 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 100e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.0#0.935 #Not calibrated
+	hermite_pi_length = 200e-9#100e-9 #Not calibrated
+	hermite_pi_amp = 0.801#0.935 #Not calibrated
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.623 #0.889 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.630 #0.889 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =   0.5348# 0.638 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp =   0.542 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               -0.01,
 		'A_off_voltage':                -0.26,
-		'yellow_repump_amplitude':      30e-9,#30e-9,
+		'yellow_repump_amplitude':      85e-9,#30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -177,14 +177,16 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 ############################################
 
 dl_physical_delay_time_offset	= 1294e-9 #1820e-9
-dl_delayed_element_run_up_time  = 400e-9
+dl_delayed_element_run_up_time  = 800e-9
 
 # dl_minimal_delay_time = dl_minimal_delay_time_bare + dl_delayed_element_run_up_time
 
 cfg['protocols']['AdwinSSRO+delay'] = {
     'delay_trigger_DI_channel':                 20,
     'delay_trigger_DO_channel':                 12,
+    'delay_HH_trigger_DO_channel':				11,
     'do_tico_delay_control':                    1,
+    'do_delay_HH_trigger':			   			0,
     # 'minimal_delay_time_bare':                  dl_minimal_delay_time_bare,
     # JS: the following parameter shouldn't be defined and isn't used anywhere anymore
     # I hope I got rid of all left-over occurrences.
@@ -197,6 +199,9 @@ cfg['protocols']['AdwinSSRO+delay'] = {
     'minimal_delay_cycles':                     15,
     'delay_clock_cycle_time':                   20e-9,
     'self_trigger_duration':                    100e-9,
+	'delay_HH_sync_duration':					50e-9,
+	'delay_HH_sync_offset':						500e-9,
+	'delay_HH_trigger_duration':				20e-9,
 }
 
 ###############################
@@ -250,17 +255,17 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (442999.99 + 475435.82)/2,
-	'C2_freq_0' 		: 442999.99,
-	'C2_freq_1_m1' 		: 475435.82,
+	'C2_freq_m1'        : (442979.59 + 475424.59)/2,
+	'C2_freq_0' 		: 442979.59,
+	'C2_freq_1_m1' 		: 475424.59,
 
 	'C2_Ren_tau_m1'    :   [4.900e-06], #3.87
 	'C2_Ren_N_m1'      :   [38], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [0.97] + [20.11] + [-2.71] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [1.03] + [20.11] + [-0.14] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	: 60.074, #360-160.818,  #61.357, #61.124, #299.431,
+	'C2_phase_per_LDE_sequence_m1'	: 58.423, #61.074, #360-160.818,  #61.357, #61.124, #299.431,
 	'C2_init_phase_correction_m1': 0.0,
-	'C2_init_phase_correction_serial_swap_m1': 182.740, # C2,C4 serial swap sequence offset
+	'C2_init_phase_correction_serial_swap_m1': 0.0, #182.740, # C2,C4 serial swap sequence offset
 	# 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
 	# offsets for the LDE calibration, not really interesting #178.552, #184.075, #181.041, # 185.919, #270.0,
 	
@@ -281,18 +286,18 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442806.88 + 416218.72)/2,
-	'C4_freq_0' 		: 442806.88,
-	'C4_freq_1_m1' 		: 416218.72,
+	'C4_freq_m1'        : (442773.64 + 416192.11)/2,
+	'C4_freq_0' 		: 442773.64,
+	'C4_freq_1_m1' 		: 416192.11,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.404e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.17] + [0.0] + [19.89] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.92] + [0.0] + [17.3] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	: 16.684, #344.723,
+	'C4_phase_per_LDE_sequence_m1'	: 15.916, #344.723,
 	'C4_init_phase_correction_m1'	: 0.0,
-	'C4_init_phase_correction_serial_swap_m1': 276.585, # C2,C4 serial swap sequence offset
+	'C4_init_phase_correction_serial_swap_m1': 0.0, #276.585, # C2,C4 serial swap sequence offset
 
 
 	###############
