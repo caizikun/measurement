@@ -32,7 +32,7 @@ C_split  = 0.847e6
 
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
-electron_transition = '-1'
+electron_transition = '+1'
 multiple_source = False
 
 mw1_source = ''
@@ -57,9 +57,9 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 144e-9#100e-9 
-	hermite_pi_amp = 0.917#0.394
+	hermite_pi_amp = 0.923#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.480#0.157
+	hermite_pi2_amp = 0.470#0.157
 
 	square_pi_length = 10e-9
 	square_pi_amp = 0.79 
@@ -98,7 +98,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      23e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_amplitude':      85e-9,#XXx28e-9,#28e-9, #50e-9
 		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -380,7 +380,7 @@ cfg['samples'][sample_name] = {
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 2e-9,#2.5e-9,
+		'A_CR_amplitude':				 2.5e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 
@@ -463,7 +463,7 @@ cfg['protocols'][name]['pulses'] = {
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
     	'DESR_pulse_duration' :		4.5e-6,
-    	'DESR_pulse_amplitude' :	0.016,#0.194,
+    	'DESR_pulse_amplitude' :	0.012,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,

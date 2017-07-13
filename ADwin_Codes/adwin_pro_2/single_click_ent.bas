@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
-' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,846,847
+' Bookmarks                      = 3,3,87,87,180,180,381,381,401,401,775,775,853,854
 '<Header End>
 ' Single click ent. sequence, described in the planning folder. Based on the purification adwin script, with Jaco PID added in
 ' PH2016
@@ -848,7 +848,14 @@ EVENT:
                 DATA_109[repetition_counter+1] = store_index_stab
                 mode = mode_after_LDE
               else ' two setups involved: Done means failure of the sequence at the moment (PH For the ent on demand THIS SHOULD COMPENSATE BY CREATING A BEST E STATE)
-                mode = 8 ' finalize and go to cr check
+                if (do_dynamical_decoupling = 1) then
+                  mode = mode_after_LDE ' Should still go through with what it has.
+                  DATA_108[repetition_counter+1] = elapsed_cycles_since_phase_stab
+                  DATA_109[repetition_counter+1] = store_index_stab
+                else  
+                  mode = 8 ' finalize and go to cr check
+                endif
+                
               endif
             endif 
             awg_done_was_low = 0 ' remember
@@ -975,6 +982,8 @@ EVENT:
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
+        
+        
         mode = mode_after_expm ' go to CR check or to relevant starting mode.
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        
@@ -986,6 +995,8 @@ EVENT:
           time_spent_in_sequence = 0 
           time_spent_in_communication = 0
         endif
+        
+        
     endselect
     
     INC(timer)

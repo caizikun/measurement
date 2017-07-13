@@ -836,7 +836,6 @@ def EntangleXsweepY(name,sweepXY = False,debug = False,upload_only=False):
             hist_only = False
             m.params['general_sweep_pts'] = [m.params['LDE_final_mw_phase'] + np.linspace(0,360,10),['X','Y']]
         m.params['general_sweep_name'] = ['LDE_final_mw_phase','tomography_basis']
-        m.params['sweep_pts'] = m.params['general_sweep_pts']
         m.params['pts'] = len(m.params['general_sweep_pts'][0])*len(m.params['general_sweep_pts'][1])
 
     else:
@@ -996,9 +995,10 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
 
     m.params['do_phase_stabilisation'] = 1
     m.params['do_dynamical_decoupling'] = 1
-    m.params['reps_per_ROsequence'] = 250
+    m.params['reps_per_ROsequence'] = 2000
     m.params['measurement_time'] = 20*60 # Eight minutes
     m.params['MW_during_LDE'] = 1
+    
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -1006,7 +1006,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     if include_CR:
         m.params['reps_per_ROsequence'] = 250
 
-    m.params['sin2_theta'] = 0.2
+    m.params['sin2_theta'] = 0.15
     m.params['do_calc_theta'] = 1 
     
 
@@ -1020,7 +1020,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.25':13443,
         '0.4':11e3,
     }
-    m.joint_params['LDE_attempts'] = 25e3  ### calculated from our simulations ####
+    m.joint_params['LDE_attempts'] = 14.0e3 + 1.818e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True
