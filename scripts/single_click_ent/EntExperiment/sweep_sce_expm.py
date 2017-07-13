@@ -460,7 +460,7 @@ def dynamical_decoupling_after_LDE(name, debug = False, upload_only = False):
     prepare(m)
 
     ### general params
-    pts = 11
+    pts =11
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 200
 

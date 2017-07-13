@@ -11,7 +11,7 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Info_Last_Save                 = TUD277459  DASTUD\tud277459
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -47,13 +47,15 @@
 #DEFINE ShortDelayErrors      Par_17
 #DEFINE Started               Par_18
 #DEFINE Awake                 Par_19
+#DEFINE NoDelaySetErrors      Par_20
 
-#DEFINE Do_HH_Trigger         Par_20
-#DEFINE HH_Trigger_Out        Par_21
+#DEFINE Delay_Ringbuffer_Idx    1
+#DEFINE Delay_Ringbuffer            Data_1
+#DEFINE Delay_Ringbuffer_Ptr        Par_40
+Dim Delay_Ringbuffer[1007] As Long As Ringbuffer_For_Read AT DM_LOCAL
+
 
 #DEFINE Output_Duration   2 ' 40 ns
-#DEFINE HH_Output_Duration  2 ' 40 ns?
-' Actual output duration: ~90 ns (depending on pulse shape) + cycles * 20 ns
 
 ' Dim current_time, time_past, cycles_past AS LONG
 ' Dim detected_bit_pattern, detected_time AS LONG
@@ -66,8 +68,9 @@
 #DEFINE detected_time Par_34
 #DEFINE corrected_delay Par_35
 
-
 INIT:
+  Ringbuffer_Clear(Delay_Ringbuffer_Idx, Delay_Ringbuffer_Ptr)
+  
   Dig_Fifo_Mode(0)
   Digin_Fifo_Enable(0)
   Digin_Fifo_Clear()
@@ -83,37 +86,41 @@ INIT:
   Awake = 1
 
 
-EVENT:    
+EVENT:  
+  ' we caught a trigger
   IF (Enable > 0) THEN
-    current_time = Digin_Fifo_Read_Timer()
     Digin_Fifo_Read(detected_bit_pattern, detected_time)
     IF ((detected_bit_pattern AND Trigger_In_Pattern) > 0) THEN       
-      ' TODO: check if we need to handle overflows
-      ' cycles_past = (current_time - detected_time) / 2 ' this line takes 34 cycles (680 ns) to execute => better to do the division with a bit shift
-      cycles_past = Shift_Right(current_time - detected_time, 1) ' this line takes 6 cycles (120 ns) to execute
-      corrected_delay = Delay - cycles_past ' this line takes 4 cycles (80 ns) to execute
-        
-      IF (corrected_delay > 5) THEN
-        NOPS(corrected_delay)
-        
-        ' Generate trigger output
-        Digout(Trigger_Out, 1)
-        NOPS(Output_Duration)
-        Digout(Trigger_Out, 0)
-        
-        INC(Trigger_Count)
-        
-        IF (Do_HH_Trigger > 0) THEN
-          Digout(HH_Trigger_Out, 1)
-          ' NOPS(HH_Output_Duration) ' we probably want this pulse to be as short as possible
-          Digout(HH_Trigger_Out, 0)
-        ENDIF
-                
+      ' I don't really know if this operation is deterministic in time ...
+      If (RingBuffer_Full(Delay_Ringbuffer_Idx, Delay_Ringbuffer_Ptr) = 0) THEN
+        Inc(NoDelaySetErrors)
       ELSE
-        INC(ShortDelayErrors)
-        ' this probably means that we are receiving pulses more quickly than we can handle
-        ' and the fifo buffer is overflowing, let's clear it
-        Digin_Fifo_Clear()
+        ' Read out the ringbuffer
+        Delay = Delay_Ringbuffer
+        ' ... so that's why I put the timer readout here
+        current_time = Digin_Fifo_Read_Timer()
+      
+        ' TODO: check if we need to handle overflows
+        ' cycles_past = (current_time - detected_time) / 2 ' this line takes 34 cycles (680 ns) to execute => better to do the division with a bit shift
+        cycles_past = Shift_Right(current_time - detected_time, 1) ' this line takes 6 cycles (120 ns) to execute      
+        corrected_delay = Delay - cycles_past ' this line takes 4 cycles (80 ns) to execute
+        
+        IF (corrected_delay > 5) THEN
+          NOPS(corrected_delay)
+        
+          ' Generate trigger output
+          Digout(Trigger_Out, 1)
+          NOPS(Output_Duration)
+          Digout(Trigger_Out, 0)
+        
+          INC(Trigger_Count)
+        
+        ELSE
+          INC(ShortDelayErrors)
+          ' this probably means that we are receiving pulses more quickly than we can handle
+          ' and the fifo buffer is overflowing, let's clear it
+          Digin_Fifo_Clear()
+        ENDIF
       ENDIF
     ELSE
       INC(IrrelevantDetections)

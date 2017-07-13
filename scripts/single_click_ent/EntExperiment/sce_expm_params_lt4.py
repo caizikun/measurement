@@ -82,13 +82,12 @@ params_lt4['PLU_4_delay']             = 200e-9
 params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
-#params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
-params_lt4['LDE_final_mw_phase'] 	  = 54.148 #qt.exp_params['protocols'][name]['pulses']['X_phase']
+params_lt4['LDE_final_mw_phase'] 	  = 79.236
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0111787340681671
-params_lt4['sin2_theta_fit_a']		= 4.7217855704376799
-params_lt4['sin2_theta_fit_x0']		= 0.61440230643190374
+params_lt4['sin2_theta_fit_of']		= 1.0004717617264427
+params_lt4['sin2_theta_fit_a']		= 4.3198007386809083
+params_lt4['sin2_theta_fit_x0']		= 0.62252666641818377
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -114,7 +113,7 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 1.0#3.5 # 3.0 V = approx. 200 nW seems okay
+params_lt4['Phase_Msmt_voltage'] = 1.5#3.5 # 3.0 V = approx. 200 nW seems okay
 params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
@@ -137,7 +136,7 @@ params_lt4['phase_setpoint'] = np.pi/2
 params_lt4['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds for phase stab
 params_lt4['pid_points'] = 2 # How many points to sample the phase at during the PID loop
 params_lt4['pid_points_to_store'] = 2 # How many points to store
-params_lt4['phase_stab_max_time'] = 140000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt4['phase_stab_max_time'] = 70000 # How long in microseconds to run the expm for after phase stabilisation
 
 # Relevant to phase stability studies
 params_lt4['sample_points'] = 10 # How many points to sample the phase at during the expm part

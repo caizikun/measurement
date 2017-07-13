@@ -213,16 +213,28 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         evolution_2_self_trigger = kw.get('evolution_2_self_trigger', True)
 
         # waiting element        
-        empty_pulse = pulse.SquarePulse(channel='sync', name='delay',
+        empty_pulse = pulse.SquarePulse(channel='adwin_sync', name='delay',
             length = 1000e-9, amplitude = 0.)
 
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = self.params['AWG_to_adwin_ttl_trigger_duration'],
-            amplitude = 2)
+            amplitude = 2.)
 
-        self_trigger = pulse.SquarePulse(channel='sync',
+        self_trigger = pulse.SquarePulse(channel='self_trigger',
             length = self.params['self_trigger_duration'],
-            amplitude = 2)
+            amplitude = 2.)
+
+        HH_sync = pulse.SquarePulse(
+            channel='sync',
+            length=self.params['delay_HH_sync_duration'],
+            amplitude=2.
+        )
+
+        HH_trigger = pulse.SquarePulse(
+            channel='self_trigger_sync',
+            length=self.params['delay_HH_trigger_duration'],
+            amplitude=2.
+        )
 
         initial_pulse_delay = 3e-6
 
@@ -231,10 +243,24 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
         for i in range(self.params['pts']):
 
             e = element.Element('ElectronT2_triggered_pt-%d_A' % i, pulsar=qt.pulsar)
-            e.add(pulse.cp(empty_pulse,
+            initial_wait_id = e.add(pulse.cp(empty_pulse,
                 length = initial_pulse_delay))
 
-            first_pulse_id = e.append(pulse.cp(pulse_pi2))
+            if self.params['do_delay_HH_trigger'] > 0:
+                e.add(
+                    HH_sync,
+                    refpulse=initial_wait_id,
+                    refpoint='start',
+                    refpoint_new='start',
+                    start=self.params['delay_HH_sync_offset']
+                )
+
+            first_pulse_id = e.add(
+                pulse.cp(pulse_pi2),
+                refpulse=initial_wait_id,
+                refpoint='end',
+                start=0.0
+            )
 
             if (evolution_1_self_trigger):
                 # tie the self trigger pulse to the center of the pi/2 pulse
@@ -248,6 +274,18 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         - self.params['self_trigger_delay'][i]
                         + self.params['self_trigger_pulse_timing_offset']
                         ))
+
+                if self.params['do_delay_HH_trigger'] > 0:
+                    e.add(pulse.cp(HH_trigger),
+                          refpulse=first_pulse_id,
+                          refpoint='center',  # used to be end during fixed delay runs
+                          refpoint_new='start',
+                          start=(
+                              self.params['refocussing_time'][i]
+                              + self.params['defocussing_offset'][i]
+                              - self.params['self_trigger_delay'][i]
+                              + self.params['self_trigger_pulse_timing_offset']
+                          ))
 
                 elements.append(e)
                 # we need to tie the start of the element to the center of the pi-pulse
@@ -285,6 +323,16 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
                         - self.params['self_trigger_delay'][i]
                         + self.params['self_trigger_pulse_timing_offset']
                         ))
+                if self.params['do_delay_HH_trigger'] > 0:
+                    e.add(pulse.cp(HH_trigger),
+                          refpulse=second_pulse_id,
+                          refpoint='center',  # used to be end during fixed delay runs
+                          refpoint_new='start',
+                          start=(
+                              self.params['refocussing_time'][i]
+                              - self.params['self_trigger_delay'][i]
+                              + self.params['self_trigger_pulse_timing_offset']
+                          ))
                 elements.append(e)
 
                 # same story about tieing the start of the element to the center of the pulse

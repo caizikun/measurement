@@ -136,7 +136,7 @@ class EntangleOnDemandExp(PQSingleClickEntExpm):
                     ('ssro_results'                          ,1,reps), 
                     ('DD_repetitions'                        ,1,reps),
                     ('time_in_cr_and_comm'                   ,1,reps),
-                    ('invalid_data_markers'                  ,1,reps),  
+                    ('invalid_data_markers'                  ,1,reps),  ### is actually yellow repump cycles
                     ('time_in_cr_and_comm'                   ,1,reps),
                     'completed_reps',
                     'store_index_stab'
@@ -1008,7 +1008,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
 
     m.params['sin2_theta'] = 0.15
     m.params['do_calc_theta'] = 1 
-    
+
 
     if m.params['sin2_theta'] > 0.5:
         raise Exception('What are you doing? sin2 theta is too big!!!')
@@ -1020,7 +1020,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
         '0.25':13443,
         '0.4':11e3,
     }
-    m.joint_params['LDE_attempts'] = 14.0e3 + 1.818e3  ### calculated from our simulations ####
+    m.joint_params['LDE_attempts'] = 14e3 + 1.818e3  ### calculated from our simulations ####
 
     if qt.current_setup == 'lt3':
         hist_only = True

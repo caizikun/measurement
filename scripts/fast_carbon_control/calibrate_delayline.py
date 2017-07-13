@@ -35,7 +35,7 @@ name=SAMPLE_CFG
 def hahn_echo_variable_delayline(name, debug=False, 
     vary_refocussing_time=True, range_start=-2e-6, range_end=2e6,
     evolution_1_self_trigger=False, evolution_2_self_trigger=False,
-    refocussing_time=10e-6, is_calibration_msmt=False):
+    refocussing_time=10e-6, is_calibration_msmt=False, do_HH_trigger=False):
     m = pulsar_delay.ElectronRefocussingTriggered(name)
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
@@ -54,10 +54,13 @@ def hahn_echo_variable_delayline(name, debug=False,
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
 
+    if do_HH_trigger:
+        m.params['do_delay_HH_trigger'] = 1
+
     pts = 21
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 500
+    m.params['repetitions'] = 1000
 
     if vary_refocussing_time:
         m.params['refocussing_time'] = np.linspace(range_start, range_end, pts)
@@ -146,10 +149,11 @@ if __name__ == '__main__':
             range_start = -200e-9,
             range_end = 200e-9,
             vary_refocussing_time = False,
-            refocussing_time = 20e-6,
+            refocussing_time = 3e-6,
             evolution_1_self_trigger = True,
             evolution_2_self_trigger = False,
-            is_calibration_msmt = True)
+            is_calibration_msmt = True,
+            do_HH_trigger=True)
     elif msmt == "check_calibration":
         hahn_echo_variable_delayline("VariableDelay_CheckCalib_HahnEcho_1T_" + name, 
             debug=False,

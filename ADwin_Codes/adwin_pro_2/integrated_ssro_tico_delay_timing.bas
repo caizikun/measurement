@@ -51,6 +51,7 @@ DIM cycle_duration AS LONG
 DIM wait_after_pulse, wait_after_pulse_duration AS LONG
 
 DIM do_tico_delay_control, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
+DIM delay_HH_trigger_DO_channel, do_HH_trigger AS LONG
 ' holds the settings for communication between ADwin CPU and TiCo processor
 ' is filled automatically by the TiCo initialization command
 DIM tdrv_datatable[150] AS LONG 
@@ -82,6 +83,8 @@ INIT:
   do_tico_delay_control        = DATA_20[13]
   delay_trigger_DI_channel     = DATA_20[14]
   delay_trigger_DO_channel     = DATA_20[15]
+  delay_HH_trigger_DO_channel  = DATA_20[16]
+  do_HH_trigger                = DATA_20[17]
   
   
   E_SP_voltage                 = DATA_21[1]
@@ -118,6 +121,10 @@ INIT:
   IF (do_tico_delay_control > 0) THEN
     tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
     tico_delay_line_set_enabled(1)
+  ENDIF
+  
+  IF (do_HH_trigger > 0) THEN
+    tico_delay_line_init_HH_trigger(do_HH_trigger, delay_HH_trigger_DO_channel)
   ENDIF
   
   sweep_index = 1
