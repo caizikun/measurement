@@ -23,7 +23,8 @@ def hahn_echo_with_djump(name, debug=False, upload = False,
     m = pulsar_delay.ElectronRefocussingTriggered(name)
 
     m.mprefix += "_djump"
-    m.adwin_process = 'dynamic_jump'
+    # m.adwin_process = 'dynamic_jump'
+    m.adwin_process = 'dynamic_jump_internal_trig'
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -71,6 +72,8 @@ def hahn_echo_with_djump(name, debug=False, upload = False,
     m.params['minimal_delay_cycles'] = 0
     m.params['minimal_delay_time'] = 0
 
+    # m.params['cycle_duration'] = 10000
+
     # MW pulses
     X_pi2 = ps.Xpi2_pulse(m)
     X_pi = ps.X_pulse(m)
@@ -86,7 +89,8 @@ def hahn_echo_with_djump(name, debug=False, upload = False,
     old_seq = qt.pulsar.last_programmed_sequence
     old_elems = qt.pulsar.last_programmed_elements
 
-    generate_new_sequence(m, old_seq, old_elems, upload = upload)
+    # generate_new_sequence(m, old_seq, old_elems, upload = upload)
+    generate_new_sequence_internal_trig(m, old_seq, old_elems, upload = upload)
     calculate_delay_cycles(m)
 
     # print m.params['jump_table']
@@ -94,6 +98,7 @@ def hahn_echo_with_djump(name, debug=False, upload = False,
         # print [round(var, 12) for var in delays]
     # print m.params['next_seq_table']
 
+    # this should go in msmt params
     table_dim = 256
 
     jump_shift = 7
@@ -212,6 +217,136 @@ def generate_new_sequence(m, seq, elements, upload = False):
 
             if pul_idx == len(pulse_seq) - 1:
                 pulse_overview['jump_table'].append(0)
+                pulse_overview['delays'].append(pulse_overview['final_time'] - start - length) # Not used atm
+            
+            start_prev = start
+
+        m.params['jump_table'].append(pulse_overview['jump_table'])
+        m.params['delays_before_jumps'].append(pulse_overview['delays'])
+
+        if pulse_overview['goto_target'] != 'None':
+            start_prev = 0
+            next_goto = next(i for (i, o) in enumerate(overview) if o['goto_target'] == pulse_overview['goto_target'])
+        else:
+            start_prev = pulse_overview['final_time']
+            if seq_idx + 1 == len(overview):
+                next_goto = 1
+            else:
+                next_goto = seq_idx + 2
+
+        if pulse_overview['jump_target'] != 'None':
+            start_prev = 0
+            next_jump = next(i for (i, o) in enumerate(overview) if o['jump_target'] == pulse_overview['jump_target'])
+        else:
+            start_prev = pulse_overview['final_time']
+            next_jump = 0
+
+        m.params['next_seq_table'].append([next_goto, next_jump])
+
+    # upload new seq
+    if upload:
+        qt.pulsar.program_awg(seq_uniq, *elements_uniq)
+
+def generate_new_sequence_internal_trig(m, seq, elements, upload = False):
+    qt.pulsar.AWG_sequence_cfg['JUMP_TIMING'] = 0 # ASYNC
+    [overview, pulse_array] = pulse_sim.group_seq_elems(seq, elements)
+   
+    seq_uniq = pulsar.Sequence(seq.name + '-unique')
+    seq_uniq.set_djump(True)
+    elements_uniq = []
+
+    unique_pulses = {}
+    jump_index = 0
+
+    empty = pulse.SquarePulse(channel = 'sync', length = 1e-6, amplitude = 0)
+
+    e_loop = element.Element('loop', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+    e_wait = element.Element('trigger_wait', pulsar = qt.pulsar, global_time = True, min_samples = 1e3) # currently not used
+    e_start_tico = element.Element('start_tico', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+
+    # e_loop.add(pulse.cp(empty, amplitude = 2, length = 100e-9), name = e_loop.name + '_sync')
+    e_loop.add(pulse.cp(empty, length = 1e-3), name = e_loop.name) # + '_empty', refpulse = e_loop.name + '_sync')
+    elements_uniq.append(e_loop)
+    seq_uniq.append(name = e_loop.name, wfname = e_loop.name, goto_target = e_wait.name, repetitions = 65536)
+    
+    e_wait.add(pulse.cp(empty), name = e_wait.name)
+    elements_uniq.append(e_wait)
+    seq_uniq.append(name = e_wait.name, wfname = e_wait.name, goto_target = e_loop.name, trigger_wait = True)
+
+    #e_start_tico.add(pulse.cp(empty, amplitude = 2, length = 100e-9), name = e_start_tico.name)
+    #elements_uniq.append(e_start_tico)
+    #seq_uniq.append(name = e_start_tico.name, wfname = e_start_tico.name, goto_target = e_loop.name)
+    #seq_uniq.add_djump_address(jump_index, e_start_tico.name)
+
+    m.params['jump_table'] = []
+    m.params['delays_before_jumps'] = []
+    m.params['next_seq_table'] = []
+
+    start_prev = 0
+
+    for seq_idx, (pulse_overview, pulse_seq) in enumerate(zip(overview, pulse_array)):
+
+        pulse_overview['jump_table'] = []
+        pulse_overview['delays'] = []
+
+        if pulse_overview['trigger_wait'] > 0:
+            start_prev = 0
+
+        for pul_idx, pul in enumerate(pulse_seq):
+            pul_physical = None
+
+            mid_point, length, phase, rotation, special = pul
+
+            phase = 180 * phase / np.pi
+
+            key = tuple([round(var, 5) for var in (length, phase, rotation, special)]) # rounding errors in pars
+
+            if key in unique_pulses:
+                pul_physical = unique_pulses[key][0]
+            else:
+
+                if special == 0:
+                    if rotation == np.pi:
+                        pul_physical = pulse.cp(ps.X_pulse(m), phase = phase)
+                    else:
+                        pul_physical = pulse.cp(ps.Xpi2_pulse(m), phase = phase)
+                elif special == 1:
+                    pul_phsyical = pulse.SquarePulse(channel='AOM_Newfocus', length = length, amplitude = 0.2)
+                elif special == 2:
+                    pul_physical = pulse.SquarePulse(channel='adwin_sync', length = length, amplitude = 2)
+                else:
+                    pul_phsyical = pulse.SquarePulse(channel='AOM_Matisse', length = length, amplitude = 0.2)
+
+                if special != 2: 
+                    jump_index += 1 # We are ading a new pulse to the AWG
+
+                    pul_name = pul_physical.name + ('-%i' % jump_index) # Give pulses unique names
+                    e = element.Element(pul_name, pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+                    e.add(pul_physical, name = pul_name)
+
+                    elements_uniq.append(e)
+
+                    seq_uniq.append(name = e.name, wfname = e.name, goto_target = e_loop.name)
+                    seq_uniq.add_djump_address(jump_index, e.name)
+
+                    unique_pulses[key] = [pul_physical, jump_index]
+                else:
+                    unique_pulses[key] = [pul_physical, 0] # Sync elements have a virtual jump index of 0
+
+            channel_offset = 0
+            for ch in pul_physical.channels:
+                if qt.pulsar.channels[ch]['delay'] > channel_offset:
+                    channel_offset = qt.pulsar.channels[ch]['delay']
+
+            length += pul_physical.start_offset + pul_physical.stop_offset
+            start = mid_point - length / 2 - channel_offset
+            delay = start - start_prev
+            
+            pulse_overview['jump_table'].append(unique_pulses[key][1])
+            pulse_overview['delays'].append(delay)
+
+            if pul_idx == len(pulse_seq) - 1:
+                pulse_overview['jump_table'].append(-1)
                 pulse_overview['delays'].append(pulse_overview['final_time'] - start - length) # Not used atm
             
             start_prev = start

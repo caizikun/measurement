@@ -45,6 +45,7 @@
 #DEFINE Started               Par_18
 #DEFINE Awake                 Par_19
 #DEFINE Jump_Bit_Shift        Par_20
+#DEFINE Stopped               Par_21
 
 #DEFINE Table_Size 256
 
@@ -75,48 +76,52 @@ INIT:
   ' Trigger_Count = 0
   ' IrrelevantDetections = 0
   ' ShortDelayErrors = 0
-  Started = Trigger_In_Pattern
-  Awake = 1
+  Started = 0 ' Read this as: start next cycle
+  Stopped = 0 ' Read this as: stop next cycle
   delay_bias = 30 ' In clock cyles (*20 ns)
   ' This is basically the diff between current_time and old_time within a loop
   starting_bias = 36 ' In processor cycles (*10 ns)
   max_element = Shift_Left(15, Jump_Bit_Shift)
-EVENT:
-  INC(Trigger_Count)
-  Digin_Fifo_Read(detected_bit_pattern, old_time)
-  old_time = old_time - starting_bias
   
+  Awake = 1
+EVENT:
   IF ((detected_bit_pattern AND Trigger_In_Pattern) > 0) THEN
-    Digout(11, 1)
-    NOPS(4)
-    Digout(11, 0)
-    
-    current_index = 1
     Do
-      current_element = jump_table[current_index]  
-      Digout_Bits(current_element, max_element - current_element)
-          
-      ' Still need to check overflow
-      current_time = Digin_Fifo_Read_Timer()
-      cycles_past = Shift_Right(current_time - old_time, 1)
-      corrected_delay = delay_cycles[current_index] - cycles_past - delay_bias
-          
-      If (corrected_delay > 5) Then
-        NOPS(corrected_delay)
-      Else
-        '        old_time = old_time - Shift_Left(corrected_delay, 1)
-        Inc(ShortDelayErrors)
-      EndIf
-          
-      old_time = Digin_Fifo_Read_Timer()
-          
-      ' Output
-      Digout(Strobe_Out, 1)
-      NOPS(4)
-      Digout(Strobe_Out, 0)
+      IF (Started > 0) THEN
         
-      Inc(current_index)
-    Until (delay_cycles[current_index] = 0) ' is NOT outputting jump index 0
+        Digin_Fifo_Read(detected_bit_pattern, old_time)
+        old_time = old_time - starting_bias
+        
+        current_index = 1
+        Do
+          current_element = jump_table[current_index]  
+          Digout_Bits(current_element, max_element - current_element)
+          
+          ' Still need to check overflow
+          current_time = Digin_Fifo_Read_Timer()
+          cycles_past = Shift_Right(current_time - old_time, 1)
+          corrected_delay = delay_cycles[current_index] - cycles_past - delay_bias
+          
+          If (corrected_delay > 5) Then
+            NOPS(corrected_delay)
+          Else
+            '        old_time = old_time - Shift_Left(corrected_delay, 1)
+            Inc(ShortDelayErrors)
+          EndIf
+          
+          old_time = Digin_Fifo_Read_Timer()
+          
+          ' Output
+          Digout(Strobe_Out, 1)
+          Digout(Strobe_Out, 0)
+        
+          Inc(current_index)
+        Until (jump_table[current_index] < 0)
+        
+        Started = 0 ' Finish the current sequence
+      ENDIF
+    Until (Stopped > 0) ' Infinite loop until process stop
+    Stopped = 0
   ELSE
     INC(IrrelevantDetections)
   ENDIF
