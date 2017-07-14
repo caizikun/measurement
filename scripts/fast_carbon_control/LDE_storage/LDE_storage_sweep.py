@@ -1458,7 +1458,9 @@ def apply_dynamic_phase_correction_delayline_tomo(name, debug=False, upload_only
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'Tomography_bases'
     m.params['general_sweep_pts'] = [
-        ['X','X'], ['Y', 'Y'], ['Z', 'Z']
+        ['X', 'I'], ['Y', 'I'], ['Z', 'I'],
+        ['I', 'X'], ['I', 'Y'], ['I', 'Z'],
+        ['X', 'X'], ['Y', 'Y'], ['Z', 'Z']
     ]
 
     print 'sweeping the', m.params['general_sweep_name']
@@ -1518,47 +1520,26 @@ def apply_dynamic_phase_correction_delayline_tomo(name, debug=False, upload_only
     # input el state is not used anymore
     m.params['input_el_state'] = None
 
-    # Note that these Tomography bases don't really make sense for multiple carbons
-
-    # tomo_dict = { 'X' : ['Z'] * m.params['number_of_carbons'],
-    #               'mX': ['Z'] * m.params['number_of_carbons'],
-    #               'Y' : ['Y'] * m.params['number_of_carbons'],
-    #               'mY': ['Y'] * m.params['number_of_carbons'],
-    #               'Z' : ['X'] * m.params['number_of_carbons'] ,
-    #               'mZ': ['X'] * m.params['number_of_carbons']}
-    #
-    # m.params['Tomography_bases'] = tomo_dict[input_state]
-
-    m.params['Tomography_list'] = [
-        ['X', 'X']
-    ]
-
-    # m.params['Tomography_bases'] = ['X','X']
-
-    # m.params['mw_first_pulse_phase'] = m.params['X_phase']
-
     #### increase the detuning for more precise measurements
     # m.params['phase_detuning'] = 6.0
     # # phase_per_rep = m.params['phase_per_sequence_repetition']
     # m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
-    m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
-    m.params['nuclear_phases_per_seqrep'] += np.array([1.0, 0.0]) * m.params['phase_detuning']
+    # m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
+    # m.params['nuclear_phases_per_seqrep'] += np.array([1.0, 0.0]) * m.params['phase_detuning']
 
     ### loop over tomography bases and RO directions upload & run
     breakst = False
     autoconfig = True
-    for tomo_bases in m.params['Tomography_list']:
-        m.params['Tomography_bases'] = tomo_bases
-        for ro in ['positive', 'negative']:
-            breakst = show_stopper()
-            if breakst:
-                break
-            save_name = "".join(m.params['Tomography_bases']) + "_" + ro
-            m.params['carbon_readout_orientation'] = ro
+    for ro in ['positive', 'negative']:
+        breakst = show_stopper()
+        if breakst:
+            break
+        save_name = ro
+        m.params['carbon_readout_orientation'] = ro
 
-            run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
-                      autoconfig=autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
-            autoconfig = False
+        run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
+                  autoconfig=autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
+        autoconfig = False
     m.finish()
 
 def sweep_number_of_delay_feedback_pulses(name, do_Z=False, debug=False, upload_only=False, dry_run=False):
