@@ -67,7 +67,7 @@ def MBE(name, carbon_list   = [1,2],
             ['I','X'],['I','Y'],['I','Z'],
             ['Z','Z'],['X','X'],['Y','Y']])
 
-    m.params['Tomography Bases'] = [['X','X']]
+    # m.params['Tomography Bases'] = [['X','X']]
 
     # m.params['Tomography Bases'] = ([
     #         ['X','X'],['X','Y'],['X','Z'],

@@ -2335,6 +2335,8 @@ config['adwin_lt2_processes'] = {
                     ['number_of_C_encoding_ROs'        ,   0],
                     ['do_LDE_1'                        ,   0],
                     ['do_phase_offset_sweep'           ,   0],
+                    ['delay_HH_trigger_DO_channel'     ,   0],
+                    ['do_HH_trigger'                   ,   0]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3309,6 +3311,8 @@ config['adwin_pro_processes'] = {
                     ['number_of_C_encoding_ROs'        ,   0],
                     ['do_LDE_1'                        ,   0],
                     ['do_phase_offset_sweep'           ,   0],
+                    ['delay_HH_trigger_DO_channel'     ,   0],
+                    ['do_delay_HH_trigger'             ,   0]
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,

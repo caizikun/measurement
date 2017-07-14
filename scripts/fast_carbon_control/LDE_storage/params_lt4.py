@@ -12,8 +12,6 @@ sample_name = qt.exp_params['samples']['current']
 
 params_lt4 = {}
 
-params_lt4['do_PQ_msmt'] = 0
-
 #general sequence things. All of these are set automatically.
 params_lt4['do_general_sweep']          = False
 params_lt4['is_two_setup_experiment']   = 0
@@ -38,10 +36,10 @@ params_lt4['LDE2_attempts'] = 10
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 950e-9#1000e-9
+params_lt4['AWG_SP_power']              = 900e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 840e-9 #560e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9
+params_lt4['average_repump_time'] 		= 525e-9 #560e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9
 params_lt4['LDE_decouple_time']         = round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9)#-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
@@ -94,7 +92,7 @@ params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns, minimum is 9.
 
 params_lt4['AWG_wait_for_lt3_start']    =  9347e-9#8.768e-6+787e-9#1787e-9#1487e-9#1487e-9#8e-6 = dt(f,AB) ###2014-06-07: Somehow both 1487 and 1486 produce 1487, Hannes -> i think because of multiple of 4 -> i chnged the start of the pulse 
 
-params_lt4['sync_during_LDE']           = 1
+params_lt4['sync_during_LDE']           = 0
 
 params_lt4['PLU_during_LDE']          = 1
 params_lt4['PLU_gate_duration']       = 200e-9#70e-9 # 200e-9
@@ -110,7 +108,7 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt4['carbons']                       = [2]
+params_lt4['carbons']                       = [2,4]
 params_lt4['carbon_swap_el_states']         = ['Z']
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
@@ -119,19 +117,28 @@ params_lt4['carbon_encoding']               = 'serial_swap'
 params_lt4['sequence_type']                 = params_lt4['carbon_encoding']
 params_lt4['dps_MBE_bases']                 = ['Y','Y']
 params_lt4['dps_MBE_readout_orientation']   = 'positive'
-params_lt4['delay_feedback_N']              = 2
+params_lt4['delay_feedback_N']              = 1
 params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
 params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 
 params_lt4['delay_feedback_use_calculated_phase_offsets'] = 1
-params_lt4['delay_feedback_static_dec_block_pulse_seq'] = ['X', 'Y', 'X', 'Y']
-params_lt4['delay_feedback_static_dec_block_duration'] = 20e-6
-params_lt4['delay_feedback_static_dec_duration'] = 2.0*params_lt4['delay_feedback_static_dec_block_duration']
+
+params_lt4['delay_feedback_initial_static_dec_block_pulse_seq'] = ['X', 'Y', 'X', 'Y']
+params_lt4['delay_feedback_initial_static_dec_block_duration'] = 20e-6
+
+params_lt4['delay_feedback_final_static_dec_block_pulse_seq'] = ['X', 'mX', 'X', 'mX']
+params_lt4['delay_feedback_final_static_dec_block_elflip_insert_after'] = 2
+params_lt4['delay_feedback_final_static_dec_block_duration'] = 20e-6
+
+params_lt4['delay_feedback_static_dec_duration'] = (
+    params_lt4['delay_feedback_initial_static_dec_block_duration']
+    + params_lt4['delay_feedback_final_static_dec_block_duration']
+)
+
 params_lt4['delay_feedback_adwin_trigger_channel'] = 'adwin_count'
 params_lt4['delay_feedback_adwin_trigger_length'] = 3e-6
 params_lt4['delay_feedback_adwin_trigger_delay'] = 1e-6
-params_lt4['delay_feedback_HHsync_include'] = 0
-params_lt4['delay_feedback_HHsync_delay'] = params_lt4['delay_feedback_static_dec_block_duration'] - 1e-6
+params_lt4['delay_feedback_HHsync_delay'] = params_lt4['delay_feedback_initial_static_dec_block_duration'] - 1e-6
 
 # we don't want the old feedback crap
 params_lt4['use_old_feedback']			= 0 
@@ -140,19 +147,21 @@ params_lt4['dynamic_phase_N']			= 2
 params_lt4['phase_feedback_resolution']	= 4.5
 
 ### Everything HydraHarp
+do_PQ_msmt = 0
+
+params_lt4['do_PQ_msmt'] = do_PQ_msmt
+params_lt4['do_delay_HH_trigger'] = do_PQ_msmt
+params_lt4['delay_feedback_HHsync_include'] = do_PQ_msmt
+
 TH_HH_selector = 1 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
 params_lt4['MIN_SYNC_BIN']        =   int(0e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(10.0e6)/TH_HH_selector#15 us # XXX was 15us 
+params_lt4['MAX_SYNC_BIN']        =   int(20.0e6)/TH_HH_selector#15 us # XXX was 15us
 params_lt4['MIN_HIST_SYNC_BIN']   =   int(0e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(10e6)/TH_HH_selector
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(20e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 2769e3 -params_lt4['MIN_SYNC_BIN'] #2490e3 BK 
-params_lt4['pulse_stop_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_start_bin'] = 2792e3 - params_lt4['MIN_SYNC_BIN'] # 2499e3 BK 
-params_lt4['tail_stop_bin'] = 2836e3 - params_lt4['MIN_SYNC_BIN']  # 2570e3 BK
 params_lt4['PQ_ch1_delay'] = 0
 
 params_lt4['measurement_time']    =   24*60*60 #sec = 24H

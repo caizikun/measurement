@@ -58,6 +58,7 @@ class Gate(object):
         self.dec_pulse_sequence = kw.pop('dec_pulse_sequence', None)
 
         self.delayfb_add_triggers = kw.pop('delayfb_add_triggers', True)
+        self.feedback_target_carbon_ind = kw.pop('feedback_target_carbon_ind', None)
 
         self.specific_transition = kw.pop('specific_transition',None) # used to specify the mw transition 
         self.fixed_dec_duration = kw.pop('fixed_dec_duration',False)
@@ -85,7 +86,6 @@ class Gate(object):
         self.go_to              = kw.pop('go_to',None)
 
         self.phase_tracked_by_adwin = kw.pop('phase_tracked_by_adwin', False)
-        self.track_single_element_phase = kw.pop('track_single_element_phase', False)
         # Empty list of C_phases before gate
         self.C_phases_before_gate   = [None]*10
         self.C_phases_after_gate    = [None]*10
@@ -982,15 +982,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
 
             elif g.Gate_type == 'carbon_delay_phase_feedback':
-                # reset all carbon phases
-                # actually, during the feedback gate only one carbon phase is really reset to zero.
-                # however, the adwin keeps track of the phases for the other carbons as well and will
-                # reset them to zero in their respective feedback gates. We do want to keep track of the
-                # phase of the other carbons as well after the feedback sequence, so this effectively
-                # sets a new reference point relative to which the phases are tracked
-                for iC in range(len(g.C_phases_before_gate)):
-                    if g.C_phases_before_gate[iC] is not None:
-                        g.C_phases_after_gate[iC] = 0.0
+                # reset the carbon phase of the feedback target
+                # for the other carbons, we keep on tracking their phase and use that as the phase offset
+                # for their respective feedback gates. The adwin keeps track of the phase accumulated
+                # in feedback sequences preceding this one and adds that as well.
+                if g.feedback_target_carbon_ind is None:
+                    print("Warning: no feedback target specified for gate: " + g.name)
+                else:
+                    # carry over phases from before the gate
+                    g.C_phases_after_gate = copy.deepcopy(g.C_phases_before_gate)
+                    if g.C_phases_before_gate[g.feedback_target_carbon_ind] is not None:
+                        g.C_phases_after_gate[g.feedback_target_carbon_ind] = 0.0
+                    else:
+                        print("Warning: applying feedback on an unitialized carbon")
                         
             elif g.Gate_type =='electron_decoupling' or g.Gate_type == 'feedback_trigger_decoupling':
 
@@ -3124,24 +3128,24 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ... -- |  | self-trigger | - (delay) - | e-spin pi pulse | - (delay) - | symmetrizing wait |  |     -- ...
                 \                              | + self-trigger  |                                    /
 
-               | e-spin decoupling |
-        ... -- | without triggers  |
-               | - tau_cut         |
+               | e-spin decoupling     |
+        ... -- | without triggers      |
+               | - tau_cut (+ el flip) |
 
-        The delay feedback sequence is embedded between decoupling blocks for two reasons:
-        - the first delay block contains a trigger that tells the ADwin to set up the delay line for the next carbon
+        The delay feedback sequence is embedded between decoupling blocks for three reasons:
+        - the first decoupling block contains a trigger that tells the ADwin to set up the delay line for the next carbon
         - we need some space to cut out tau_cuts to reliably embed the gate into the sequence
+        - if the number of feedback pulses is odd, the final decoupling block contains an electron flip
 
         :param Gate:
         :return:
         """
-     
-        if Gate.dec_pulse_sequence is None:
-            Gate.dec_pulse_sequence = self.params['delay_feedback_static_dec_block_pulse_seq']
 
-        static_dec_block_duration = self.params['delay_feedback_static_dec_block_duration']
-        static_dec_N = len(Gate.dec_pulse_sequence)
-        static_dec_tau = static_dec_block_duration/(2.*static_dec_N)
+        initial_dec_pulse_sequence = self.params['delay_feedback_initial_static_dec_block_pulse_seq']
+
+        initial_static_dec_block_duration = self.params['delay_feedback_initial_static_dec_block_duration']
+        initial_static_dec_N = len(initial_dec_pulse_sequence)
+        initial_static_dec_tau = initial_static_dec_block_duration/(2.*initial_static_dec_N)
 
         Gate.tau_cut = 1.0e-6 # JS 07-2017: I just set this to a static value here, I hope that's good enough
 
@@ -3152,9 +3156,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         ### generate delay feedback trigger element
         dft_element = element.Element('%s_trigger' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
-        dec_element_length = self.params['delay_feedback_static_dec_block_duration'] - Gate.tau_cut
+        initial_dec_element_length = self.params['delay_feedback_initial_static_dec_block_duration'] - Gate.tau_cut
         T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block',
-                                        length=dec_element_length, amplitude=0.)
+                                        length=initial_dec_element_length, amplitude=0.)
         feedback_trigger = pulse.SquarePulse(
             channel=self.params['delay_feedback_adwin_trigger_channel'],
             length=self.params['delay_feedback_adwin_trigger_length'],
@@ -3188,8 +3192,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                 refpoint_new='start',
                                 start=self.params['delay_feedback_HHsync_delay'] - Gate.tau_cut)
 
-        current_t = static_dec_tau - Gate.tau_cut
-        for pulse_type in Gate.dec_pulse_sequence:
+        current_t = initial_static_dec_tau - Gate.tau_cut
+        for pulse_type in initial_dec_pulse_sequence:
             if not pulse_type == 'I':
                 if pulse_type == 'X':
                     cur_pulse = pulse.cp(X)
@@ -3207,7 +3211,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     refpoint_new = 'center',
                     start = current_t
                 )
-            current_t += 2. * static_dec_tau
+            current_t += 2. * initial_static_dec_tau
 
         dft_element.wait_for_trigger = False
         Gate.elements = [dft_element]
@@ -3299,15 +3303,31 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             g2_elt.wait_for_trigger = True
             g3_elt.wait_for_trigger = True
             Gate.elements += [g1_elt, g2_elt, g3_elt]
+            final_feedback_pulse = pulse_type
 
         ### generate final decoupling element, out of which we carve tau_cut
+        ### if necessary, we also flip the electron here
+        final_dec_pulse_sequence = self.params['delay_feedback_final_static_dec_block_pulse_seq']
+
+        final_static_dec_block_duration = self.params['delay_feedback_final_static_dec_block_duration']
+        final_static_dec_N = len(final_dec_pulse_sequence)
+        final_static_dec_tau = final_static_dec_block_duration / (2. * final_static_dec_N)
+
         final_element = element.Element('%s_final' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
 
-        anchor_element = final_element.append(pulse.cp(T_dec_block))
+        final_dec_element_length = self.params['delay_feedback_final_static_dec_block_duration'] - Gate.tau_cut
+        T_dec_block_final = pulse.SquarePulse(
+            channel='MW_Imod', name='T_dec_block_final',
+            length=final_dec_element_length, amplitude=0.
+        )
+
+        anchor_element = final_element.append(pulse.cp(T_dec_block_final))
+        elflip_insert_after = self.params['delay_feedback_final_static_dec_block_elflip_insert_after']
 
         # now we don't subtract tau_cut at the begin, instead we carve it out of the end
-        current_t = static_dec_tau
-        for pulse_type in Gate.dec_pulse_sequence:
+        current_t = final_static_dec_tau
+        i = 0
+        for pulse_type in final_dec_pulse_sequence:
             if not pulse_type == 'I':
                 if pulse_type == 'X':
                     cur_pulse = pulse.cp(X)
@@ -3325,7 +3345,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                 refpoint_new='center',
                                 start=current_t
                                 )
-            current_t += 2. * static_dec_tau
+            i += 1
+            current_t += initial_static_dec_tau
+            if (self.params['delay_feedback_N'] % 2 == 1) and (i == elflip_insert_after):
+                # we need to insert an electron flip
+                if final_feedback_pulse == 'X':
+                    elflip_pulse = pulse.cp(mX)
+                elif final_feedback_pulse == 'mX':
+                    elflip_pulse = pulse.cp(X)
+                elif final_feedback_pulse == 'Y':
+                    elflip_pulse = pulse.cp(mY)
+                elif final_feedback_pulse == 'mY':
+                    elflip_pulse = pulse.cp(Y)
+                else:
+                    print("I don't understand final feedback pulse type: " + pulse_type)
+                final_element.add(elflip_pulse,
+                                  refpulse=anchor_element,
+                                  refpoint='start',
+                                  refpoint_new='center',
+                                  start=current_t
+                                  )
+            current_t += initial_static_dec_tau
+
 
         final_element.wait_for_trigger = False
         Gate.elements += [final_element]
@@ -3335,10 +3376,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         # rest of the code. I hope this works out
         Gate.elements_duration = -2.0*Gate.tau_cut
 
-        # if we do an odd number of feedback pulses, we effectively do a pi rotation on the electron
-        # let's announce that so that the phase tracking may take that into consideration
-        if self.params['delay_feedback_N'] % 2 == 1:
-            self.Gate_operation = 'pi'
+        # we actually do an electron flip now if the number of pulses is odd, so this has been taken care of
+        # # if we do an odd number of feedback pulses, we effectively do a pi rotation on the electron
+        # # let's announce that so that the phase tracking may take that into consideration
+        # if self.params['delay_feedback_N'] % 2 == 1:
+        #     self.Gate_operation = 'pi'
 
     ### function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):

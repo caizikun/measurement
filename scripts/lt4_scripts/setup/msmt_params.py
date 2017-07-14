@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.630 #0.889 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.626 #0.889 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =   0.542 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp =   0.540 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -77,7 +77,7 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               -0.01,
 		'A_off_voltage':                -0.26,
-		'yellow_repump_amplitude':      85e-9,#30e-9,#30e-9,
+		'yellow_repump_amplitude':      50e-9,#30e-9,#30e-9,
 		'yellow_repump_duration':       300,#300,
 		'yellow_CR_repump':             1,
 		'green_CR_repump':              1000,
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -255,15 +255,15 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (442979.59 + 475424.59)/2,
-	'C2_freq_0' 		: 442979.59,
-	'C2_freq_1_m1' 		: 475424.59,
+	'C2_freq_m1'        : (442998.35 + 475427.11)/2,
+	'C2_freq_0' 		: 442998.35,
+	'C2_freq_1_m1' 		: 475427.11,
 
 	'C2_Ren_tau_m1'    :   [4.900e-06], #3.87
 	'C2_Ren_N_m1'      :   [38], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [1.03] + [20.11] + [-0.14] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-1.45] + [20.11] + [-1.1] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	: 58.423, #61.074, #360-160.818,  #61.357, #61.124, #299.431,
+	'C2_phase_per_LDE_sequence_m1'	: 60.353, #61.074, #360-160.818,  #61.357, #61.124, #299.431,
 	'C2_init_phase_correction_m1': 0.0,
 	'C2_init_phase_correction_serial_swap_m1': 0.0, #182.740, # C2,C4 serial swap sequence offset
 	# 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
@@ -286,16 +286,16 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442773.64 + 416192.11)/2,
-	'C4_freq_0' 		: 442773.64,
-	'C4_freq_1_m1' 		: 416192.11,
+	'C4_freq_m1'        : (442803.78 + 416226.96)/2,
+	'C4_freq_0' 		: 442803.78,
+	'C4_freq_1_m1' 		: 416226.96,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.404e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.92] + [0.0] + [17.3] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [2.37] + [0.0] + [17.91] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	: 15.916, #344.723,
+	'C4_phase_per_LDE_sequence_m1'	: 16.577, #344.723,
 	'C4_init_phase_correction_m1'	: 0.0,
 	'C4_init_phase_correction_serial_swap_m1': 0.0, #276.585, # C2,C4 serial swap sequence offset
 
