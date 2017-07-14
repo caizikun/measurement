@@ -175,13 +175,12 @@ class SingleClickEntExpm(DD.MBI_C13):
         if self.params['do_phase_stabilisation'] and stab_reps != 0:
             toSave.append(('pid_counts_1',1,stab_reps))
             toSave.append(('pid_counts_2',1,stab_reps))
-            # toSave.append(('calculated_phase',1,stab_reps))
+            toSave.append(('calculated_phase',1,stab_reps))
             
         
         if self.params['only_meas_phase']: 
             toSave.append(('sampling_counts_1',1,reps*sample_points))
             toSave.append(('sampling_counts_2',1,reps*sample_points))
-
 
         elif self.params['do_post_ent_phase_msmt']: 
             toSave.append(('sampling_counts_1',1,reps))
@@ -287,25 +286,25 @@ class SingleClickEntExpm(DD.MBI_C13):
         ### initialize empty sequence and elements
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('SingleClickEnt')
-        if self.params['do_general_sweep'] == 1:
+        if self.params['do_general_sweep'] == 1:  
             if type(self.params['general_sweep_name']) == list:
                 x0 = self.params['general_sweep_pts'][0]
                 x1 = self.params['general_sweep_pts'][1]
                 self.params['general_sweep_pts1'] = x0
                 self.params['general_sweep_pts2'] = x1
-                self.params['general_sweep_pts'] = []
-                
+                self.params['general_sweep_pts']  = []
                 sweep_pts = list(product(x0,x1))
-                
+
         ### create a list of gates according to the current sweep.
         for pt in range(self.params['pts']):
             self.pt = pt
             #sweep parameter
-            if self.params['do_general_sweep'] == 1:    
+            if self.params['do_general_sweep'] == 1:      
                 if type(self.params['general_sweep_name']) == list:
-                    self.params[self.params['general_sweep_name'][0]] = sweep_pts[pt][0]
-                    self.params[self.params['general_sweep_name'][1]] = sweep_pts[pt][1]
-                    self.params['sweep_pts'] = range(len(sweep_pts))
+
+                        self.params[self.params['general_sweep_name'][0]] = sweep_pts[pt][0]
+                        self.params[self.params['general_sweep_name'][1]] = sweep_pts[pt][1]
+                        self.params['sweep_pts'] = range(len(sweep_pts))
                 else:
                     self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
             else:
@@ -449,7 +448,10 @@ class SingleClickEntExpm(DD.MBI_C13):
             else:
                 Fail_done.go_to = 'wait_for_adwin_'+str(pt)
 
-
+            if self.params['do_dynamical_decoupling'] + self.params['do_dynamical_decoupling_AWG_only'] > 0:
+                Fail_done.go_to = 'dd_'+str(pt)
+            else:
+                Fail_done.go_to = 'wait_for_adwin_'+str(pt)
             #######################################################################
             ### append all necessary gates according to the current measurement ###
             #######################################################################

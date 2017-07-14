@@ -998,6 +998,7 @@ def EntangleOnDemand(name,debug = False,upload_only=False,include_CR = False):
     m.params['reps_per_ROsequence'] = 2000
     m.params['measurement_time'] = 20*60 # Eight minutes
     m.params['MW_during_LDE'] = 1
+    
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
     m.params['PLU_during_LDE'] = 1
@@ -1057,7 +1058,7 @@ if __name__ == '__main__':
     ##### non-local measurements
     ## SPCorrs with Pi/2 pulse
     # if (qt.current_setup == 'lt3'):
-    #     qt.instruments['ZPLServo'].move_out()
+    #     qt.instruments['ZPLServo'].move_out()q
     # else:
     #     qt.instruments['ZPLServo'].move_in()
     # SPCorrs_ZPL_twoSetup(name+'_SPCorrs_ZPL_LT3',debug = False,upload_only=False)

@@ -983,6 +983,8 @@ EVENT:
         
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
         P2_DIGOUT(DIO_MODULE,remote_adwin_do_fail_channel,0) 
+        
+        
         mode = mode_after_expm ' go to CR check or to relevant starting mode.
         time_spent_in_sequence = time_spent_in_sequence + timer
         timer = -1        

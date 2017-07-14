@@ -53,7 +53,7 @@ params_lt3['remote_adwin_di_fail_channel'] = 18
 params_lt3['remote_adwin_do_success_channel'] = 13
 params_lt3['remote_adwin_do_fail_channel'] = 8
 params_lt3['adwin_comm_safety_cycles'] = 15
-params_lt3['adwin_comm_timeout_cycles'] = 50000 # 10ms 
+params_lt3['adwin_comm_timeout_cycles'] = 1000 # 10ms 
 params_lt3['remote_awg_trigger_channel'] = 1 # not used on slave
 params_lt3['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt3['master_slave_awg_trigger_delay'] = 9 # times 10ns
@@ -68,7 +68,7 @@ params_lt3['decoupling_element_duration'] = 2*params_lt3['dynamic_decoupling_tau
 params_lt3['sync_during_LDE']           = 1
 
 params_lt3['PLU_during_LDE']          = 1
-params_lt3['PLU_gate_duration']       = 20e-9#70e-9
+params_lt3['PLU_gate_duration']       = 25e-9#70e-9
 params_lt3['PLU_gate_3_duration']     = 40e-9
 params_lt3['PLU_1_delay']             = 28e-9#18e-9#+18e-9 ### optimized to deselect the pulse w. plu
 params_lt3['PLU_3_delay']             = 50e-9
@@ -81,9 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']      = 0.0
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.99601704174995942
-params_lt3['sin2_theta_fit_a']		= 1.9323687824888511
-params_lt3['sin2_theta_fit_x0']		= 0.85377910196284501
+params_lt3['sin2_theta_fit_of']		= 0.99295314815255942
+params_lt3['sin2_theta_fit_a']		= 1.8779332652288541
+params_lt3['sin2_theta_fit_x0']		= 0.85470860335684884
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
@@ -136,7 +136,7 @@ params_lt3['count_int_time_meas'] = 1000 # How long to integrate counts for in m
 params_lt3['pid_points'] = 2 # How many points to sample the phase at during the PID loop
 params_lt3['pid_points_to_store'] = 2 # How many points to store
 params_lt3['sample_points'] = 10 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_time'] = 140000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt3['phase_stab_max_time'] = 70000 # How long in microseconds to run the expm for after phase stabilisation
 
 
 

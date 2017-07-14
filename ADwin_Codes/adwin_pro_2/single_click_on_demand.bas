@@ -75,6 +75,7 @@ DIM DATA_109[max_single_click_ent_repetitions] AS LONG at DRAM_Extern 'save last
 DIM DATA_110[max_pid] AS FLOAT at DRAM_Extern 'Hold the calculated phase during phase stabilisation
 DIM DATA_114[max_single_click_ent_repetitions] AS LONG at DRAM_Extern' Invalid data marker 
 DIM DATA_113[max_single_click_ent_repetitions] AS Long at DRAM_extern
+
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM Float_Initializer[100] as Float AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -447,7 +448,7 @@ EVENT:
             Case 2 ' local timeout
               mode = timeout_mode_after_adwin_comm
           endselect
-          
+          DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           time_spent_in_communication = time_spent_in_communication + timer
           DATA_101[repetition_counter+1] = DATA_101[repetition_counter+1] + timer  ' store time spent in adwin communication for debugging
           timer = -1 ' timer is incremented at the end of the select_case mode structure. Will be zero in the next run
@@ -1006,6 +1007,7 @@ EVENT:
         inc(index)
           
       CASE 7 'store the result of the e measurement and the sync number counter
+        
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_LDE ' store sync number of successful run
         finish_CR()
         DATA_114[repetition_counter+1] = DATA_26[1] 'what was the state of the invalid data marker?
