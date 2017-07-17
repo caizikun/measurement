@@ -1,17 +1,13 @@
 '<TiCoBasic Header, Headerversion 001.001>
 ' Process_Number                 = 1
-' Initial_Processdelay           = 1000
-' Eventsource                    = External
-' External_Address               = 80804880H
-' External_Mask                  = FFFFH
-' External_Value                 = 0
-' External_Operation             = greater
+' Initial_Processdelay           = 50
+' Eventsource                    = Timer
 ' Priority                       = High
 ' Version                        = 1
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277459  DASTUD\tud277459
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -37,89 +33,71 @@
 
 #INCLUDE C:\ADwin\TiCoBasic\inc\DIO32TiCo.inc
 
-#DEFINE Strobe_Out            Par_13 
-#DEFINE Trigger_Count         Par_14 
-#DEFINE Trigger_In_Pattern    Par_15
-#DEFINE IrrelevantDetections  Par_16
-#DEFINE ShortDelayErrors      Par_17
-#DEFINE Started               Par_18
-#DEFINE Awake                 Par_19
-#DEFINE Jump_Bit_Shift        Par_20
-
 #DEFINE Table_Size 256
 
-#DEFINE current_time Par_30
-#DEFINE current_index Par_31
-#DEFINE current_element Par_32
-#DEFINE cycles_past Par_33
-#DEFINE detected_bit_pattern Par_34
-#DEFINE old_time Par_35
-#DEFINE corrected_delay Par_36
-#DEFINE max_element Par_37
-#DEFINE delay_bias Par_38
-#DEFINE starting_bias Par_39
+#DEFINE Enable                 Par_10
+#DEFINE Jump_Bit_Shift         Par_11
+#DEFINE AWG_start_DO_channel   Par_12
+#DEFINE AWG_jump_strobe_DO_channel Par_13
 
-DIM Data_2[Table_Size] As Long ' jump table
-DIM Data_3[Table_Size] As Long ' delay cycles
+#DEFINE awake                 Par_19
+#DEFINE current_index         Par_20
+#DEFINE current_element       Par_21
+#DEFINE corrected_delay       Par_22
+#DEFINE max_element           Par_23
+#DEFINE delay_bias            Par_24
+#DEFINE ShortDelayErrors      Par_25
 
-#DEFINE jump_table Data_2
-#DEFINE delay_cycles Data_3
+
+DIM Data_1[Table_Size] As Long ' jump table
+DIM Data_2[Table_Size] As Long ' delay cycles
+
+#DEFINE jump_table Data_1
+#DEFINE delay_cycles Data_2
 
 INIT:
-  Dig_Fifo_Mode(0)
-  Digin_Fifo_Enable(0)
-  Digin_Fifo_Clear()
-  Digin_Fifo_Enable(Trigger_In_Pattern)
   
-  ' Enable = 0
-  ' Trigger_Count = 0
-  ' IrrelevantDetections = 0
-  ' ShortDelayErrors = 0
-  Started = Trigger_In_Pattern
-  Awake = 1
+  Enable = 0
   delay_bias = 30 ' In clock cyles (*20 ns)
   ' This is basically the diff between current_time and old_time within a loop
-  starting_bias = 36 ' In processor cycles (*10 ns)
-  max_element = Shift_Left(15, Jump_Bit_Shift)
-EVENT:
-  INC(Trigger_Count)
-  Digin_Fifo_Read(detected_bit_pattern, old_time)
-  old_time = old_time - starting_bias
   
-  IF ((detected_bit_pattern AND Trigger_In_Pattern) > 0) THEN
-    Digout(11, 1)
-    NOPS(4)
-    Digout(11, 0)
-    
+  max_element = Shift_Left(15, Jump_Bit_Shift)
+  
+  awake = 1
+  
+  Par_37 = 0
+EVENT:
+  inc(Par_37)
+  If (Enable = 1) Then
+    ' Trigger AWG
+    DIGOUT(AWG_start_DO_channel,1)  ' AWG trigger
+    DIGOUT(AWG_start_DO_channel,0)
     current_index = 1
     Do
+      ' get current jump index and output it early so strobe can catch it properly
       current_element = jump_table[current_index]  
-      Digout_Bits(current_element, max_element - current_element)
-          
+      Digout_Bits(current_element, max_element - current_element) ' Set the jump table
+         
       ' Still need to check overflow
-      current_time = Digin_Fifo_Read_Timer()
-      cycles_past = Shift_Right(current_time - old_time, 1)
-      corrected_delay = delay_cycles[current_index] - cycles_past - delay_bias
+      corrected_delay = delay_cycles[current_index] - delay_bias
           
       If (corrected_delay > 5) Then
         NOPS(corrected_delay)
       Else
-        '        old_time = old_time - Shift_Left(corrected_delay, 1)
         Inc(ShortDelayErrors)
       EndIf
           
-      old_time = Digin_Fifo_Read_Timer()
-          
-      ' Output
-      Digout(Strobe_Out, 1)
-      NOPS(4)
-      Digout(Strobe_Out, 0)
+      ' Output strobe and jump immediately
+      Digout(AWG_jump_strobe_DO_channel, 1)
+      NOPS(4) ' Is this really necessary?
+      Digout(AWG_jump_strobe_DO_channel, 0)
         
       Inc(current_index)
-    Until (delay_cycles[current_index] = 0) ' is NOT outputting jump index 0
-  ELSE
-    INC(IrrelevantDetections)
-  ENDIF
+    Until (delay_cycles[current_index] = 0)
+      
+    Enable = 0
+
+  endif
   
+    
 FINISH:
-  Digin_Fifo_Clear()

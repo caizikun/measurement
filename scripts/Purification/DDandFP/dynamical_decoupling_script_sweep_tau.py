@@ -74,5 +74,5 @@ if __name__ == '__main__':
         tau_min=center_tau - (steps/2)*tau_step,
         tau_max=center_tau + (steps/2)*tau_step,
         tau_step = tau_step,
-        N=64,
+        N=1,
         reps_per_ROsequence = 250)

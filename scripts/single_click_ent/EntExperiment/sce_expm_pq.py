@@ -772,7 +772,7 @@ def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 400
+    m.params['reps_per_ROsequence'] = 100
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -781,15 +781,16 @@ def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
     m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
+    m.params['measurement_time'] = 20*60 # Eight minutes
 
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
         hist_only = True
-        m.params['general_sweep_pts'] = np.array([0]*4)
+        m.params['general_sweep_pts'] = np.array([0]*10)
     else:
         hist_only = False
-        m.params['general_sweep_pts'] = np.array([m.params['LDE_final_mw_phase'],m.params['LDE_final_mw_phase']+90,m.params['LDE_final_mw_phase']+180,m.params['LDE_final_mw_phase']+270])
-
+        m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
+    
     
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
@@ -914,7 +915,7 @@ def EntangleSweepEverything(name,debug = False,upload_only=False):
 
     m.params['do_phase_stabilisation'] = 1
 
-    m.params['reps_per_ROsequence'] = 100
+    m.params['reps_per_ROsequence'] = 60
     m.params['MW_during_LDE'] = 1
     m.joint_params['do_final_mw_LDE'] = 1
     m.params['is_two_setup_experiment'] = 1
@@ -1092,9 +1093,10 @@ if __name__ == '__main__':
     # EntangleSweepTheta(name+'_EntangleXX_SweepTheta',tomography_basis = 'X',debug = False,upload_only=False)
     # EntangleXsweepY(name+'_EntangleXsweepY',sweepXY=False,debug = False,upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
-    EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
+    # EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
 
-    # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
+    EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
+    EntangleXcalibrateMWPhase(name+'_EntangleXsweepYcalib',debug = False,upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

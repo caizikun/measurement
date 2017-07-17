@@ -30,7 +30,7 @@ params_lt4['MW_final_delay_offset']		= 10e-9
 params_lt4['first_mw_pulse_is_pi2']     = 0
 params_lt4['LDE_attempts_before_yellow']  = 2000
 params_lt4['Yellow_AWG_duration']			= 300e-6
-params_lt4['Yellow_AWG_power']			= 50e-9
+params_lt4['Yellow_AWG_power']			= 0e-9#50e-9
 
 
 
@@ -113,8 +113,9 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 1.5#3.5 # 3.0 V = approx. 200 nW seems okay
-params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
+params_lt4['Phase_Msmt_voltage'] = 1.3#3.5 # 3.0 V = approx. 200 nW seems okay
+if qt.current_setup == 'lt4':
+	params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3
@@ -133,10 +134,10 @@ params_lt4['PID_Kd'] = 0.0
 params_lt4['phase_setpoint'] = np.pi/2
 
 # Relevant to PID/ ent expm
-params_lt4['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds for phase stab
-params_lt4['pid_points'] = 2 # How many points to sample the phase at during the PID loop
-params_lt4['pid_points_to_store'] = 2 # How many points to store
-params_lt4['phase_stab_max_time'] = 70000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt4['count_int_time_stab'] = 10000 # How long to integrate counts for in microseconds for phase stab
+params_lt4['pid_points'] = 3 # How many points to sample the phase at during the PID loop
+params_lt4['pid_points_to_store'] = 3 # How many points to store
+params_lt4['phase_stab_max_time'] = 150000 # How long in microseconds to run the expm for after phase stabilisation
 
 # Relevant to phase stability studies
 params_lt4['sample_points'] = 10 # How many points to sample the phase at during the expm part

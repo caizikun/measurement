@@ -2897,6 +2897,44 @@ config['adwin_pro_processes'] = {
                     },
                 },
 
+
+        'integrated_ssro_tico_controlled' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_tico_controlled.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                },
+
         'dummy_selftrigger' : {
                 'index' : 9,
                 'file' : 'dummy_selftrigger.TB9',
@@ -3677,30 +3715,28 @@ config['adwin_pro_processes'] = {
                 },
                 },
                 'dynamic_jump' : {
-                    'index' : 1,
-                    'file' : 'dynamic_jump.TC9',
+                    'index' : 9,
+                    'file' : 'dynamic_jump.TB9',
                     'par' : {
+                        # 'table_dim' : 30
                     },
                     'params_long' : [
                         ['cycle_duration'           ,   1000],
-                        ['AWG_start_DO_channel'     ,   16  ],
-                        ['AWG_done_DI_channel'      ,   8   ],
-                        ['delay_trigger_DI_channel' ,   20  ],
-                        ['delay_trigger_DO_channel' ,   12  ],
+                        ['AWG_start_DO_channel'     ,   9   ],
+                        ['AWG_jump_strobe_DO_channel' ,   0 ],
+                        ['do_init_only'             ,   0   ]
                     ],
                     'params_long_index'  : 20,
-                    'params_long_length' : 100,
+                    # 'params_long_length' : 100,
                     'params_float' : [
                     ],
                     'params_float_index' : 21,
                     'data_long' : {
-                        'jump_table' :   40,
-                        'next_seq_table'    :   42,
+                        'jump_table' :   100,
+                        'delay_cycles'  :   101,
+                        'next_seq_table'    :   102,
                     },
-                    'data_float' : {
-                        'delay_cycles'  :   41
-                    }
-                }
+                },
         }
 
 

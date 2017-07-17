@@ -124,7 +124,7 @@ class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
 
 
-        PulsarMeasurement.autoconfig(self)
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
     def generate_sequence(self, upload=True, **kw):
 
