@@ -155,7 +155,7 @@ def prepare(m, setup=qt.current_setup,name=qt.exp_params['protocols']['current']
         m.params['is_master'] = 0
 
     m.params['send_AWG_start'] = 1
-    m.params['sync_during_LDE'] = 1
+    m.params['sync_during_LDE'] = 0
     m.params['wait_for_AWG_done'] = 0
     m.params['do_general_sweep']= 1
     m.params['trigger_wait'] = 1
@@ -180,7 +180,7 @@ def prepare_carbon_params(m):
     else:
         m.params['Carbon_LDE_init_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
-def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,autoconfig = True,mw=True,simplify_wfnames=False):
+def run_sweep(m,debug=True, upload_only=True,save_name='adwindata',multiple_msmts=False,autoconfig = True,mw=True,simplify_wfnames=False):
 
     if autoconfig:
         m.autoconfig()    
@@ -205,7 +205,7 @@ def run_sweep(m,debug=True, upload_only=True,save_name='',multiple_msmts=False,a
     m.setup(debug=debug,mw=mw)
 
     if not debug:
-        m.run(autoconfig=False, setup=False)
+        m.run(autoconfig=False, setup=False, pq_save_name="pq_data/" + save_name)
 
         if save_name != '':
             m.save(save_name)
@@ -434,8 +434,8 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False)
     m.params['do_carbon_readout']  = 1
     m.params['do_LDE_1'] = 1
 
-    m.params['LDE1_attempts'] = 150
-    m.joint_params['LDE1_attempts'] = 150
+    m.params['LDE1_attempts'] = 100
+    m.joint_params['LDE1_attempts'] = 100
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
@@ -1283,7 +1283,7 @@ def analyse_simple_el_init_swap(name, debug=False, upload_only=False, input_stat
 
     m.finish()
 
-def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,input_state = 'Z',simplify_wfnames=False, dry_run=False, do_phase_offset_sweep=False):
+def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,simplify_wfnames=False, dry_run=False, do_phase_offset_sweep=False):
     """
     combines all carbon parts of the sequence in order to 
     verify that all parts of the sequence work correctly.
@@ -1292,7 +1292,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
     Has the option to either sweep the repetitions of LDE2 (easy mode)
     """
-    m = purify_slave.purify_single_setup(name+'_'+input_state)
+    m = purify_slave.purify_single_setup(name)
     prepare(m)
     # prepare_carbon_params(m)
 
@@ -1300,14 +1300,20 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
 
 
     if not do_phase_offset_sweep:
-        pts = 12
-        m.params['phase_detuning'] = 12.
+        pts = 11
+        m.params['phase_detuning'] = 0.
         ### calculate sweep array
-        minReps = 3
-        maxReps = 48
-        step = int((maxReps-minReps)/pts)+1
+        minReps = 10
+        maxReps = 311
+        # minReps = 340
+        # maxReps = 641
+        # minReps = 670
+        # maxReps = 971
+        step = 30 # int((maxReps-minReps)/pts)+1
 
-        print(np.arange(minReps,maxReps,step))
+        m.params['general_sweep_pts'] = np.arange(minReps, maxReps, step)
+        print(m.params['general_sweep_pts'])
+        print("len: %d" % (len(m.params['general_sweep_pts'])))
         want_this = raw_input("Do you want this? (y)")
         if not want_this == "y":
             return
@@ -1316,17 +1322,18 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         m.params['do_general_sweep'] = 1
         m.params['general_sweep_name'] = 'LDE2_attempts'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.arange(minReps, maxReps, step)
+
         m.params['pts'] = len(m.params['general_sweep_pts'])
         m.params['sweep_name'] = m.params['general_sweep_name']
         m.params['sweep_pts'] = m.params['general_sweep_pts']
     else:
         pts = 11
-        offset_range = 60.0
+        offset_range = 360.0
         m.params['phase_detuning'] = 0.0
 
         m.params['do_general_sweep'] = 0
         m.params['LDE2_attempts'] = 10
+        m.joint_params['LDE2_attempts'] = 10
 
         m.params['pts'] = pts
         m.params['sweep_name'] = 'sequence_phase_offset'
@@ -1371,7 +1378,8 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
 
     m.params['do_phase_fb_delayline'] = 1
 
-    m.params['carbon_encoding'] = 'serial_swap'
+    m.params['carbon_encoding'] = 'MBE'
+    m.params['carbon_swap_el_states'] = ['X']
     # print(m.params['Hermite_pi_amp'], m.params['Hermite_pi_length'], m.params['X_phase'])
     # m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']  #### needs to be changed back to regular pi/2 for most calibrations
     # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
@@ -1381,8 +1389,9 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
 
     ### awg sequencing logic / lde parameters
     m.params['LDE_1_is_init'] = 0
-    m.joint_params['opt_pi_pulses'] = 0 
-    m.params['input_el_state'] =  input_state
+    m.joint_params['opt_pi_pulses'] = 0
+    # input el state is not used anymore
+    m.params['input_el_state'] = None
 
     # Note that these Tomography bases don't really make sense for multiple carbons
 
@@ -1395,7 +1404,11 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     #
     # m.params['Tomography_bases'] = tomo_dict[input_state]
 
-    m.params['Tomography_bases'] = ['X']
+    m.params['Tomography_list'] = [
+        ['X','X']
+    ]
+
+    # m.params['Tomography_bases'] = ['X','X']
 
     # m.params['mw_first_pulse_phase'] = m.params['X_phase']
 
@@ -1404,20 +1417,128 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     # # phase_per_rep = m.params['phase_per_sequence_repetition']
     # m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
     m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
-    m.params['nuclear_phases_per_seqrep'] += np.array([1.0]) * m.params['phase_detuning']
+    m.params['nuclear_phases_per_seqrep'] += np.array([1.0, 0.0]) * m.params['phase_detuning']
 
-                     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
     autoconfig = True
-    for ro in ['positive','negative']:
+    for tomo_bases in m.params['Tomography_list']:
+        m.params['Tomography_bases'] = tomo_bases
+        for ro in ['positive','negative']:
+            breakst = show_stopper()
+            if breakst:
+                break
+            save_name = "".join(m.params['Tomography_bases']) + "_" + ro
+            m.params['carbon_readout_orientation'] = ro
+
+            run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
+            autoconfig = False
+    m.finish()
+
+
+def apply_dynamic_phase_correction_delayline_tomo(name, debug=False, upload_only=False, simplify_wfnames=False,
+                                             dry_run=False):
+    """
+    combines all carbon parts of the sequence in order to
+    verify that all parts of the sequence work correctly.
+    Can be used to calibrate the phase per LDE attempt!
+    Here the adwin performs dynamic phase correction such that an
+    initial carbon state |x> (after swapping) is rotated back onto itself and correctly read out.
+    Has the option to either sweep the repetitions of LDE2 (easy mode)
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+    # prepare_carbon_params(m)
+
+    ### general params
+
+    m.params['LDE2_attempts'] = 10
+    m.joint_params['LDE2_attempts'] = 10
+
+    m.params['do_general_sweep'] = 1
+    m.params['general_sweep_name'] = 'Tomography_bases'
+    m.params['general_sweep_pts'] = [
+        ['X', 'I'], ['Y', 'I'], ['Z', 'I'],
+        ['I', 'X'], ['I', 'Y'], ['I', 'Z'],
+        ['X', 'X'], ['Y', 'Y'], ['Z', 'Z']
+    ]
+
+    print 'sweeping the', m.params['general_sweep_name']
+
+    m.params['pts'] = len(m.params['general_sweep_pts'])
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['reps_per_ROsequence'] = 500
+
+    turn_all_sequence_elements_off(m)
+    m.params['do_phase_offset_sweep'] = 0
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    if not dry_run:
+        m.params['do_carbon_init'] = 1
+        m.params['do_swap_onto_carbon'] = 1
+        m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+        m.params['do_LDE_1'] = 0
+        m.params['simple_el_init'] = 1
+        m.params['do_LDE_2'] = 1
+        m.params['do_phase_correction'] = 1
+
+        m.params['do_purifying_gate'] = 0
+        m.params['do_carbon_readout'] = 1
+        m.params['do_repump_after_LDE2'] = 1
+        mw = True
+        ####
+    else:
+        m.params['do_carbon_init'] = 1
+        m.params['do_C_init_SWAP_wo_SSRO'] = 1
+        m.params['do_swap_onto_carbon'] = 1
+        m.params['do_SSRO_after_electron_carbon_SWAP'] = 0
+        m.params['do_LDE_1'] = 0
+        m.params['simple_el_init'] = 1
+        m.params['do_LDE_2'] = 1
+        m.params['do_phase_correction'] = 1
+
+        m.params['do_purifying_gate'] = 0
+        m.params['do_carbon_readout'] = 1
+        m.params['do_repump_after_LDE2'] = 1
+        mw = False
+
+    m.params['do_phase_fb_delayline'] = 1
+
+    m.params['carbon_encoding'] = 'MBE'
+    m.params['carbon_swap_el_states'] = ['X']
+    # print(m.params['Hermite_pi_amp'], m.params['Hermite_pi_length'], m.params['X_phase'])
+    # m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']  #### needs to be changed back to regular pi/2 for most calibrations
+    # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    # m.params['mw_first_pulse_phase'] = m.params['X_phase']
+
+
+
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 0
+    m.joint_params['opt_pi_pulses'] = 0
+    # input el state is not used anymore
+    m.params['input_el_state'] = None
+
+    #### increase the detuning for more precise measurements
+    # m.params['phase_detuning'] = 6.0
+    # # phase_per_rep = m.params['phase_per_sequence_repetition']
+    # m.params['phase_per_sequence_repetition'] = phase_per_rep + m.params['phase_detuning']
+    # m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
+    # m.params['nuclear_phases_per_seqrep'] += np.array([1.0, 0.0]) * m.params['phase_detuning']
+
+    ### loop over tomography bases and RO directions upload & run
+    breakst = False
+    autoconfig = True
+    for ro in ['positive', 'negative']:
         breakst = show_stopper()
         if breakst:
             break
-        save_name = 'X_'+ro
+        save_name = ro
         m.params['carbon_readout_orientation'] = ro
 
-        run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig = autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
+        run_sweep(m, debug=debug, upload_only=upload_only, multiple_msmts=True, save_name=save_name,
+                  autoconfig=autoconfig, simplify_wfnames=simplify_wfnames, mw=mw)
         autoconfig = False
     m.finish()
 
@@ -1558,7 +1679,7 @@ if __name__ == '__main__':
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
-    calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
+    # calibrate_LDE_phase(name+'_LDE_phase_calibration',upload_only = False)
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
@@ -1584,17 +1705,17 @@ if __name__ == '__main__':
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False,input_state = 'Z')
     # apply_dynamic_phase_correction_delayline(
     #     name + '_phase_offset_fb_delayline',
-    #     upload_only=True,
-    #     dry_run=True,
-    #     input_state='Z',
-    #     do_phase_offset_sweep=False
-    # )
-
-    # apply_dynamic_phase_correction_delayline(
-    #     name + '_phase_fb_delayline',
     #     upload_only=False,
     #     dry_run=False,
-    #     input_state = 'Z')
+    #     input_state='Z',
+    #     do_phase_offset_sweep=True
+    # )
+    #
+    apply_dynamic_phase_correction_delayline(
+        name + '_phase_fb_delayline',
+        upload_only=True,
+        dry_run=False,
+    )
 
     # sweep_number_of_delay_feedback_pulses("_delay_pulses_sweep",
     #                                       debug=False,

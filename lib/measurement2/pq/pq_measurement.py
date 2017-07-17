@@ -65,7 +65,7 @@ class PQMeasurement(m2.Measurement):
 
         self.stop_measurement_process()
 
-    def run(self, autoconfig=True, setup=True, debug=False,  live_filter_on_marker=False,hist_only = False):
+    def run(self, autoconfig=True, setup=True, debug=False, live_filter_on_marker=False, hist_only = False, pq_save_name=None):
 
         if debug:
             self.run_debug()
@@ -96,17 +96,21 @@ class PQMeasurement(m2.Measurement):
         T2_TIMEFACTOR = np.uint64(self.PQ_ins.get_T2_TIMEFACTOR())
         T2_READMAX = self.PQ_ins.get_T2_READMAX()
 
+        dset_path = ''
+        if pq_save_name is not None:
+            dset_path = pq_save_name + "/"
+
         print 'run PQ measurement, TTTR_read_count ', TTTR_read_count, ' TTTR_RepetitiveReadouts' , TTTR_RepetitiveReadouts
         # note: for the live data, 32 bit is enough ('u4') since timing uses overflows.
-        dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
+        dset_hhtime = self.h5data.create_dataset(dset_path + 'PQ_time-{}'.format(rawdata_idx),
             (0,), 'u8', maxshape=(None,))
-        dset_hhchannel = self.h5data.create_dataset('PQ_channel-{}'.format(rawdata_idx), 
+        dset_hhchannel = self.h5data.create_dataset(dset_path + 'PQ_channel-{}'.format(rawdata_idx),
             (0,), 'u1', maxshape=(None,))
-        dset_hhspecial = self.h5data.create_dataset('PQ_special-{}'.format(rawdata_idx), 
+        dset_hhspecial = self.h5data.create_dataset(dset_path + 'PQ_special-{}'.format(rawdata_idx),
             (0,), 'u1', maxshape=(None,))
-        dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
+        dset_hhsynctime = self.h5data.create_dataset(dset_path + 'PQ_sync_time-{}'.format(rawdata_idx),
             (0,), 'u8', maxshape=(None,))
-        dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
+        dset_hhsyncnumber = self.h5data.create_dataset(dset_path + 'PQ_sync_number-{}'.format(rawdata_idx),
             (0,), 'u4', maxshape=(None,))
 
         self.hist_length = np.uint64(self.params['MAX_HIST_SYNC_BIN'] - self.params['MIN_HIST_SYNC_BIN'])
@@ -232,21 +236,21 @@ class PQMeasurement(m2.Measurement):
 
                 if current_dset_length > self.params['MAX_DATA_LEN']:
                     rawdata_idx += 1
-                    dset_hhtime = self.h5data.create_dataset('PQ_time-{}'.format(rawdata_idx), 
+                    dset_hhtime = self.h5data.create_dataset(dset_path + 'PQ_time-{}'.format(rawdata_idx),
                         (0,), 'u8', maxshape=(None,))
-                    dset_hhchannel = self.h5data.create_dataset('PQ_channel-{}'.format(rawdata_idx), 
+                    dset_hhchannel = self.h5data.create_dataset(dset_path + 'PQ_channel-{}'.format(rawdata_idx),
                         (0,), 'u1', maxshape=(None,))
-                    dset_hhspecial = self.h5data.create_dataset('PQ_special-{}'.format(rawdata_idx), 
+                    dset_hhspecial = self.h5data.create_dataset(dset_path + 'PQ_special-{}'.format(rawdata_idx),
                         (0,), 'u1', maxshape=(None,))
-                    dset_hhsynctime = self.h5data.create_dataset('PQ_sync_time-{}'.format(rawdata_idx), 
+                    dset_hhsynctime = self.h5data.create_dataset(dset_path + 'PQ_sync_time-{}'.format(rawdata_idx),
                         (0,), 'u8', maxshape=(None,))
-                    dset_hhsyncnumber = self.h5data.create_dataset('PQ_sync_number-{}'.format(rawdata_idx), 
+                    dset_hhsyncnumber = self.h5data.create_dataset(dset_path + 'PQ_sync_number-{}'.format(rawdata_idx),
                         (0,), 'u4', maxshape=(None,))         
                     current_dset_length = 0
 
                     self.h5data.flush()
 
-        dset_hist = self.h5data.create_dataset('PQ_hist', data=self.hist, compression='gzip')
+        dset_hist = self.h5data.create_dataset(dset_path + 'PQ_hist', data=self.hist, compression='gzip')
         self.h5data.flush()
 
         self.PQ_ins.StopMeas()

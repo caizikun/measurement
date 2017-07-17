@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,423,423,663,663,664,664,708,708,843,843,909,909,1075,1076,1077,1080,1081
+' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,437,437,685,685,686,686,734,734,871,871,937,937,1103,1104,1105,1108,1109
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -81,14 +81,14 @@ DIM DATA_104[max_purification_repetitions] AS LONG at DRAM_Extern' number of rep
 DIM DATA_105[max_purification_repetitions] AS LONG at DRAM_Extern ' SSRO counts electron readout after purification gate 
 DIM DATA_106[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts carbon spin readout after tomography 
 DIM DATA_107[max_purification_repetitions] AS LONG at DRAM_Extern' SSRO counts last electron spin readout performed in the adwin seuqnece 
-DIM DATA_108[max_purification_repetitions] as FLOAT at DRAM_Extern' required phase feedback on the nuclear spin. mainly for debugging 
+DIM DATA_108[max_purification_repetitions][max_nuclei] as FLOAT at DRAM_Extern' required phase feedback on the nuclear spin. mainly for debugging 
 ' DIM DATA_109[max_purification_repetitions] AS FLOAT at DRAM_Extern' minimum achievable phase deviation
 ' DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via the adwin
 ' DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 ' DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
 ' DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
 
-DIM DATA_109[max_purification_repetitions] AS LONG AT DRAM_Extern ' feedback delay setting
+DIM DATA_109[max_purification_repetitions][max_nuclei] AS LONG AT DRAM_Extern ' feedback delay setting
 DIM DATA_124[max_purification_repetitions] AS LONG AT DRAM_Extern ' nuclear phase offset sweep
 DIM DATA_125[max_purification_repetitions] AS LONG AT DRAM_Extern ' sweep delay cycles
 
@@ -139,8 +139,8 @@ DIM nuclear_phases_offset_IN[max_nuclei] AS FLOAT AT DRAM_EXTERN
 
 DIM excess_phase_360s AS LONG AT DM_LOCAL
 
-DIM phase_compensation_delay_cycles[phase_feedback_resolution_steps][max_nuclei] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
-DIM phase_compensation_feedback_times[phase_feedback_resolution_steps][max_nuclei]  AS FLOAT AT DM_LOCAL
+DIM phase_compensation_delay_cycles[2160] AS LONG AT DM_LOCAL ' max_nuclei*phase_resolution_steps = 2160
+DIM phase_compensation_feedback_times[2160]  AS FLOAT AT DM_LOCAL
 
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
@@ -190,8 +190,9 @@ DIM nuclear_feedback_angle, nuclear_feedback_time, nuclear_offset_sweep_value AS
 DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel AS LONG
 DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
 DIM delay_time_offset, delay_feedback_target_phase, delay_feedback_static_dec_duration AS FLOAT
-DIM nuclear_feedback_index, nuclear_feedback_cycles AS LONG
+DIM phase_feedback_index, nuclear_feedback_index, nuclear_feedback_cycles AS LONG
 DIM do_phase_offset_sweep AS LONG
+DIM delay_HH_trigger_DO_channel, do_HH_trigger AS LONG
 
 DIM dedicate_next_cycle_to_calculations AS LONG
 DIM requested_calculations AS LONG
@@ -293,15 +294,28 @@ SUB modulo_nuclear_phases() ' takes 122 cycles
   nuclear_phases[6] = nuclear_phases[6] - (excess_phase_360s * 360)  
 ENDSUB
 
-FUNCTION get_nuclear_feedback_index(phase_to_compensate, current_feedback_nucleus) AS LONG
-  
-  get_nuclear_feedback_index = Round(phase_to_compensate / phase_feedback_resolution) + 1
-  IF (get_nuclear_feedback_index > phase_feedback_resolution_steps) THEN
-    get_nuclear_feedback_index = get_nuclear_feedback_index - phase_feedback_resolution_steps
+'FUNCTION get_nuclear_feedback_index(phase_to_compensate, current_feedback_nucleus) AS LONG
+'  
+'  get_nuclear_feedback_index = Round(phase_to_compensate / phase_feedback_resolution) + 1
+'  IF (get_nuclear_feedback_index > phase_feedback_resolution_steps) THEN
+'    get_nuclear_feedback_index = get_nuclear_feedback_index - phase_feedback_resolution_steps
+'  ENDIF
+'  
+'  get_nuclear_feedback_index = get_nuclear_feedback_index + (current_feedback_nucleus - 1) * phase_feedback_resolution_steps
+'ENDFUNCTION
+
+FUNCTION get_phase_feedback_index(phase_to_compensate) AS LONG
+  get_phase_feedback_index = Round(phase_to_compensate / phase_feedback_resolution) + 1
+  IF (get_phase_feedback_index > phase_feedback_resolution_steps) THEN
+    get_phase_feedback_index = get_phase_feedback_index - phase_feedback_resolution_steps
   ENDIF
-  
-  get_nuclear_feedback_index = get_nuclear_feedback_index + (current_feedback_nucleus - 1) * phase_feedback_resolution_steps
 ENDFUNCTION
+
+FUNCTION get_nuclear_feedback_index(phase_index, current_feedback_nucleus) AS LONG
+  get_nuclear_feedback_index = phase_index + (current_feedback_nucleus - 1) * phase_feedback_resolution_steps
+ENDFUNCTION
+
+
 
 
 SUB reset_nuclear_phases()
@@ -475,6 +489,8 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   number_of_C_encoding_ROs         = DATA_20[47]
   do_LDE_1                         = DATA_20[48]
   do_phase_offset_sweep            = DATA_20[49]
+  delay_HH_trigger_DO_channel      = DATA_20[50]
+  do_HH_trigger                    = DATA_20[51]
   
   ' float params from python
   E_SP_voltage                              = DATA_21[1] 'E spin pumping before MBI
@@ -525,10 +541,16 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_106[array_step],100)
     MemCpy(Initializer[1],DATA_107[array_step],100)
     MemCpy(Initializer[1],DATA_114[array_step],100)
-    MemCpy(InitializerFloat[1],DATA_108[array_step],100)
-    MemCpy(Initializer[1],DATA_109[array_step],100)
     
     array_step = array_step + 100
+  NEXT i
+  
+  array_step = 1
+  FOR i = 1 TO max_purification_repetitions/10
+    MemCpy(InitializerFloat[1],DATA_108[array_step][1],60)
+    MemCpy(Initializer[1],DATA_109[array_step][1],60)
+    
+    array_step = array_step + 10
   NEXT i
   
   'initialize the max_SP_bins
@@ -690,6 +712,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     tico_delay_line_init(DIO_MODULE, delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel)
     tico_delay_line_set_enabled(1)
     tico_delay_line_set_cycles(0)
+    IF (do_HH_trigger > 0) THEN
+      tico_delay_line_init_HH_trigger(do_HH_trigger, delay_HH_trigger_DO_channel) 
+    ENDIF
+    
   ENDIF
   
    
@@ -742,12 +768,13 @@ EVENT:
         modulo_nuclear_phases()
         
       CASE REQ_CALC_SET_DELAY_LINE_FOR_PHASE_CORRECTION
-        nuclear_feedback_index = get_nuclear_feedback_index(nuclear_phases[current_feedback_nucleus], current_feedback_nucleus) ' takes 33 cycles
-        nuclear_feedback_cycles = phase_compensation_delay_cycles[nuclear_feedback_index]            
+        phase_feedback_index = get_phase_feedback_index(nuclear_phases[current_feedback_nucleus])
+        nuclear_feedback_index = get_nuclear_feedback_index(phase_feedback_index, current_feedback_nucleus)
+        nuclear_feedback_cycles = phase_compensation_delay_cycles[nuclear_feedback_index]
         tico_delay_line_set_cycles(nuclear_feedback_cycles) ' takes +/- 36 cycles
-        nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index] ' takes 4 cycles
-        DATA_108[repetition_counter + 1] = nuclear_phases[current_feedback_nucleus]
-        DATA_109[repetition_counter + 1] = nuclear_feedback_cycles 
+        nuclear_feedback_time = phase_compensation_feedback_times[nuclear_feedback_index]
+        DATA_108[repetition_counter + 1][current_feedback_nucleus] = nuclear_phases[current_feedback_nucleus]
+        DATA_109[repetition_counter + 1][current_feedback_nucleus] = nuclear_feedback_cycles 
         
         dedicate_next_cycle_to_calculations = 1
         requested_calculations = REQ_CALC_UPDATE_ON_DELAY_TIME
@@ -840,6 +867,7 @@ EVENT:
             time_spent_in_state_preparation = time_spent_in_state_preparation + timer
             timer = -1     
             mode = 1 'go to spin pumping directly
+            wait_time = 10 ' do 10 cycles of nothing to give the adwin time to catch up on any overlong CR cycles
           endif  
         
         

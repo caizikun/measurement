@@ -28,6 +28,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
     for single-setup testing and phase calibrations
     """
     mprefix = 'purification_delayfb'
+    max_nuclei = 6
     # adwin_process = 'purification_delayfb' # we set this in the autoconfig based on the selected feedback method
     def __init__(self,name):
         DD.MBI_C13.__init__(self,name)
@@ -160,7 +161,12 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         print('completed %s / %s readout repetitions' % \
               (reps_completed, self.params['repetitions']))
 
-    def run(self, autoconfig=False, setup=False):
+    def setup(self, **kw):
+        DD.MBI_C13.setup(self, **kw)
+        if self.params['do_PQ_msmt'] > 0:
+            pq.PQMeasurement.setup(self, **kw)
+
+    def run(self, autoconfig=False, setup=False, **kw):
 
         """
         inherited from pulsar msmt.
@@ -168,40 +174,45 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         if autoconfig:
             self.autoconfig()
 
-
         if setup:
-            self.setup()
+            self.setup(**kw)
 
-        # print loadstr
+        if self.params['do_PQ_msmt'] == 0:
+            # print loadstr
 
-        length = self.params['nr_of_ROsequences']
+            length = self.params['nr_of_ROsequences']
 
-        self.start_measurement_process()
-        self.start_keystroke_monitor('abort')
-        # self.remote_helper.set_is_running(True)
+            self.start_measurement_process()
+            self.start_keystroke_monitor('abort')
+            # self.remote_helper.set_is_running(True)
 
-        while self.measurement_process_running():
+            while self.measurement_process_running():
 
-            if self.keystroke('abort') != '':
-                print 'aborted.'
+                if self.keystroke('abort') != '':
+                    print 'aborted.'
+                    self.stop_keystroke_monitor('abort')
+                    break
+
+                self.print_measurement_progress()
+                qt.msleep(1)
+
+            try:
                 self.stop_keystroke_monitor('abort')
-                break
+            except KeyError:
+                pass # means it's already stopped
 
-            self.print_measurement_progress()
-            qt.msleep(1)
-
-        try:
-            self.stop_keystroke_monitor('abort')
-        except KeyError:
-            pass # means it's already stopped
-
-        self.stop_measurement_process()
+            self.stop_measurement_process()
+        else:
+            pq.PQMeasurement.run(self, **kw)
 
     def finish(self, **kw):
         DD.MBI_C13.finish(self, **kw)
 
         if self.params['do_PQ_msmt']:
-            pq.PQMeasurement.finish(self, **kw)
+            # finishing is already handled by MBI_C13.finish (saving data and such)
+            # PQmsmt finish doesn't do anything extra, but crashes on the stuff it does twice
+            # pq.PQMeasurement.finish(self, **kw)
+            pass
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
@@ -223,8 +234,8 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         ]
 
         new_fb_data = [
-            ('compensated_phase'                     ,1,reps),
-            ('feedback_delay_cycles'                 ,1,reps),
+            ('compensated_phase'                     ,1,reps*self.max_nuclei),
+            ('feedback_delay_cycles'                 ,1,reps*self.max_nuclei),
             ('overlong_cycles_per_mode'              ,1,255),
             ('mode_flowchart'                        ,1,200),
             ('mode_flowchart_cycles'                 ,1,200),
@@ -877,10 +888,31 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     # the generation of this gate is taken care of by DD_2
                     delay_feedback_gate = DD.Gate(
                         'C%d_delayfb%d_pt%d' % (c_id, i, pt),
-                        'carbon_delay_phase_feedback'
+                        'carbon_delay_phase_feedback',
+                        feedback_target_carbon_ind=c_id
                     )
 
                     self.dynamic_phase_correct_list_per_carbon[i].append(delay_feedback_gate)
+
+                    # if self.params['delay_feedback_N'] % 2 == 1:
+                    #     last_el_pulse = self.params['delay_feedback_pulse_seq'][self.params['delay_feedback_N'] - 1]
+                    #     if last_el_pulse == 'X':
+                    #         backflip_phase = self.params['X_phase'] + 180.0
+                    #     elif last_el_pulse == 'mX':
+                    #         backflip_phase = self.params['X_phase']
+                    #     elif last_el_pulse == 'Y':
+                    #         backflip_phase = self.params['Y_phase'] + 180.0
+                    #     elif last_el_pulse == 'mY':
+                    #         backflip_phase = self.params['Y_phase']
+                    #     # the electron is flipped after feedback, flip it back
+                    #     electron_pi_gate = DD.Gate(
+                    #         'C%d_delayfb%d_elflip_pt%d' % (c_id, i, pt),
+                    #         'electron_Gate',
+                    #         Gate_operation='pi',
+                    #         phase=backflip_phase
+                    #     )
+                    #
+                    #     self.dynamic_phase_correct_list_per_carbon[i].append(electron_pi_gate)
             else:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
@@ -1122,9 +1154,10 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                             event_jump_element   = 'next',
                             readout_orientation = self.params['dps_MBE_readout_orientation'])
 
-                        # the first carbon gate in the MBE sequence corresponds to the first carbon in the array
-                        # so we regenerate the LDE1 rephasing element in accordance with that carbon gate
-                        self.generate_LDE_rephasing_elt(LDE1_rephase_list[i], addressed_carbon=self.params['carbons'][0])
+                        if self.params['do_LDE_1'] > 0:
+                            # the first carbon gate in the MBE sequence corresponds to the first carbon in the array
+                            # so we regenerate the LDE1 rephasing element in accordance with that carbon gate
+                            self.generate_LDE_rephasing_elt(LDE1_rephase_list[i], addressed_carbon=self.params['carbons'][0])
 
                         gate_seq.extend(probabilistic_MBE_seq)
                     else:
@@ -1293,22 +1326,14 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                 and self.params['delay_feedback_use_calculated_phase_offsets'] > 0):
                 # after sequence generation by DD_2, the gate objects should have been update with phase information
                 # let's try to extract that and put it to our own use
-                accumulated_phases = np.zeros(self.params['number_of_carbons'])
-                calculated_phase_offsets = np.zeros(self.params['number_of_carbons'])
 
-                phase_feedback_gates = []
                 # extract the phase feedback gates from the gate sequence
                 # (the whole sequence has been deepcopied so the original gate references don't point to the updated objects)
+                i = 0
                 for g in gate_seq:
                     if g.Gate_type == 'carbon_delay_phase_feedback':
-                        phase_feedback_gates.append(g)
-
-                for i in range(self.params['number_of_carbons']):
-                    g = phase_feedback_gates[i]
-                    phases_before_gate = np.array(g.C_phases_before_gate, dtype=np.float)
-                    accumulated_phases += np.rad2deg(phases_before_gate[self.params['carbons']])
-                    calculated_phase_offsets[i] = accumulated_phases[i]
-                self.calculated_phase_offsets[pt] = calculated_phase_offsets % 360.0
+                        self.calculated_phase_offsets[pt,i] = np.rad2deg(g.C_phases_before_gate[g.feedback_target_carbon_ind]) % 360.0
+                        i += 1
 
         if upload:
             print ' uploading sequence'

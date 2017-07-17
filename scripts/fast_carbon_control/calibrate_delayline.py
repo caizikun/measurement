@@ -57,10 +57,10 @@ def hahn_echo_variable_delayline(name, debug=False,
     if do_HH_trigger:
         m.params['do_delay_HH_trigger'] = 1
 
-    pts = 21
+    pts = 1
 
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 1000000
 
     if vary_refocussing_time:
         m.params['refocussing_time'] = np.linspace(range_start, range_end, pts)
