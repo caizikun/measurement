@@ -28,7 +28,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
     measurement class for testing when both setups are operating without any PQ instrument
     for single-setup testing and phase calibrations
     """
-    mprefix = 'purification_delayfb'
+    mprefix = 'puridelay'
     max_nuclei = 6
     # adwin_process = 'purification_delayfb' # we set this in the autoconfig based on the selected feedback method
     def __init__(self,name):
@@ -1051,7 +1051,10 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                 # TODO: check if this generalization for >1 carbons actually works!
                 for i in range(self.params['number_of_carbons']):
                     ### initialize carbon in +Z or +X
-                    c_id = self.params['carbons'][i]
+                    if not self.params['reverse_carbon_inits']:
+                        c_id = self.params['carbons'][i]
+                    else:
+                        c_id = self.params['carbons'][::-1][i]
                     init_method = self.params['carbon_init_method']
                     carbon_init_seq = self.initialize_carbon_sequence(go_to_element = 'start',
                             prefix = 'C_Init', pt =pt,
