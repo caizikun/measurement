@@ -781,6 +781,7 @@ def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
     m.params['sin2_theta'] = 0.4
     m.params['do_calc_theta'] = 1
     m.params['do_post_ent_phase_msmt'] = 1
+    m.params['measurement_time'] = 20*60 # Eight minutes
 
     ### only one setup is allowed to sweep the phase.
     if qt.current_setup == 'lt3':
@@ -789,6 +790,7 @@ def EntangleXcalibrateMWPhase(name,debug = False,upload_only=False):
     else:
         hist_only = False
         m.params['general_sweep_pts'] = m.params['LDE_final_mw_phase'] + np.linspace(0,360,10) 
+    
     
     m.params['do_general_sweep'] = 1
     m.params['general_sweep_name'] = 'LDE_final_mw_phase' 
@@ -1095,7 +1097,7 @@ if __name__ == '__main__':
 
     EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
     EntangleXcalibrateMWPhase(name+'_EntangleXsweepYcalib',debug = False,upload_only = False)
-    
+
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:
             # Experimental addition for remote running

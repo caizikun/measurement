@@ -2,7 +2,7 @@
 import numpy as np
 import qt
 
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt, pulsar_delay
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 reload(pulsar_msmt)
 from measurement.scripts.espin import espin_funcs
 # from measurement.scripts.fast_carbon_control.delay_characterization import electron_T2_variable_delayline as hahn_sweep
@@ -15,17 +15,17 @@ SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 name = SAMPLE_CFG
 
-def hahn_echo_with_djump(name, debug=False, upload = False,
-    vary_refocussing_time=True, range_start=-2e-6, range_end=2e6,
-    evolution_1_self_trigger=False, evolution_2_self_trigger=False,
-    refocussing_time=10e-6, run_msmt = True):
+def hahn_echo_with_djump(name, debug=False, upload = False,old_school=False, range_start = -2e-6, range_end = 2e6, run_msmt = True):
 
-    m = pulsar_delay.ElectronRefocussingTriggered(name)
+    # From electron_T2_fixed_delayline
+    m = ElectronT2NoTriggers(name)
 
     m.mprefix += "_djump"
-    # m.adwin_process = 'dynamic_jump'
-    m.adwin_process = 'dynamic_jump_internal_trig'
-
+    if old_school:
+        m.adwin_process = 'integrated_ssro'
+    else:
+        m.adwin_process = 'integrated_ssro_tico_controlled'
+    
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
@@ -33,85 +33,88 @@ def hahn_echo_with_djump(name, debug=False, upload = False,
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+delay'])
+
 
     m.params['pulse_type'] = 'Hermite'
 
-    m.params['Ex_SP_amplitude']=0
-    m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
 
-    m.params['self_trigger_duration'] = 100e-9
-
     pts = 50
-
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
-
-    if vary_refocussing_time:
-        m.params['refocussing_time'] = np.linspace(range_start, range_end, pts)
-        m.params['defocussing_offset'] = 0.0 * np.ones(pts)
-        m.params['self_trigger_delay'] = m.params['refocussing_time'] 
-
-        m.params['sweep_name'] = 'single-sided free evolution time (us)'
-        m.params['sweep_pts'] = (m.params['refocussing_time']) * 1e6
-
-    else:
-        m.params['refocussing_time'] = np.ones(pts) * refocussing_time
-        m.params['defocussing_offset'] = np.linspace(range_start,range_end,pts)
-        m.params['self_trigger_delay'] = m.params['refocussing_time']
-
-        m.params['sweep_name'] = 'defocussing offset (us)'
-        m.params['sweep_pts'] = (m.params['defocussing_offset']) * 1e6
-
-    m.params['delay_times'] = m.params['self_trigger_delay']
-    m.params['do_tico_delay_control'] = 0
-
-    m.params['delay_clock_cycle_time'] = 20e-9 # 20 ns TiCo1 clock cycle
-    m.params['minimal_delay_cycles'] = 0
-    m.params['minimal_delay_time'] = 0
-
-    # m.params['cycle_duration'] = 10000
+    #m.params['wait_for_AWG_done']=1
+    #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
+    # range from 0 to 1000 us
+    m.params['evolution_times'] = np.ones(pts) * 10000e-9 
+    m.params['defocussing_offset'] = np.linspace(range_start,range_end,pts) 
 
     # MW pulses
+    m.params['detuning']  = 0 #-1e6 #0.5e6
     X_pi2 = ps.Xpi2_pulse(m)
     X_pi = ps.X_pulse(m)
+    m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * m.params['X_phase']    # First pi/2 = +X
+    # m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']+180 )   # Second pi/2 = mX
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * m.params['X_phase']
+    m.params['pulse_sweep_pi_phases'] = np.ones(pts) * m.params['X_phase']
 
-    # We have to upload the old sequence if we want to retrieve it from the pulsar
-    m.generate_sequence(upload = True, pulse_pi2 = X_pi2, pulse_pi = X_pi, 
-        evolution_1_self_trigger=evolution_1_self_trigger, 
-        evolution_2_self_trigger=evolution_2_self_trigger,
-        post_selftrigger_delay = 2e-6)
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'evolution time (ns)'
+    m.params['sweep_pts'] = (m.params['defocussing_offset'])* 1e9
+
+    # for the self-triggering through the delay line
+    # m.params['self_trigger_delay'] = 500e-9 # 0.5 us
+    # m.params['self_trigger_duration'] = 100e-9
+
+    # lt3 params
+    m.params['AWG_start_DO_channel'] = 9
+    m.params['AWG_jump_strobe_DO_channel'] = 0
+   
+
+    m.params['minimal_delay_time'] = 0
+    m.params['minimal_delay_cycles'] = 0
+    m.params['delay_clock_cycle_time'] = 20e-9
+
+    # Start measurement
+    seq, elements = m.generate_sequence(upload=old_school, pulse_pi2 = X_pi2, pulse_pi = X_pi)
 
     print 'Programmed old sequence; creating new'
 
-    old_seq = qt.pulsar.last_programmed_sequence
-    old_elems = qt.pulsar.last_programmed_elements
+    if not(old_school):
+        generate_new_sequence(m, seq, elements, upload = upload)
+        calculate_delay_cycles(m)
 
-    # generate_new_sequence(m, old_seq, old_elems, upload = upload)
-    generate_new_sequence_internal_trig(m, old_seq, old_elems, upload = upload)
-    calculate_delay_cycles(m)
-
-    # print m.params['jump_table']
-    # for delays in m.params['delays_before_jumps']:
+        # Print the tables that go to the adwin
+        # print m.params['jump_table']
+        # print m.params['next_seq_table']
+        # for delays in m.params['delays_before_jumps']:
         # print [round(var, 12) for var in delays]
-    # print m.params['next_seq_table']
 
     # this should go in msmt params
+    # print m.params['table_dim']
     table_dim = 256
 
-    jump_shift = 7
+    jump_shift = 4
 
-    m.adwin.set_dynamic_jump_var(
-        jump_table      = (2**jump_shift) * pad_and_flat(m.params['jump_table'], table_dim, table_dim),  
-        delay_cycles    = pad_and_flat(m.params['delay_table'], table_dim, table_dim), 
-        next_seq_table  = pad_and_flat(m.params['next_seq_table'], table_dim, 2)
-        )
-
+    
     if run_msmt:
-        m.setup(wait_for_awg = False, mw = False, ssro_setup = False, awg_ready_state='Running')
-        m.run(autoconfig = False, setup = False)
+         
+        if not(old_school):
+            m.adwin.start_dynamic_jump(do_init_only = 1) # Necessary for init
+            qt.msleep(0.05)
+       
+            m.adwin.set_dynamic_jump_var(
+            jump_table      = (2**jump_shift) * pad_and_flat(m.params['jump_table'], table_dim, table_dim),  
+            delay_cycles    = pad_and_flat(m.params['delay_table'], table_dim, table_dim), 
+            next_seq_table  = pad_and_flat(m.params['next_seq_table'], table_dim, 2)
+            )
+            m.adwin.start_dynamic_jump(do_init_only = 2) # Necessary for init
+        
+        m.run()
+        m.save()
+        m.finish()
+
 
 def pad_and_flat(table, x_size, y_size, dtype = np.int32):
     np_table = np.array(table, dtype = dtype)
@@ -120,9 +123,82 @@ def pad_and_flat(table, x_size, y_size, dtype = np.int32):
     ext_table[:np_table.shape[0],:np_table.shape[1]] = np_table
     return ext_table.flatten()
 
+class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
+    """
+    Class to generate an electron Hahn echo sequence with a single refocussing pulse.
+    generate_sequence needs to be supplied with a pi2_pulse as kw.
+    """
+    mprefix = 'ElectronT2NoTriggers'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
+
+
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+    def  generate_sequence(self, upload=True, **kw):
+
+        # define the necessary pulses
+        
+        # rotations
+        pulse_pi2 = kw.get('pulse_pi2', None)
+        pulse_pi = kw.get('pulse_pi', None)
+
+        # waiting element        
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = 10e-6,
+            amplitude = 2)
+
+        # make the elements, one for each evolution time
+        elements = []
+        for i in range(self.params['pts']):
+
+            e1 = element.Element('ElectronT2_notrigger_pt-%d_A' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e1.append(pulse.cp(T,
+                length = 3000e-9))
+
+            e1.append(pulse.cp(pulse_pi2,
+                phase = self.params['pulse_sweep_pi2_phases1'][i]))
+
+            e1.append(pulse.cp(T,
+                length = self.params['evolution_times'][i] / 2.))
+
+            e1.append(pulse.cp(pulse_pi,
+                phase = self.params['pulse_sweep_pi_phases'][i]))
+
+            e1.append(pulse.cp(T,
+                length = (self.params['evolution_times'][i]/2) +  self.params['defocussing_offset'][i] / 2.))
+
+            pid = e1.append(pulse.cp(pulse_pi2,
+                phase = self.params['pulse_sweep_pi2_phases2'][i]))
+
+            e1.add(adwin_sync, start = 3e-6, refpulse = pid)
+
+            elements.append(e1)
+        # return_e=e
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+        return seq, elements
+
 def generate_new_sequence(m, seq, elements, upload = False):
     qt.pulsar.AWG_sequence_cfg['JUMP_TIMING'] = 0 # ASYNC
-    [overview, pulse_array] = pulse_sim.group_seq_elems(seq, elements)
+    [overview, pulse_array] = group_seq_elems(seq, elements)
    
     seq_uniq = pulsar.Sequence(seq.name + '-unique')
     seq_uniq.set_djump(True)
@@ -131,16 +207,13 @@ def generate_new_sequence(m, seq, elements, upload = False):
     unique_pulses = {}
     jump_index = 0
 
-    empty = pulse.SquarePulse(channel = 'sync', length = 1e-6, amplitude = 0)
+    empty = pulse.SquarePulse(channel = 'tico_sync', length = 1e-6, amplitude = 0)
 
     e_loop = element.Element('loop', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
     e_wait = element.Element('trigger_wait', pulsar = qt.pulsar, global_time = True, min_samples = 1e3) # currently not used
     e_start_tico = element.Element('start_tico', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
 
     # e_loop.add(pulse.cp(empty, amplitude = 2, length = 100e-9), name = e_loop.name + '_sync')
-    e_loop.add(pulse.cp(empty, length = 1e-3), name = e_loop.name) # + '_empty', refpulse = e_loop.name + '_sync')
-    elements_uniq.append(e_loop)
-    seq_uniq.append(name = e_loop.name, wfname = e_loop.name, goto_target = e_wait.name, repetitions = 65536)
     
     e_wait.add(pulse.cp(empty), name = e_wait.name)
     elements_uniq.append(e_wait)
@@ -151,6 +224,10 @@ def generate_new_sequence(m, seq, elements, upload = False):
     seq_uniq.append(name = e_start_tico.name, wfname = e_start_tico.name, goto_target = e_loop.name)
     seq_uniq.add_djump_address(jump_index, e_start_tico.name)
 
+    e_loop.add(pulse.cp(empty, length = 1e-3), name = e_loop.name) # + '_empty', refpulse = e_loop.name + '_sync')
+    elements_uniq.append(e_loop)
+    seq_uniq.append(name = e_loop.name, wfname = e_loop.name, goto_target = e_wait.name, repetitions = 65536)
+    
     m.params['jump_table'] = []
     m.params['delays_before_jumps'] = []
     m.params['next_seq_table'] = []
@@ -395,14 +472,96 @@ def calculate_delay_cycles(m):
         # round delay times (not keeping in mind cumulative errors)
         m.params['delay_table'] = np.rint(delay_cycles).astype(np.int32)
 
+def group_seq_elems(combined_seq,combined_list_of_elements):
+    jumps_or_go_tos = []
+    sequence_overview = []
+    pulse_array = []
+    current_group_pulses = np.array([]).reshape(0,5)
+    time = 0
+    first_group_elem_name = None 
+    trigger_wait = False
+    
+    for seq_elem in combined_seq.elements:
+        
+        if seq_elem['goto_target'] != None: # End of group!
+                jumps_or_go_tos.append(seq_elem['goto_target'])
+            
+        if seq_elem['jump_target'] != None: # End of group!
+                jumps_or_go_tos.append(seq_elem['jump_target'])
+    
+    for seq_elem in combined_seq.elements:
+        
+        elem = pulse_sim.get_pulse_elem_for_seq_element(seq_elem,combined_list_of_elements)
+
+        current_elem_pulses = pulse_sim.get_seq_element_pulses(elem,verbose = False)
+        reps = int(seq_elem['repetitions'])
+        
+        if seq_elem['goto_target'] != None or seq_elem['jump_target'] != None:
+            reps = 1 # Dont repeat an element if you can jump out of it.
+        
+        if seq_elem['trigger_wait'] != False:
+            time = 0
+
+        pulses = np.array([]).reshape(0,5)
+            
+        for x in range(reps):
+            if np.size(current_elem_pulses):
+                temp_pulses = np.copy(current_elem_pulses)
+                temp_pulses[:,0] += time
+                pulses = np.vstack([pulses,temp_pulses])
+            time += elem.length()
+            
+        if first_group_elem_name == None:
+            first_group_elem_name = seq_elem['name']
+        
+        start_of_group = False
+        end_of_group = False
+        
+        if seq_elem['trigger_wait'] != False or seq_elem['name'] in jumps_or_go_tos: # Start of new group!
+            if np.size(current_group_pulses):
+                sequence_overview.append({'name' : first_group_elem_name,\
+                               'trigger_wait' : int(trigger_wait),\
+                               'goto_target' : str(seq_elem['goto_target']),\
+                               'jump_target' : str(seq_elem['jump_target']), 'final_time' : float(time)}) 
+                pulse_array.append(current_group_pulses)
+            first_group_elem_name = seq_elem['name']
+            trigger_wait = seq_elem['trigger_wait']
+            current_group_pulses = pulses
+            
+            start_of_group = True
+         
+        if seq_elem['goto_target'] != None or seq_elem['jump_target'] != None:
+            end_of_group = True
+            
+            if not(start_of_group): current_group_pulses = np.vstack([current_group_pulses,pulses])
+            sequence_overview.append({'name' : first_group_elem_name,\
+                               'trigger_wait' : int(trigger_wait),\
+                               'goto_target' : str(seq_elem['goto_target']),\
+                               'jump_target' : str(seq_elem['jump_target']), 'final_time' : float(time)}) 
+            pulse_array.append(current_group_pulses) 
+            time = 0
+            first_group_elem_name = None
+            trigger_wait = False
+            current_group_pulses = np.array([]).reshape(0,5)
+        elif end_of_group == False and start_of_group == False:
+            current_group_pulses = np.vstack([current_group_pulses,pulses])
+            
+    
+    if np.size(current_group_pulses):
+                sequence_overview.append({'name' : first_group_elem_name,\
+                               'trigger_wait' : int(trigger_wait),\
+                               'goto_target' : str(seq_elem['goto_target']),\
+                               'jump_target' : str(seq_elem['jump_target']), 'final_time' : float(time)}) 
+                pulse_array.append(current_group_pulses)
+
+    return [sequence_overview,pulse_array]
+
 if __name__ == '__main__':
 
     hahn_echo_with_djump("VariableDelay_HahnEcho_2T_" + name + "_DJUMP", 
     debug = True,
     upload = True,
-    range_start = 2e-6,
-    range_end = 100e-6,
-    vary_refocussing_time = True,
-    evolution_1_self_trigger = False,
-    evolution_2_self_trigger = False,
+    old_school = False,
+    range_start = 0e-6,
+    range_end = 10e-6,
     run_msmt = True)

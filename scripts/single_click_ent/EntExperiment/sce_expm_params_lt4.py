@@ -30,7 +30,7 @@ params_lt4['MW_final_delay_offset']		= 10e-9
 params_lt4['first_mw_pulse_is_pi2']     = 0
 params_lt4['LDE_attempts_before_yellow']  = 2000
 params_lt4['Yellow_AWG_duration']			= 300e-6
-params_lt4['Yellow_AWG_power']			= 0e-9#85e-9
+params_lt4['Yellow_AWG_power']			= 0e-9#50e-9
 
 
 
@@ -82,12 +82,12 @@ params_lt4['PLU_4_delay']             = 200e-9
 params_lt4['mw_first_pulse_amp']      = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_amp'] #### needs to be changed back to regular pi/2 for most calibrations
 params_lt4['mw_first_pulse_length']   = qt.exp_params['protocols'][name]['pulses']['Hermite_theta_length']
 params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses']['X_phase']
-params_lt4['LDE_final_mw_phase'] 	  = 5.57475276685
+params_lt4['LDE_final_mw_phase'] 	  = 79.236
 
 params_lt4['sin2_theta']			= 0.5
-params_lt4['sin2_theta_fit_of']		= 1.0065066154324493
-params_lt4['sin2_theta_fit_a']		= 3.9913845883013894
-params_lt4['sin2_theta_fit_x0']		= 0.63918666125699231
+params_lt4['sin2_theta_fit_of']		= 1.0004717617264427
+params_lt4['sin2_theta_fit_a']		= 4.3198007386809083
+params_lt4['sin2_theta_fit_x0']		= 0.62252666641818377
 
 ### Everything HydraHarp
 TH_HH_selector = 1#e3 #set to 1 for HH
@@ -113,8 +113,9 @@ params_lt4['TTTR_RepetitiveReadouts'] =  1
 
 
 params_lt4['Phase_msmt_DAC_channel'] = 12 
-params_lt4['Phase_Msmt_voltage'] = 3.2#3.5 # 3.0 V = approx. 200 nW seems okay
-params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
+params_lt4['Phase_Msmt_voltage'] = 1.3#3.5 # 3.0 V = approx. 200 nW seems okay
+if qt.current_setup == 'lt4':
+	params_lt4['Phase_Msmt_off_voltage'] = qt.instruments['PhaseAOM'].get_pri_V_off()
 params_lt4['Phase_stab_DAC_channel'] = 14 ### channel of the fibre stretcher
 params_lt4['zpl1_counter_channel'] = 2
 params_lt4['zpl2_counter_channel'] = 3

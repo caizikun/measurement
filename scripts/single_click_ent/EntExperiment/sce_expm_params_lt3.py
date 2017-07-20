@@ -81,9 +81,9 @@ params_lt3['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 params_lt3['LDE_final_mw_phase']      = 0.0
 
 params_lt3['sin2_theta']			= 0.5
-params_lt3['sin2_theta_fit_of']		= 0.99295314815255942
-params_lt3['sin2_theta_fit_a']		= 1.8779332652288541
-params_lt3['sin2_theta_fit_x0']		= 0.85470860335684884
+params_lt3['sin2_theta_fit_of']		= 0.99819431908929301
+params_lt3['sin2_theta_fit_a']		= 1.7899821590050404
+params_lt3['sin2_theta_fit_x0']		= 0.87348842297673401
 
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
@@ -131,12 +131,12 @@ params_lt3['PID_Ki'] = 0.0
 params_lt3['PID_Kd'] = 0.0
 params_lt3['phase_setpoint'] = np.pi/2
 
-params_lt3['count_int_time_stab'] = 12000 # How long to integrate counts for in microseconds
+params_lt3['count_int_time_stab'] = 10000 # How long to integrate counts for in microseconds
 params_lt3['count_int_time_meas'] = 1000 # How long to integrate counts for in microseconds
-params_lt3['pid_points'] = 2 # How many points to sample the phase at during the PID loop
-params_lt3['pid_points_to_store'] = 2 # How many points to store
+params_lt3['pid_points'] = 3 # How many points to sample the phase at during the PID loop
+params_lt3['pid_points_to_store'] = 3 # How many points to store
 params_lt3['sample_points'] = 10 # How many points to sample the phase at during the expm part
-params_lt3['phase_stab_max_time'] = 70000 # How long in microseconds to run the expm for after phase stabilisation
+params_lt3['phase_stab_max_time'] = 150000 # How long in microseconds to run the expm for after phase stabilisation
 
 
 
