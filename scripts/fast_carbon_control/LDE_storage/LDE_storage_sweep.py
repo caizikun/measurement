@@ -844,7 +844,8 @@ def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
 
     m.finish()
 
-def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_params=False, carbon_override=None):
+def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_params=False, carbon_override=None,
+                        max_correction=None):
     """
     uses LDE 1 and swap to initialize the carbon in state |x>.
     Sweeps the number of repetitions (LDE2) and performs tomography of X.
@@ -932,7 +933,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     breakst = show_stopper()
 
     if update_msmt_params and not debug and not breakst and not upload_only:
-        update_LDE_phase_param()
+        update_LDE_phase_param(max_correction=max_correction)
 
 
 def update_LDE_phase_param(**kw):
@@ -940,6 +941,9 @@ def update_LDE_phase_param(**kw):
     reload(write_to_msmt_params)
     import analysis.lib.purification.purify_delayfb as pu_delayfb
     reload(pu_delayfb)
+
+    max_correction = kw.pop('max_correction', None)
+
     fit_result = pu_delayfb.calibrate_LDE_phase(
         do_fit=True,
         fixed=[1],
@@ -968,6 +972,11 @@ def update_LDE_phase_param(**kw):
     print("Previous LDE phase: %.3f" % previous_LDE_phase)
     print("Detuning compensated acquired phase per repetition: %.3f +/- %.3f" % (acq_phase_per_rep, u_acq_phase_per_rep))
     print("Updated LDE phase: %.3f" % updated_LDE_phase)
+
+    if (max_correction is not None) and (np.abs(acq_phase_per_rep) > max_correction):
+        print("Correction is larger than maximally allowed, skipping!")
+        return
+
 
     if (np.abs(acq_phase_per_rep) > 360.0) or ((np.abs(detuning) > 0.0) and (np.abs(acq_phase_per_rep) > 360./np.abs(detuning))):
         print("The phase per repetition that I get is larger than can be characterized with this detuning")
@@ -1370,7 +1379,8 @@ def analyse_simple_el_init_swap(name, debug=False, upload_only=False, input_stat
 
     m.finish()
 
-def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,simplify_wfnames=False, dry_run=False, do_phase_offset_sweep=False):
+def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = False,simplify_wfnames=False,
+                                             dry_run=False, do_phase_offset_sweep=False, extra_params={}):
     """
     combines all carbon parts of the sequence in order to 
     verify that all parts of the sequence work correctly.
@@ -1380,7 +1390,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     Has the option to either sweep the repetitions of LDE2 (easy mode)
     """
     m = purify_slave.purify_single_setup(name)
-    prepare(m)
+    prepare(m, override_params=extra_params)
 
     # prepare_carbon_params(m)
 
@@ -1391,9 +1401,9 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     else:
         m.params['phase_detuning'] = 0.
 
-    m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
-    m.params['detuning_per_carbon'] = np.array([1.0, 1.0]) * m.params['phase_detuning']
-    m.params['nuclear_phases_per_seqrep'] += m.params['detuning_per_carbon']
+    # m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
+    # m.params['detuning_per_carbon'] = np.array([1.0, 1.0]) * m.params['phase_detuning']
+    # m.params['nuclear_phases_per_seqrep'] += m.params['detuning_per_carbon']
 
 
     if not do_phase_offset_sweep:
@@ -1403,19 +1413,19 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         # maxReps = 45
         # minReps = 10
         # maxReps = 330
-        minReps = 340
+        minReps = m.params['minReps']
         # maxReps = 641
         # minReps = 670
-        maxReps = 971
+        maxReps = m.params['maxReps']
         step = 60 #int((maxReps-minReps)/pts)+1
 
         m.params['general_sweep_pts'] = np.arange(minReps, maxReps, step)
         print(m.params['general_sweep_pts'])
         print("len: %d" % (len(m.params['general_sweep_pts'])))
         print("detunings: " + str(m.params['detuning_per_carbon']))
-        want_this = raw_input("Do you want this? (y)")
-        if not want_this == "y":
-            return
+        # want_this = raw_input("Do you want this? (y)")
+        # if not want_this == "y":
+        #     return
 
         ### define sweep
         m.params['do_general_sweep'] = 1
@@ -1479,8 +1489,8 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
 
     m.params['do_phase_fb_delayline'] = 1
 
-    m.params['carbon_encoding'] = 'serial_swap'
-    m.params['carbon_swap_el_states'] = ['Z', 'Z'] #['X']
+    # m.params['carbon_encoding'] = 'serial_swap'
+    # m.params['carbon_swap_el_states'] = ['Z', 'Z'] #['X']
     # print(m.params['Hermite_pi_amp'], m.params['Hermite_pi_length'], m.params['X_phase'])
     # m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']  #### needs to be changed back to regular pi/2 for most calibrations
     # m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
@@ -1505,13 +1515,13 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     #
     # m.params['Tomography_bases'] = tomo_dict[input_state]
 
-    m.params['Tomography_list'] = [
-        # ['X', 'I'],
-        # ['I', 'X'],
-        ['X', 'X'],
-        # [m.params['C13_X_phase'] + 45.0, m.params['C13_X_phase'] + 45.0],
-        [m.params['C13_X_phase'] + 45.0, m.params['C13_X_phase'] - 45.0]
-    ]
+    # m.params['Tomography_list'] = [
+    #     # ['X', 'I'],
+    #     # ['I', 'X'],
+    #     ['X', 'X'],
+    #     # [m.params['C13_X_phase'] + 45.0, m.params['C13_X_phase'] + 45.0],
+    #     [m.params['C13_X_phase'] + 45.0, m.params['C13_X_phase'] - 45.0]
+    # ]
 
     # m.params['Tomography_list'] = [
     #     ['X','X'],
@@ -1874,8 +1884,101 @@ def recalibrate_newfocus():
     stools.recalibrate_lt4_lasers(names=['NewfocusAOM'], awg_names=['NewfocusAOM'])
 
 def recalibrate_all():
-    stools.recalibrate_lt4_lasers(names=['YellowAOM', 'MatisseAOM', 'NewfocusAOM'],
-                                  awg_names=['YellowAOM', 'NewfocusAOM'])
+    stools.recalibrate_lt4_lasers(names=['GreenAOM', 'MatisseAOM', 'NewfocusAOM'],
+                                  awg_names=['NewfocusAOM'])
+
+def optimize():
+    GreenAOM.set_power(5e-6)
+    optimiz0r.optimize(dims=['x','y','z','y','x'])
+    GreenAOM.turn_off()
+
+def overnight_dps_des_sweep(debug):
+    # overnight section
+    carbons = [2,4,5]
+    C13_X_phase = 0.0
+
+    msmt_sweep_limits = [
+        (10, 340),
+        (340, 970),
+    ]
+
+    msmt_templates = [
+        {
+            'carbon_encoding':              'serial_swap',
+            'carbon_swap_el_states':        ['Z', 'Z'],
+            'Tomography_list': [
+                ['X', 'I'],
+                ['I', 'X'],
+                ['X', 'X'],
+                [C13_X_phase + 45.0, C13_X_phase + 45.0],
+                [C13_X_phase + 45.0, C13_X_phase - 45.0],
+            ]
+        },
+        {
+            'carbon_encoding':              'MBE',
+            'carbon_swap_el_states':        ['X'],
+            'Tomography_list': [
+                ['X', 'X'],
+                ['Y', 'Y'],
+                ['Z', 'Z'],
+                ['X', 'Y'],
+                ['Y', 'X'],
+            ]
+        },
+        {
+            'carbon_encoding':              'MBE',
+            'carbon_swap_el_states':        ['-X'],
+            'Tomography_list': [
+                ['X', 'X'],
+                ['Y', 'Y'],
+                ['Z', 'Z'],
+                ['X', 'Y'],
+                ['Y', 'X'],
+            ]
+        }
+    ]
+
+    import itertools
+    import copy
+    carbon_combis = itertools.combinations(carbons)
+
+    for combi in carbon_combis:
+        if not debug:
+            optimize()
+            recalibrate_all()
+
+        for calibration_carbon in carbons:
+            calibrate_LDE_phase(
+                name+'_LDE_phase_calibration_C%d' % calibration_carbon,
+                upload_only = False,
+                update_msmt_params=True,
+                carbon_override=calibration_carbon,
+                max_correction=2.0
+            )
+
+        for d in msmt_sweep_limits:
+            for m_template in msmt_templates:
+                m = copy.deepcopy(m_template)
+                m['minReps'] = d[0]
+                m['maxReps'] = d[1]
+                m['carbons'] = combi
+
+                m_name = "%s_phase_fb_delayline_C%s_%s_%s" % (
+                    name,
+                    "".join(combi),
+                    m['carbon_encoding'],
+                    "".join(m['carbon_swap_el_states'])
+                )
+
+                if not debug:
+                    recalibrate_all()
+
+                apply_dynamic_phase_correction_delayline(
+                    m_name,
+                    upload_only=debug,
+                    dry_run=False,
+                    extra_params=m
+                )
 
 if __name__ == '__main__':
     test_pwr = 600e-9
@@ -1966,3 +2069,9 @@ if __name__ == '__main__':
 
 
     # fake_LDE_coherence_check("sweep_N", debug=False)
+
+
+
+
+
+
