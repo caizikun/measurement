@@ -129,12 +129,12 @@ if __name__ == '__main__':
     MBE(SAMPLE + 'positive', el_RO= 'positive',carbon_list = carbons,
                         carbon_init_list = carbons,number_of_MBE_steps=1,
                         carbon_init_methods=['swap','swap'],
-                        carbon_init_thresholds = [0,0],debug=True)
+                        carbon_init_thresholds = [0,0],debug=False)
 
-    # MBE(SAMPLE + 'negative', el_RO= 'negative',carbon_list = carbons,
-    #                     carbon_init_list = carbons,number_of_MBE_steps=1,
-    #                     carbon_init_methods=['swap','swap'],
-    #                     carbon_init_thresholds = [0,0],debug=False)
+    MBE(SAMPLE + 'negative', el_RO= 'negative',carbon_list = carbons,
+                        carbon_init_list = carbons,number_of_MBE_steps=1,
+                        carbon_init_methods=['swap','swap'],
+                        carbon_init_thresholds = [0,0],debug=False)
     # MBE(SAMPLE + 'negative', el_RO= 'negative')
 
 

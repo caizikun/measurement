@@ -14,7 +14,7 @@ reload(DD)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True):
+def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequence=1000, mbi = True, readout_pulse='-y'):
 
     m = DD.SimpleDecoupling(name+'_tau_'+str(tau*1e9))
 
@@ -33,7 +33,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     #inital and final pulse
     m.params['Initial_Pulse'] ='y'
-    m.params['Final_Pulse'] ='-y' 
+    m.params['Final_Pulse'] = readout_pulse
     #Method to construct the sequence
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
     
@@ -58,9 +58,20 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 
-    tau = 6.404e-06 #6.406e-6 
-    NoP1=np.arange(2,60,2)
-    SimpleDecoupling_swp_N(SAMPLE+'_sweep_N',
+    tau = 4.900e-6 #6.406e-6
+    NoP1=np.arange(2,200,8)
+    SimpleDecoupling_swp_N(
+        SAMPLE+'_sweep_N_positive',
         NoP=NoP1,
         tau =tau, 
-        reps_per_ROsequence = 500)
+        reps_per_ROsequence = 1000,
+        readout_pulse='-y'
+    )
+    if True:
+        SimpleDecoupling_swp_N(
+            SAMPLE + '_sweep_N_negative',
+            NoP=NoP1,
+            tau=tau,
+            reps_per_ROsequence=1000,
+            readout_pulse='y'
+        )

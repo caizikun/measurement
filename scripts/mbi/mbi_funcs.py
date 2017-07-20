@@ -30,6 +30,7 @@ def finish(m, upload=True, debug=False):
     m.params['send_AWG_start']      = [1]
     m.params['sequence_wait_time']  = [0]
     print upload
+    print
     m.generate_sequence(upload=upload, debug=debug)
     m.dump_AWG_seq()
 

@@ -14,6 +14,7 @@ reload(pulsar)
 # import DD_2_delay as DD; reload(DD)
 from measurement.lib.measurement2.adwin_ssro import DD_2 as DD; reload(DD)
 import measurement.lib.measurement2.pq.pq_measurement as pq; reload(pq)
+import measurement.lib.measurement2.adwin_ssro.pulsar_msmt as pulsar_msmt; reload(pulsar_msmt)
 import measurement.lib.measurement2.adwin_ssro.pulse_select as ps
 import LDE_element as LDE_elt; reload(LDE_elt)
 execfile(qt.reload_current_setup)
@@ -46,6 +47,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         qt.msleep(0.1)
 
     def autoconfig(self, **kw):
+        print("Autoconfigging")
         if self.params['use_old_feedback'] > 0:
             purify_single_setup.adwin_process = "purification"
         else:
@@ -65,6 +67,9 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
             self.params['number_of_C_encoding_ROs'] = self.params['number_of_carbons']
         elif self.params['carbon_encoding'] == 'MBE':
             self.params['number_of_C_encoding_ROs'] = 1
+
+        if self.params['delay_feedback_single_phase_offset'] == 0:
+            self.params['do_phase_offset_sweep'] = 1
 
 
         #self.adwin.boot() # uncomment to avoid memory fragmentation of the adwin.
@@ -132,6 +137,9 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
 
         if self.params['do_phase_offset_sweep']:
             carbon_data_entries += ['nuclear_phases_offset_sweep']
+
+        if self.params['do_phase_per_seqrep_sweep']:
+            carbon_data_entries += ['nuclear_phases_per_seqrep_sweep']
 
         for entry in carbon_data_entries:
             self.adwin_set_var(entry, self.params[entry])
@@ -1098,16 +1106,18 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                         phase = self.params['Y_phase']
                     elif el_state == 'X':
                         Gate_operation = 'pi2'
-                        phase = self.params['Y_phase']
+                        phase = self.params['Y_phase'] + 180.0
                     elif el_state == '-X':
                         Gate_operation = 'pi2'
-                        phase = self.params['Y_phase'] + 180.0
+                        phase = self.params['Y_phase']
                     elif el_state == 'Y':
                         Gate_operation = 'pi2'
                         phase = self.params['X_phase']
                     elif el_state == '-Y':
                         Gate_operation = 'pi2'
                         phase = self.params['X_phase'] + 180.0
+                    else:
+                        print("I don't know electron state: " + el_state)
 
                     el_init_rotation_gate = DD.Gate(
                         'El_init_%d_rotation%d' % (i,pt),
@@ -1183,6 +1193,8 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
 
                 else: # this is used if we sweep the number of repetitions for Qmemory testing.
                     gate_seq.append(LDE_repump2)
+            elif self.params['repump_instead_of_LDE_2']:
+                gate_seq.append(LDE_repump2)
 
             # this has moved to in between the tomography gates for the new feedback
             if (self.params['do_dd_phase_correction_calibration'] or
@@ -1342,6 +1354,99 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         else:
 
             print 'upload = false, no sequence uploaded to AWG'
+
+
+class FakeLDECoherenceCheck(pulsar_msmt.PulsarMeasurement):
+    mprefix="FakeLDECoherenceCheck"
+
+    def generate_sequence(self, upload=True, **kw):
+        axis = kw.pop('axis', 'X')
+
+        pulse_phases = {
+            'X': self.params['X_phase'],
+            '-X': self.params['X_phase'] + 180.0,
+            'Y': self.params['Y_phase'],
+            '-Y': self.params['Y_phase'] + 180.0,
+        }
+
+        pi_pulse = pulse.cp(ps.X_pulse(self), phase = pulse_phases[axis])
+        pi2_pulse = pulse.cp(ps.Xpi2_pulse(self), phase = pulse_phases[axis])
+
+        adwin_sync = pulse.SquarePulse(
+            channel='adwin_sync',
+            length=self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude=2
+        )
+
+        elements = []
+        seq = pulsar.Sequence("Fake LDE coherence check")
+
+        element_names = ['initial', 'reps', 'final']
+
+        for i in range(self.params['pts']):
+            for j in range(3):
+                fake_LDE_el = element.Element("FakeLDE_pt-%d_%s" % (i, element_names[j]), pulsar=qt.pulsar, global_time=False)
+
+                LDE_length = pulse.SquarePulse(
+                    channel="MW_Imod",
+                    name="length placeholder",
+                    length=self.params['LDE_element_length'][i],
+                    amplitude=0.
+                )
+
+                length_id = fake_LDE_el.add(pulse.cp(LDE_length))
+                # add final pi and pi2 pulse
+                if (j != 2):
+                    fake_LDE_el.add(
+                        pulse.cp(pi_pulse),
+                        refpulse=length_id,
+                        refpoint='end',
+                        refpoint_new='center',
+                        start=-(self.params['LDE_decouple_time'][i] - self.params['average_repump_time'][i])
+                    )
+                    fake_LDE_el.add(
+                        pulse.cp(pi2_pulse),
+                        refpulse=length_id,
+                        refpoint='end',
+                        refpoint_new='center',
+                        start=-(2*self.params['LDE_decouple_time'][i] - self.params['average_repump_time'][i])
+                    )
+                # add first pi2 pulse
+                if (j != 0):
+                    fake_LDE_el.add(
+                        pulse.cp(pi2_pulse),
+                        refpulse=length_id,
+                        refpoint='start',
+                        refpoint_new='center',
+                        start=self.params['average_repump_time'][i],
+                    )
+                elements.append(fake_LDE_el)
+                seq.append(
+                    name=fake_LDE_el.name,
+                    wfname=fake_LDE_el.name,
+                    trigger_wait=(j==0),
+                    repetitions=1 if j != 1 else (self.params['N_LDE'][i] - 1)
+                )
+            adwin_RO_trigger = element.Element("FakeLDE_pt-%d_adwin_trigger" % i, pulsar=qt.pulsar, global_time=True)
+            adwin_RO_trigger.append(pulse.cp(adwin_sync, length = 100e-9))
+            adwin_RO_trigger.append(pulse.cp(adwin_sync))
+            adwin_RO_trigger.append(pulse.cp(adwin_sync, length = 100e-9))
+            elements.append(adwin_RO_trigger)
+            seq.append(name=adwin_RO_trigger.name, wfname=adwin_RO_trigger.name, trigger_wait=False)
+
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+
+
+
+
+
+
 
 
 

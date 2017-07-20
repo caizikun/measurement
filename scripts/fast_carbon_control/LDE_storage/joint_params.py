@@ -2,8 +2,8 @@
 contains all necessary parameters for remote measurements
 '''
 import qt
-import params_lt2
-reload(params_lt2)
+import params_lt4
+reload(params_lt4)
 name = qt.exp_params['protocols']['current']
 
 
@@ -56,12 +56,12 @@ joint_params['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for high
 joint_params['LDE1_attempts'] = 1000 
 joint_params['LDE2_attempts'] = 500
 
-joint_params['LDE_element_length'] = 7.0e-6 #DO NOT CHANGE THIS
+joint_params['LDE_element_length'] = 6e-6 #3*params_lt4.params_lt4['LDE_decouple_time'] #6.75e-6 #DO NOT CHANGE THIS # JS: did so anyway (2017-07-18)
 
 
-#change params to LT3 and LT4 later on.
-joint_params['master_LDE_decouple_time']    = params_lt2.params_lt2['LDE_decouple_time']
-joint_params['master_average_repump_time']  = params_lt2.params_lt2['average_repump_time']
-
-joint_params['slave_LDE_decouple_time']     = params_lt2.params_lt2['LDE_decouple_time']
-joint_params['slave_average_repump_time']   = params_lt2.params_lt2['average_repump_time']
+# #change params to LT3 and LT4 later on.
+# joint_params['master_LDE_decouple_time']    = params_lt2.params_lt2['LDE_decouple_time']
+# joint_params['master_average_repump_time']  = params_lt2.params_lt2['average_repump_time']
+#
+# joint_params['slave_LDE_decouple_time']     = params_lt2.params_lt2['LDE_decouple_time']
+# joint_params['slave_average_repump_time']   = params_lt2.params_lt2['average_repump_time']
