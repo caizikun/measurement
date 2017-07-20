@@ -50,13 +50,13 @@ else:
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.893 #0.526 #0.630 #0.889 # 0.893 # for a single pi pulse
+	hermite_pi_amp = 0.896 #0.526 #0.630 #0.889 # 0.893 # for a single pi pulse
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp =  0.628 #0.421 #0.543 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
+	hermite_pi2_amp =  0.630 #0.421 #0.543 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
 
 
 ### General settings for AdwinSSRO
@@ -255,13 +255,13 @@ cfg['samples'][sample_name] = {
 	###############
 	# C2(A ~ -26)  #
 	###############
-	'C2_freq_m1'        : (443003.12 + 475434.55)/2,
-	'C2_freq_0' 		: 443003.12,
-	'C2_freq_1_m1' 		: 475434.55,
+	'C2_freq_m1'        : (442971.62 + 475413.80)/2,
+	'C2_freq_0' 		: 442971.62,
+	'C2_freq_1_m1' 		: 475413.8,
 
 	'C2_Ren_tau_m1'    :   [4.900e-06], #3.87
 	'C2_Ren_N_m1'      :   [38], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [2.99] + [20.11] + [-1.81] + [-5.36] + [0.0] + [0.0] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [1.1] + [20.11] + [1.89] + [-5.02] + [0.0] + [0.0] + [223.37] + [0.0]),
 
 	'C2_phase_per_LDE_sequence_m1'	: 258.707,
 	'C2_init_phase_correction_m1': 0.0,
@@ -286,14 +286,14 @@ cfg['samples'][sample_name] = {
 	###############
 	# C4 (A ~ 33) #
 	###############
-	'C4_freq_m1'        : (442801.46 + 416193.23)/2,
-	'C4_freq_0' 		: 442801.46,
-	'C4_freq_1_m1' 		: 416193.23,
+	'C4_freq_m1'        : (442775.92 + 416214.02)/2,
+	'C4_freq_0' 		: 442775.92,
+	'C4_freq_1_m1' 		: 416214.02,
 	# 'C4_freq_1_p1' 		: 416427.2,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.52] + [0.0] + [-2.36] + [-3.92] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-3.49] + [0.0] + [-5.51] + [2.35] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	'C4_phase_per_LDE_sequence_m1'	: 218.646,
 	'C4_init_phase_correction_m1'	: 0.0,
@@ -303,16 +303,17 @@ cfg['samples'][sample_name] = {
 	###############
 	# C5 (A ~ 26) #
 	###############
-	'C5_freq_m1'        : (443705.15 + 422768.80)/2,
-	'C5_freq_0' 		: 443695.36,
-	'C5_freq_1_m1' 		: 422768.69,
+	'C5_freq_m1'        : (443686.02 + 422738.93)/2,
+	'C5_freq_0' 		: 443686.02,
+	'C5_freq_1_m1' 		: 422738.93,
 
 	'C5_Ren_tau_m1'    :   [8.656e-6], #[10.964e-6], #8.826
 	'C5_Ren_N_m1'      :   [40], # [46],  #,
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.1] + [20.11] + [22.62] + [8.7] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-8.32] + [20.11] + [-0.38] + [5.72] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C5_phase_per_LDE_sequence_m1'	:	0.0,
+	'C5_phase_per_LDE_sequence_m1'	: 224.169,
 	'C5_init_phase_correction_m1': 0.0,
+	'C5_init_phase_correction_serial_swap_m1' :0.0,
 
 
 	###############

@@ -32,7 +32,7 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [2,4]#,4]
+carbons = [2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -41,8 +41,8 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = False
-f_ms1 = False
+f_ms0 = True
+f_ms1 = True
 update_average_freq = True
 
 self_phase_calibration = True

@@ -1901,14 +1901,14 @@ if __name__ == '__main__':
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
-    # calibration_carbon = 4
-    #
-    # calibrate_LDE_phase(
-    #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
-    #     upload_only = False,
-    #     update_msmt_params=True,
-    #     carbon_override=calibration_carbon
-    # )
+    calibration_carbon = 5
+
+    calibrate_LDE_phase(
+        name+'_LDE_phase_calibration_C%d' % calibration_carbon,
+        upload_only = False,
+        update_msmt_params=True,
+        carbon_override=calibration_carbon
+    )
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
@@ -1940,11 +1940,11 @@ if __name__ == '__main__':
     #     do_phase_offset_sweep=True
     # )
     # #
-    apply_dynamic_phase_correction_delayline(
-        name + '_phase_fb_delayline',
-        upload_only=False,
-        dry_run=False,
-    )
+    # apply_dynamic_phase_correction_delayline(
+    #     name + '_phase_fb_delayline',
+    #     upload_only=False,
+    #     dry_run=False,
+    # )
 
     # apply_dynamic_phase_correction_delayline_tomo(
     #     name + '_phase_fb_delayline_tomo',
