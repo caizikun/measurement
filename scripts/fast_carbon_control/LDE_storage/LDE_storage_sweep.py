@@ -11,6 +11,35 @@ import msvcrt
 import time
 name = qt.exp_params['protocols']['current']
 
+def json_load_byteified(file_handle):
+    return _byteify(
+        json.load(file_handle, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+def json_loads_byteified(json_text):
+    return _byteify(
+        json.loads(json_text, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+def _byteify(data, ignore_dicts = False):
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+            for key, value in data.iteritems()
+        }
+    # if it's anything else, return it in its original form
+    return data
+
 def show_stopper():
     print '-----------------------------------'            
     print 'press q to stop measurement cleanly'
@@ -1402,7 +1431,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         m.params['phase_detuning'] = 0.
 
     # m.params['Carbon_LDE_phase_correction_list'] += m.params['phase_detuning']
-    # m.params['detuning_per_carbon'] = np.array([1.0, 1.0]) * m.params['phase_detuning']
+    m.params['detuning_per_carbon'] = np.zeros((m.params['number_of_carbons']))#np.array([1.0, 1.0]) * m.params['phase_detuning']
     # m.params['nuclear_phases_per_seqrep'] += m.params['detuning_per_carbon']
 
 
@@ -1538,9 +1567,10 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
     ### loop over tomography bases and RO directions upload & run
 
     nuclear_phases_per_seqrep = np.copy(m.params['nuclear_phases_per_seqrep'])
+    tomo_list = m.params['Tomography_list']
 
     breakst = False
-    for tomo_bases in m.params['Tomography_list']:
+    for tomo_bases in tomo_list:
         breakst = show_stopper()
         if breakst:
             break
@@ -1880,113 +1910,13 @@ def check_newfocus_power(pwr):
     PMServo.move_out()
     return m_pwr
 
-def recalibrate_newfocus():
-    stools.recalibrate_lt4_lasers(names=['NewfocusAOM'], awg_names=['NewfocusAOM'])
-
-def recalibrate_all():
-    stools.recalibrate_lt4_lasers(names=['GreenAOM', 'MatisseAOM', 'NewfocusAOM'],
-                                  awg_names=['NewfocusAOM'])
-
-def optimize():
-    GreenAOM.set_power(5e-6)
-    optimiz0r.optimize(dims=['x','y','z','y','x'])
-    GreenAOM.turn_off()
-
-def overnight_dps_des_sweep(debug):
-    # overnight section
-    carbons = [2,4,5]
-    C13_X_phase = 0.0
-
-    msmt_sweep_limits = [
-        (10, 340),
-        (340, 970),
-    ]
-
-    msmt_templates = [
-        {
-            'carbon_encoding':              'serial_swap',
-            'carbon_swap_el_states':        ['Z', 'Z'],
-            'Tomography_list': [
-                ['X', 'I'],
-                ['I', 'X'],
-                ['X', 'X'],
-                [C13_X_phase + 45.0, C13_X_phase + 45.0],
-                [C13_X_phase + 45.0, C13_X_phase - 45.0],
-            ]
-        },
-        {
-            'carbon_encoding':              'MBE',
-            'carbon_swap_el_states':        ['X'],
-            'Tomography_list': [
-                ['X', 'X'],
-                ['Y', 'Y'],
-                ['Z', 'Z'],
-                ['X', 'Y'],
-                ['Y', 'X'],
-            ]
-        },
-        {
-            'carbon_encoding':              'MBE',
-            'carbon_swap_el_states':        ['-X'],
-            'Tomography_list': [
-                ['X', 'X'],
-                ['Y', 'Y'],
-                ['Z', 'Z'],
-                ['X', 'Y'],
-                ['Y', 'X'],
-            ]
-        }
-    ]
-
-    import itertools
-    import copy
-    carbon_combis = itertools.combinations(carbons)
-
-    for combi in carbon_combis:
-        if not debug:
-            optimize()
-            recalibrate_all()
-
-        for calibration_carbon in carbons:
-            calibrate_LDE_phase(
-                name+'_LDE_phase_calibration_C%d' % calibration_carbon,
-                upload_only = False,
-                update_msmt_params=True,
-                carbon_override=calibration_carbon,
-                max_correction=2.0
-            )
-
-        for d in msmt_sweep_limits:
-            for m_template in msmt_templates:
-                m = copy.deepcopy(m_template)
-                m['minReps'] = d[0]
-                m['maxReps'] = d[1]
-                m['carbons'] = combi
-
-                m_name = "%s_phase_fb_delayline_C%s_%s_%s" % (
-                    name,
-                    "".join(combi),
-                    m['carbon_encoding'],
-                    "".join(m['carbon_swap_el_states'])
-                )
-
-                if not debug:
-                    recalibrate_all()
-
-                apply_dynamic_phase_correction_delayline(
-                    m_name,
-                    upload_only=debug,
-                    dry_run=False,
-                    extra_params=m
-                )
-
 if __name__ == '__main__':
-    test_pwr = 600e-9
-    if (np.abs(check_newfocus_power(test_pwr) - test_pwr) > 0.02*test_pwr):
-        print("Deviation more than 2%! Continue? (y/n) ")
-        inp = raw_input()
-        if inp != 'y':
-            raise Exception("Aborting")
+    # test_pwr = 600e-9
+    # if (np.abs(check_newfocus_power(test_pwr) - test_pwr) > 0.02*test_pwr):
+    #     print("Deviation more than 2%! Continue? (y/n) ")
+    #     inp = raw_input()
+    #     if inp != 'y':
+    #         raise Exception("Aborting")
 
 
     # repump_speed(name+'_repump_speed',upload_only = False)
@@ -2004,14 +1934,14 @@ if __name__ == '__main__':
 
     # sweep_LDE_attempts_before_swap(name+'LDE_attempts_vs_swap',upload_only = False)
 
-    calibration_carbon = 5
-
-    calibrate_LDE_phase(
-        name+'_LDE_phase_calibration_C%d' % calibration_carbon,
-        upload_only = False,
-        update_msmt_params=True,
-        carbon_override=calibration_carbon
-    )
+    # calibration_carbon = 5
+    #
+    # calibrate_LDE_phase(
+    #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
+    #     upload_only = False,
+    #     update_msmt_params=True,
+    #     carbon_override=calibration_carbon
+    # )
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
 
@@ -2069,6 +1999,34 @@ if __name__ == '__main__':
 
 
     # fake_LDE_coherence_check("sweep_N", debug=False)
+
+    import json
+    with open('overnight_m.json') as json_file:
+        m_data = json_load_byteified(json_file)
+
+    print(m_data)
+    debug = m_data['debug']
+
+    if m_data['requested_measurement'] == 'LDE_calibration':
+        calibration_carbon = m_data['calibration_carbon']
+        calibrate_LDE_phase(
+            name + '_LDE_phase_calibration_C%d' % calibration_carbon,
+            upload_only=debug,
+            update_msmt_params=True,
+            carbon_override=calibration_carbon,
+            max_correction=2.0
+        )
+    elif m_data['requested_measurement'] == 'LDE_sweep':
+        m_name = m_data['m_name']
+        apply_dynamic_phase_correction_delayline(
+            m_name,
+            upload_only=debug,
+            dry_run=False,
+            extra_params=m_data
+        )
+    else:
+        print("What do you want?")
+
 
 
 
