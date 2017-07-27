@@ -19,6 +19,8 @@
 #Define next_table Data_102
 #Define seq_indices Data_103
 
+#Define random_jumps Data_110
+
 ' holds the settings for communication between ADwin CPU and TiCo processor
 ' is filled automatically by the TiCo initialization command
 DIM tdrv_datatable[150] AS LONG
@@ -27,12 +29,17 @@ DIM tdrv_datatable[150] AS LONG
 DIM TiCo_DIO_MODULE AS LONG
 DIM table_dim AS LONG
 DIM jump_bit_shift AS LONG
-DIM do_random_gates AS LONG
+
+DIM do_random_gates AS LONG ' Fill the jump table with random jumps instead
+DIM rand_jump_factor AS LONG
+DIM rand_jump_index AS LONG
 
 DIM DATA_100[1000000] AS LONG
 DIM DATA_101[1000000] AS LONG
 DIM DATA_102[2000] AS LONG
 DIM DATA_103[1000] AS LONG
+
+DIM Data_110[10000000] As Long At DRAM_Extern ' random jumps
 
 SUB tico_delay_line_init(DIO_MODULE, AWG_start_DO_channel, AWG_jump_strobe_DO_channel)
   TiCo_DIO_MODULE = DIO_MODULE
@@ -67,7 +74,11 @@ SUB tico_set_jump_and_delays(seq_index)
   end_index = seq_indices[seq_index + 1] ' exclusive
   length = end_index - start_index
   P2_Set_Par(TiCo_DIO_MODULE, 1, TiCoDL_max_index, length)
-  P2_SetData_Long(tdrv_datatable, TiCo_Jump_Table, 1, length, jump_table, start_index, 3)
+  If (do_random_gates > 0) Then
+    Dim source
+  Else
+    P2_SetData_Long(tdrv_datatable, TiCo_Jump_Table, 1, length, jump_table, start_index, 3)
+  EndIf
   P2_SetData_Long(tdrv_datatable, TiCo_Delay_Cycles, 1, length, delay_cycles, start_index, 3)
 ENDSUB
 
