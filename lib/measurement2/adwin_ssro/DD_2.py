@@ -5980,7 +5980,7 @@ class MBI_C13(DynamicalDecoupling):
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
         elif nr_of_carbons == 3:
-            Tomo_bases == ([
+            Tomo_bases = ([
             ['X','I','I'],['Y','I','I'],['Z','I','I'],
             ['I','X','I'],['I','Y','I'],['I','Z','I'],
             ['I','I','X'],['I','I','Y'],['I','I','Z'],

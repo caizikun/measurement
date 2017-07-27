@@ -3375,7 +3375,8 @@ config['adwin_pro_processes'] = {
                     ['do_LDE_1'                        ,   0],
                     ['do_phase_offset_sweep'           ,   0],
                     ['delay_HH_trigger_DO_channel'     ,   0],
-                    ['do_delay_HH_trigger'             ,   0]
+                    ['do_delay_HH_trigger'             ,   0],
+                    ['do_phase_per_seqrep_sweep'       ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 100,
@@ -3421,12 +3422,13 @@ config['adwin_pro_processes'] = {
                     'delay_cycles_sweep'        : 125,
                     }, 
                 'data_float' : {
-                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
-                    'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
-                    'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
-                    'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
-                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
-                    'nuclear_phases_offset_sweep'   : 124, # array that holds the offsets in case we want to sweep
+                    'compensated_phase'                     : 108, # how much phase feedback has been given on the carbon
+                    'nuclear_frequencies'                   : 120, # list of e-spin state averaged carbon frequencies
+                    'nuclear_phases'                        : 121, # current carbon phase (used primarily during ADwin operation to track phases)
+                    'nuclear_phases_per_seqrep'             : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'                 : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
+                    'nuclear_phases_offset_sweep'           : 124, # array that holds the offsets in case we want to sweep
+                    'nuclear_phases_per_seqrep_sweep'       : 126,
                     },
                 },
 

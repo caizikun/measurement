@@ -9,7 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 2
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,149,149,151,151,437,437,685,685,686,686,734,734,871,871,937,937,1103,1104,1105,1108,1109
+' Bookmarks                      = 3,3,16,16,22,22,152,152,154,154,452,452,705,705,706,706,754,754,891,891,957,957,1123,1124,1125,1128,1129
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -43,7 +43,7 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE ..\adwin_pro_2\configuration.inc
-#INCLUDE ..\adwin_pro_2\cr_mod_Bell.inc
+#INCLUDE ..\adwin_pro_2\cr_mod_Bell_cached.inc
 #INCLUDE ..\adwin_pro_2\control_tico_delay_line.inc
 '#INCLUDE .\cr.inc
 '#INCLUDE .\cr_mod_Bell.inc
@@ -89,8 +89,11 @@ DIM DATA_108[max_purification_repetitions][max_nuclei] as FLOAT at DRAM_Extern' 
 ' DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
 
 DIM DATA_109[max_purification_repetitions][max_nuclei] AS LONG AT DRAM_Extern ' feedback delay setting
-DIM DATA_124[max_purification_repetitions] AS LONG AT DRAM_Extern ' nuclear phase offset sweep
+DIM DATA_124[max_purification_repetitions][max_nuclei] AS LONG AT DRAM_Extern ' nuclear phase offset sweep
 DIM DATA_125[max_purification_repetitions] AS LONG AT DRAM_Extern ' sweep delay cycles
+
+#DEFINE nuclear_phases_per_seqrep_sweep     DATA_126
+DIM nuclear_phases_per_seqrep_sweep[max_purification_repetitions][max_nuclei] AS FLOAT AT DRAM_Extern ' phases per seqrep sweep
 
 DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data marker
 
@@ -191,7 +194,7 @@ DIM delay_trigger_DI_channel, delay_trigger_DI_pattern, delay_trigger_DO_channel
 DIM minimal_delay_cycles, do_phase_fb_delayline, do_sweep_delay_cycles, delay_feedback_N AS LONG
 DIM delay_time_offset, delay_feedback_target_phase, delay_feedback_static_dec_duration AS FLOAT
 DIM phase_feedback_index, nuclear_feedback_index, nuclear_feedback_cycles AS LONG
-DIM do_phase_offset_sweep AS LONG
+DIM do_phase_offset_sweep, do_phase_per_seqrep_sweep AS LONG
 DIM delay_HH_trigger_DO_channel, do_HH_trigger AS LONG
 
 DIM dedicate_next_cycle_to_calculations AS LONG
@@ -242,6 +245,21 @@ SUB update_nuclear_phases_from_list(phase_list[])
   nuclear_phases[4] = nuclear_phases[4] + phase_list[4]
   nuclear_phases[5] = nuclear_phases[5] + phase_list[5]
   nuclear_phases[6] = nuclear_phases[6] + phase_list[6]
+  
+ENDSUB
+
+SUB update_nuclear_phases_from_list_indexed(phase_list[], idx)
+  ' unfortunately variable indexed array access takes twice as long as constant access
+  ' ugly solution: unroll the loop by hand
+  
+  ' note: max_nuclei is set at 6 now!
+  
+  nuclear_phases[1] = nuclear_phases[1] + phase_list[idx + 1]
+  nuclear_phases[2] = nuclear_phases[2] + phase_list[idx + 2]
+  nuclear_phases[3] = nuclear_phases[3] + phase_list[idx + 3]
+  nuclear_phases[4] = nuclear_phases[4] + phase_list[idx + 4]
+  nuclear_phases[5] = nuclear_phases[5] + phase_list[idx + 5]
+  nuclear_phases[6] = nuclear_phases[6] + phase_list[idx + 6]
   
 ENDSUB
 
@@ -330,13 +348,7 @@ SUB init_nuclear_phases_offset()
   update_nuclear_phases_from_list(nuclear_phases_offset)
   
   IF (do_phase_offset_sweep > 0) THEN
-    nuclear_offset_sweep_value = DATA_124[current_ROseq]
-    IF (nuclear_offset_sweep_value < 0) THEN
-      nuclear_offset_sweep_value = nuclear_offset_sweep_value + 360.0
-    ENDIF
-    INC(Par_65)
-    FPar_38 = nuclear_offset_sweep_value
-    update_nuclear_phases_from_scalar(nuclear_offset_sweep_value)
+    update_nuclear_phases_from_list(DATA_124[current_ROseq])
     modulo_nuclear_phases()
   ENDIF
 ENDSUB
@@ -379,6 +391,9 @@ SUB AWG_start_trigger()
   P2_DIGOUT(DIO_MODULE, AWG_start_DO_channel,0) 
 ENDSUB
 
+SUB update_nuclear_phases_per_seqrep()
+  MemCpy(nuclear_phases_per_seqrep_sweep[current_ROseq][1], nuclear_phases_per_seqrep[1], max_nuclei)
+ENDSUB
 
 
 LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
@@ -491,6 +506,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   do_phase_offset_sweep            = DATA_20[49]
   delay_HH_trigger_DO_channel      = DATA_20[50]
   do_HH_trigger                    = DATA_20[51]
+  do_phase_per_seqrep_sweep        = DATA_20[52]
   
   ' float params from python
   E_SP_voltage                              = DATA_21[1] 'E spin pumping before MBI
@@ -578,6 +594,10 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   
   init_nuclear_phases_offset()
   
+  IF (do_phase_per_seqrep_sweep > 0) THEN
+    update_nuclear_phases_per_seqrep()
+  ENDIF
+    
   FOR i = 1 to number_of_dps_nuclei ' don't calculate the stuff for nuclei slots that are not in use; those have bullshit frequency values that upset the calculation
     FOR j = 1 to phase_feedback_resolution_steps
       ' overrotate by 5 rotations to ensure that the corresponding delay time is longer than the minimal delay time
@@ -737,18 +757,18 @@ EVENT:
   PAR_61 = mode   
   Par_60 = timer
   
-  IF (current_mode <> mode) THEN  
-    inc(flowchart_index)  
-    if (flowchart_index > max_flowchart_modes) THEN
-      flowchart_index = 1
-    endif
-    mode_flowchart[flowchart_index] = mode
-    mode_flowchart_cycles[flowchart_index] = 0
-  endif
-                    
-  if (flowchart_index > 0) THEN
-    inc(mode_flowchart_cycles[flowchart_index])
-  endif
+  '  IF (current_mode <> mode) THEN  
+  '    inc(flowchart_index)  
+  '    if (flowchart_index > max_flowchart_modes) THEN
+  '      flowchart_index = 1
+  '    endif
+  '    mode_flowchart[flowchart_index] = mode
+  '    mode_flowchart_cycles[flowchart_index] = 0
+  '  endif
+  '                    
+  '  if (flowchart_index > 0) THEN
+  '    inc(mode_flowchart_cycles[flowchart_index])
+  '  endif
 
   
   current_mode = mode
@@ -1293,6 +1313,10 @@ EVENT:
           dedicate_next_cycle_to_calculations = 1
           requested_calculations = REQ_CALC_INIT_PHASES_OFFSET
           tico_delay_line_set_cycles(0)
+          
+          IF (do_phase_per_seqrep_sweep > 0) THEN
+            update_nuclear_phases_per_seqrep()
+          ENDIF
         
           mbi_timer = 0 
           P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
@@ -1320,18 +1344,18 @@ EVENT:
   ENDIF
   
   
-  Par_36 = (Read_Timer() - start_time)
-  
-  IF (Par_36 > overlong_cycle_threshold) THEN
-    INC(overlong_cycles_per_mode[current_mode + 1])
-    INC(Par_34)
-    IF(current_mode = 7) THEN
-      Par_35 = Par_36
-      Par_37 = timer
-      Par_38 = Par_41
-    ENDIF
-    
-  ENDIF
+  '  Par_36 = (Read_Timer() - start_time)
+  '    
+  '  IF (Par_36 > overlong_cycle_threshold) THEN
+  '    INC(overlong_cycles_per_mode[current_mode + 1])
+  '    INC(Par_34)
+  '    IF(current_mode = 7) THEN
+  '      Par_35 = Par_36
+  '      Par_37 = timer
+  '      Par_38 = Par_41
+  '    ENDIF
+  '      
+  '  ENDIF
     
 FINISH:
   P2_DIGOUT(DIO_MODULE,remote_adwin_do_success_channel,0)
