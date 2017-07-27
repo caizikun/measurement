@@ -33,8 +33,6 @@
 
 #INCLUDE C:\ADwin\TiCoBasic\inc\DIO32TiCo.inc
 
-#DEFINE Table_Size 256
-
 #DEFINE Enable                 Par_10
 #DEFINE Jump_Bit_Shift         Par_11
 #DEFINE AWG_start_DO_channel   Par_12
@@ -47,10 +45,10 @@
 #DEFINE max_element           Par_23
 #DEFINE delay_bias            Par_24
 #DEFINE ShortDelayErrors      Par_25
+#DEFINE max_index             Par_26
 
-
-DIM Data_1[Table_Size] As Long ' jump table
-DIM Data_2[Table_Size] As Long ' delay cycles
+DIM Data_1[1000] As Long ' jump table
+DIM Data_2[1000] As Long ' delay cycles
 
 #DEFINE jump_table Data_1
 #DEFINE delay_cycles Data_2
@@ -58,22 +56,23 @@ DIM Data_2[Table_Size] As Long ' delay cycles
 INIT:
   
   Enable = 0
-  delay_bias = 30 ' In clock cyles (*20 ns)
-  ' This is basically the diff between current_time and old_time within a loop
+  delay_bias = 44 ' In clock cyles (*20 ns)
   
   max_element = Shift_Left(15, Jump_Bit_Shift)
   
   awake = 1
   
   Par_37 = 0
+  Processdelay = 50 ' In clock cyles (*20 ns)
 EVENT:
-  inc(Par_37)
+  Inc(Par_37)
+  
   If (Enable = 1) Then
     ' Trigger AWG
-    DIGOUT(AWG_start_DO_channel,1)  ' AWG trigger
+    DIGOUT(AWG_start_DO_channel,1)
     DIGOUT(AWG_start_DO_channel,0)
-    current_index = 1
-    Do
+    
+    For current_index = 1 To max_index
       ' get current jump index and output it early so strobe can catch it properly
       current_element = jump_table[current_index]  
       Digout_Bits(current_element, max_element - current_element) ' Set the jump table
@@ -89,15 +88,13 @@ EVENT:
           
       ' Output strobe and jump immediately
       Digout(AWG_jump_strobe_DO_channel, 1)
-      NOPS(4) ' Is this really necessary?
+      ' NOPS(4) ' Is this really necessary?
       Digout(AWG_jump_strobe_DO_channel, 0)
-        
-      Inc(current_index)
-    Until (delay_cycles[current_index] = 0)
+    Next current_index
       
     Enable = 0
 
-  endif
+  EndIf
   
     
 FINISH:
