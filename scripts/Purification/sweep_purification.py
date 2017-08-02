@@ -201,9 +201,9 @@ def repump_speed(name,debug = False,upload_only=False):
     prepare(m)
 
     ### general params
-    pts = 21
+    pts = 101
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
@@ -220,7 +220,7 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.4e-6,1.5e-6,pts)
+    m.params['general_sweep_pts'] = np.append(np.linspace(0.0,0.15e-6,50),np.linspace(0.15e-6,2.e-6,pts-50))
     m.params['sweep_name'] = m.params['general_sweep_name'] + ' (ns)'
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 

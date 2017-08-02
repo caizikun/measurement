@@ -32,7 +32,9 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [2,4,5]#,4]
+qt.exp_params['simplify_wfnames'] = True
+
+carbons = [2,4,5,3,6,7]#[2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -41,11 +43,11 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
-f_ms0 = True
-f_ms1 = True
-update_average_freq = True
+f_ms0 = False
+f_ms1 = False
+update_average_freq = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
@@ -56,7 +58,7 @@ cross_phase_steps       = 1
 
 
 # Note that you wont save to msmt params if debug is on.
-debug = False 
+debug = False
 
 ### repetitions per data point.
 freq_reps = 750
@@ -94,7 +96,9 @@ elif SETUP == 'lt4':
         '3' : detuning_basic,
         '4' : detuning_basic,
         '5' : detuning_basic,
-        '6' : detuning_basic
+        '6' : detuning_basic,
+        '7' : detuning_basic,
+        '8' : detuning_basic
         }
 ######
 
@@ -140,7 +144,7 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 25
-    if carbon_nr == 6:
+    if carbon_nr == 8:
         m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
@@ -276,9 +280,9 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     m.params['init_state']          = 'up' 
     # m.params['nr_of_gates']          = nr_of_gates
     
-    m.params['pts']                 = 19
-    if C_measured == 6:
-        m.params['pts'] = 16
+    m.params['pts']                 = 16
+    # if C_measured == 6:
+    #     m.params['pts'] = 16
 
     if smart_sweep_pts:
         if np.mod(m.params['pts'],2)!=0:

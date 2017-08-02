@@ -30,6 +30,7 @@ class Pulsar:
         'ch3', 'ch3_marker1', 'ch3_marker2',
         'ch3', 'ch3_marker1', 'ch3_marker2' ]
     AWG_sequence_cfg={}
+    override_simplify_wfnames = False
 
     def __init__(self):
         self.channels = {}
@@ -420,7 +421,10 @@ class Pulsar:
         #     print("If you don't want this, modify pulsar.py function program_awg.")
         #     simplify_wfnames = True
         # else:
-        simplify_wfnames = kw.pop('simplify_wfnames', False)
+        if 'simplify_wfnames' in qt.exp_params and qt.exp_params['simplify_wfnames']:
+            simplify_wfnames = True
+        else:
+            simplify_wfnames = kw.pop('simplify_wfnames', False)
 
         simplified_wfnames = {}
 
