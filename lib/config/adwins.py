@@ -3724,13 +3724,14 @@ config['adwin_pro_processes'] = {
                     'index' : 9,
                     'file' : 'dynamic_jump.TB9',
                     'par' : {
-                        # 'table_dim' : 30
+                        
                     },
                     'params_long' : [
                         ['cycle_duration'           ,   1000],
                         ['AWG_start_DO_channel'     ,   9   ],
                         ['AWG_jump_strobe_DO_channel' ,   0 ],
-                        ['do_init_only'             ,   0   ]
+                        ['do_init_only'             ,   0   ],
+                        ['jump_bit_shift'           ,   4   ],
                     ],
                     'params_long_index'  : 20,
                     # 'params_long_length' : 100,
@@ -3741,6 +3742,8 @@ config['adwin_pro_processes'] = {
                         'jump_table' :   100,
                         'delay_cycles'  :   101,
                         'next_seq_table'    :   102,
+                        'seq_indices'   : 103,
+                        'random_ints'   : 110,
                     },
                 },
         }
