@@ -265,7 +265,7 @@ cfg['samples'][sample_name] = {
 	'C2_Ren_N_m1'      :   [46], #36
 	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [210.12] + [0.82] + [-4.02] + [-9.21] + [2.53] + [3.66] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	: 61.238,
+	'C2_phase_per_LDE_sequence_m1'	: 61.088,
 	'C2_init_phase_correction_m1': 0.0,
 	# 'C2_init_phase_correction_serial_swap_m1': 0.0, #182.740, # C2,C4 serial swap sequence offset
 	# 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
@@ -282,7 +282,7 @@ cfg['samples'][sample_name] = {
 	'C3_Ren_N_m1'      :   [66],
 	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [1.98] + [46.8] + [-4.54] + [0.2] + [5.62] + [-9.44] + [0.0] + [0.0] + [0.0]),
 
-	'C3_phase_per_LDE_sequence_m1'	: 84.294,
+	'C3_phase_per_LDE_sequence_m1'	: 84.216,
 	'C3_init_phase_correction_m1': 0.0,
 	# 'C3_init_phase_correction_serial_swap_m1': 0.0,
 	
@@ -298,7 +298,7 @@ cfg['samples'][sample_name] = {
 	'C4_Ren_N_m1'      :   [28],#[56], #28
 	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [2.8] + [3.12] + [-0.24] + [-0.6] + [1.87] + [5.39] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	: 15.774,
+	'C4_phase_per_LDE_sequence_m1'	: 15.843,
 	'C4_init_phase_correction_m1'	: 0.0,
 	# 'C4_init_phase_correction_serial_swap_m1': 0.0, #276.585, # C2,C4 serial swap sequence offset
 
@@ -314,7 +314,7 @@ cfg['samples'][sample_name] = {
 	'C5_Ren_N_m1'      :   [40], # [46],  #,
 	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [-1.11] + [1.59] + [-10.62] + [10.75] + [1.39] + [6.16] + [0.0] + [0.0]),
 
-	'C5_phase_per_LDE_sequence_m1'	: 22.059,
+	'C5_phase_per_LDE_sequence_m1'	: 22.252,
 	'C5_init_phase_correction_m1': 0.0,
 	# 'C5_init_phase_correction_serial_swap_m1' :0.0,
 
@@ -330,7 +330,7 @@ cfg['samples'][sample_name] = {
 	'C6_Ren_N_m1'      :   [52],
 	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [-1.12] + [-3.57] + [-3.73] + [-0.81] + [98.86] + [-5.92] + [0.0] + [0.0] + [0.0]),
 
-	'C6_phase_per_LDE_sequence_m1'	: 97.708,
+	'C6_phase_per_LDE_sequence_m1'	: 97.645,
 	'C6_init_phase_correction_m1': 0.0,
 	# 'C6_init_phase_correction_serial_swap_m1': 0.0,
 
@@ -345,7 +345,7 @@ cfg['samples'][sample_name] = {
 	'C7_Ren_N_m1'      :   [60],
 	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-8.99] + [2.98] + [4.54] + [18.25] + [16.01] + [1.79] + [228.22] + [0.0] + [0.0]),
 
-	'C7_phase_per_LDE_sequence_m1'	: 46.349,
+	'C7_phase_per_LDE_sequence_m1'	: 46.392,
 	'C7_init_phase_correction_m1': 0.0,
 	# 'C7_init_phase_correction_serial_swap_m1': 0.0,
 

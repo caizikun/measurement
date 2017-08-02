@@ -2144,13 +2144,12 @@ if __name__ == '__main__':
                 do_upload=not debug,
             )
         elif m_data['requested_measurement'] == 'LDE_sweep':
-            if False:
+            m_name = m_data['m_name']
+            if 'serial_swap' in m_name:
                 try:
-                    optimize()
                     recalibrate_all()
                 except:
                     print("Calibration and optimization didn't work")
-            m_name = m_data['m_name']
             apply_dynamic_phase_correction_delayline(
                 m_name,
                 upload_only=debug,
