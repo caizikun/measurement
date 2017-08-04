@@ -777,12 +777,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             Cdecstr = 'C'+str(i)+'_freq'+self.params['electron_transition']
             try:
                 C_freq_0.append(self.params[C0str]*2*np.pi)
+            except:
+                C_freq_0.append(None)
+            try:
                 C_freq_1.append(self.params[C1str]*2*np.pi)
                 C_freq.append (self.params[Cdecstr]*2*np.pi)
             except:
-                C_freq_1.append(None)
-                C_freq_0.append(None)
                 C_freq.append (None)
+                C_freq_1.append(None)
 
         return C_freq_0, C_freq_1, C_freq
 

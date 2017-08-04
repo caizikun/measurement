@@ -79,8 +79,8 @@ if __name__ == '__main__':
     times = np.linspace(1e2,50e3,7)
 
     
-    # T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
-    #                 T1_readout_state = 'ms=0', debug=False)
+    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
+                    T1_readout_state = 'ms=0', debug=False)
     T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
                     T1_readout_state = 'ms=-1', debug=False)
     
