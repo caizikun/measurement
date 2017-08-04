@@ -510,6 +510,16 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
 
+    if 'first_mw_pulse_type' in override_params:
+        if override_params['first_mw_pulse_type'] == 'pi':
+            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
+            m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+        elif override_params['first_mw_pulse_type'] == 'pi2':
+            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+            m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+        elif override_params['first_mw_pulse_type'] == 'none':
+            m.params['mw_first_pulse_amp'] = 0.0
+
     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -969,18 +979,17 @@ def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
     m.finish()
 
 def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_params=False, carbon_override=None,
-                        max_correction=None, crude=False, do_upload=True):
+                        max_correction=None, crude=False, do_upload=True, override_params=None):
     """
     uses LDE 1 and swap to initialize the carbon in state |x>.
     Sweeps the number of repetitions (LDE2) and performs tomography of X.
     Is used to calibrate the acquired phase per LDE repetition.
     """
     m = purify_slave.purify_single_setup(name)
-    override_params = None
+    if override_params is None:
+        override_params = dict()
     if carbon_override is not None:
-        override_params = {
-            'carbons':                  [carbon_override],
-        }
+        override_params['carbons'] = [carbon_override]
     prepare(m, override_params=override_params)
 
     print("Operating on carbons: " + str(m.params['carbons']))
@@ -988,7 +997,6 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     ### general params
     # pts = 15
     ### calculate sweep array
-
     if crude:
         minReps = 1
         maxReps = 12
@@ -999,6 +1007,11 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
         maxReps = 32
         step = 3
         m.params['phase_detuning'] = 16.
+
+    if 'minReps' in override_params: minReps = override_params['minReps']
+    if 'maxReps' in override_params: maxReps = override_params['maxReps']
+    if 'step' in override_params: step = override_params['step']
+    if 'phase_detuning' in override_params: m.params['phase_detuning'] = override_params['phase_detuning']
 
     #### increase the detuning for more precise measurements
 
@@ -1021,7 +1034,21 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     m.params['LDE_1_is_init'] = 1 
     m.joint_params['opt_pi_pulses'] = 0 
     m.params['input_el_state'] = 'Z'
-    m.params['mw_first_pulse_phase'] = m.params['X_phase']
+    m.params['mw_first_pulse_phase'] = (
+        m.params['X_phase']
+        if not 'mw_first_pulse_phase' in override_params
+        else override_params['mw_first_pulse_phase']
+    )
+
+    if 'first_mw_pulse_type' in override_params:
+        if override_params['first_mw_pulse_type'] == 'pi':
+            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
+            m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+        elif override_params['first_mw_pulse_type'] == 'pi2':
+            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+            m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+        elif override_params['first_mw_pulse_type'] == 'none':
+            m.params['mw_first_pulse_amp'] = 0.0
     # m.params['mw_first_pulse_amp'] = 0
 
     if len(m.params['carbons']) > 1:
@@ -2155,6 +2182,14 @@ if __name__ == '__main__':
                 carbon_override=calibration_carbon,
                 max_correction=3.0,
                 do_upload=not debug,
+            )
+        elif m_data['requested_measurement'] == 'LDE_phase':
+            calibrate_LDE_phase(
+                m_data['m_name'],
+                upload_only=debug,
+                do_upload=not debug,
+                update_msmt_params=False,
+                override_params=m_data
             )
         elif m_data['requested_measurement'] == 'LDE_sweep':
             m_name = m_data['m_name']
