@@ -34,7 +34,7 @@ n = 1
 
 qt.exp_params['simplify_wfnames'] = True
 
-carbons = [2,4,5,3,6,7]#[2,4,5]#,4]
+carbons = [1]#2,4,5,3,6,7]#[2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -47,7 +47,7 @@ f_ms0 = False
 f_ms1 = False
 update_average_freq = False
 
-self_phase_calibration = False
+self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False

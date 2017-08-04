@@ -496,8 +496,10 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['do_carbon_readout']  = 1
     m.params['do_LDE_1'] = 1
 
-    m.params['LDE1_attempts'] = 100
-    m.joint_params['LDE1_attempts'] = 100
+    if 'LDE1_attempts' not in override_params:
+        m.params['LDE1_attempts'] = 50
+
+    m.joint_params['LDE1_attempts'] = m.params['LDE1_attempts']
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
@@ -1001,7 +1003,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     #### increase the detuning for more precise measurements
 
     
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
 
@@ -1118,6 +1120,17 @@ def update_LDE_phase_param(**kw):
     print("Writing to msmt_params.py...")
     write_to_msmt_params.write_to_msmt_params_file([LDE_param_key], [None], False, round_decimals=3)
     print("Done!")
+    try:
+        with open('LDE_calibration_log.txt', 'a') as file:
+            file.write("Updating LDE phase measurement param for C%d\n" % carbon_id)
+            file.write("Detuning used: %.1f\n" % detuning)
+            file.write("Previous LDE phase: %.3f\n" % previous_LDE_phase)
+            file.write("Detuning compensated acquired phase per repetition: %.3f +/- %.3f\n" % (
+            acq_phase_per_rep, u_acq_phase_per_rep))
+            file.write("Updated LDE phase: %.3f\n" % updated_LDE_phase)
+            file.write("\n")
+    except:
+        print("Writing to log file failed")
 
 
 
@@ -2040,7 +2053,7 @@ if __name__ == '__main__':
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False,
-    #                           carbon_override=2)
+    #                           carbon_override=1)
 
     # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
     # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
@@ -2159,8 +2172,12 @@ if __name__ == '__main__':
             )
         elif m_data['requested_measurement'] == 'sweep_average_repump_time':
             c_str = "".join([str(c) for c in m_data['carbons']])
+            if 'm_name' in m_data:
+                m_name = m_data['m_name']
+            else:
+                m_name = name + '_Sweep_Repump_time_C%s_X' % c_str
             sweep_average_repump_time(
-                name+'_Sweep_Repump_time_C%s_X' % c_str,
+                m_name,
                 do_Z = False,
                 debug=debug,
                 override_params=m_data,

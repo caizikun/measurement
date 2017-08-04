@@ -121,7 +121,7 @@ params_lt4['sequence_type']                 = params_lt4['carbon_encoding']
 params_lt4['dps_MBE_bases']                 = ['Y','Y']
 params_lt4['dps_MBE_readout_orientation']   = 'positive'
 params_lt4['delay_feedback_N']              = 1
-params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
+params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*8*360.0 # making sure that we have enough delay time
 params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 
 params_lt4['delay_feedback_use_calculated_phase_offsets'] = 1
