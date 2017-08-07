@@ -24,25 +24,33 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
     
-
-
-    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
-        if Gate.first_pulse_is_pi2:
-            Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
-    elif hasattr(Gate,'first_pulse_is_pi2'):
-        if Gate.first_pulse_is_pi2:
+    if 'first_mw_pulse_type' in msmt.params:
+        if msmt.params['first_mw_pulse_type'] == 'pi':
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X, phase = msmt.params['mw_first_pulse_phase'])
+        elif msmt.params['first_mw_pulse_type'] == 'pi2':
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
-
-    if hasattr(Gate,'no_first_pulse'):
-        if Gate.no_first_pulse:
+        elif msmt.params['first_mw_pulse_type'] == 'none':
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+        else:
+            raise ValueError("What are you doing first_mw_pulse_type does not make sense.")
+    else:
+        if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
+            if Gate.first_pulse_is_pi2:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
+        elif hasattr(Gate,'first_pulse_is_pi2'):
+            if Gate.first_pulse_is_pi2:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
 
-    if hasattr(Gate,'no_mw_pulse'):
-        if Gate.no_mw_pulse:
-            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        if hasattr(Gate,'no_first_pulse'):
+            if Gate.no_first_pulse:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+
+        if hasattr(Gate,'no_mw_pulse'):
+            if Gate.no_mw_pulse:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
 
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))

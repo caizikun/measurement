@@ -509,17 +509,6 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['general_sweep_pts'] = np.linspace(-0.3e-6,1.0e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
-
-    if 'first_mw_pulse_type' in override_params:
-        if override_params['first_mw_pulse_type'] == 'pi':
-            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
-            m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
-        elif override_params['first_mw_pulse_type'] == 'pi2':
-            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-            m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
-        elif override_params['first_mw_pulse_type'] == 'none':
-            m.params['mw_first_pulse_amp'] = 0.0
-
     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -1040,15 +1029,6 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
         else override_params['mw_first_pulse_phase']
     )
 
-    if 'first_mw_pulse_type' in override_params:
-        if override_params['first_mw_pulse_type'] == 'pi':
-            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi_amp']
-            m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
-        elif override_params['first_mw_pulse_type'] == 'pi2':
-            m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-            m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
-        elif override_params['first_mw_pulse_type'] == 'none':
-            m.params['mw_first_pulse_amp'] = 0.0
     # m.params['mw_first_pulse_amp'] = 0
 
     if len(m.params['carbons']) > 1:
@@ -1056,7 +1036,10 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
 
     carbon = m.params['carbons'][0]
 
-
+    m.params['do_LDE_1'] = 0
+    m.params['simple_el_init'] = 0
+    m.params['carbon_init_method'] = 'MBI'
+    m.params['do_swap_onto_carbon'] = 0
     
 
     ### define sweep
@@ -2099,8 +2082,8 @@ if __name__ == '__main__':
     #
     # calibrate_LDE_phase(
     #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
-    #     upload_only = False,
-    #     update_msmt_params=True,
+    #     upload_only = True,
+    #     update_msmt_params=False,
     #     carbon_override=calibration_carbon,
     #     max_correction=3.0,
     #     crude=False

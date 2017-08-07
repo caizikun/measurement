@@ -22,6 +22,38 @@ def recalibrate_all():
     stools.recalibrate_lt4_lasers(names=['GreenAOM', 'MatisseAOM', 'NewfocusAOM'],
                                   awg_names=['NewfocusAOM'])
 
+def bell_check_powers():
+
+    prot_name = qt.exp_params['protocols']['current']
+
+    names=['MatisseAOM', 'NewfocusAOM','GreenAOM']
+    setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
+                4000e-9, # The amount for repumping in purification
+                10e-6]
+    relative_thresholds = [0.15,0.15,0.15]
+    qt.instruments['PMServo'].move_in()
+    qt.msleep(2)
+    qt.stools.init_AWG()
+    qt.stools.turn_off_all_lasers()
+
+    all_fine=True
+    for n,s,t in zip(names, setpoints,relative_thresholds):
+        if (msvcrt.kbhit() and (msvcrt.getch() == 'q')): 
+            break
+        setpoint, value = qt.stools.check_power(n, s, 'adwin', 'powermeter', 'PMServo', False)
+        deviation =np.abs(1-setpoint/value)
+        print 'deviation', deviation
+        if deviation>t:
+            all_fine=False
+            qt.stools.recalibrate_laser(n, 'PMServo', 'adwin')
+            if n == 'NewfocusAOM':
+                qt.stools.recalibrate_laser(n, 'PMServo', 'adwin',awg=True)
+            break
+    qt.instruments['PMServo'].move_out()
+    return all_fine
+
+
+
 def optimize():
     GreenAOM.set_power(10e-6)
     optimiz0r.optimize(dims=['x','y','z','y','x'])
@@ -31,8 +63,8 @@ if __name__ == '__main__':
     debug = False
     # overnight section
     carbons = [1,2,3,4,5,6,7]
-    LDE_attempts = [50, 100, 150, 200, 250, 500]
-    powers = [4e-6, 1e-6]
+    LDE_attempts = [50, 100, 150, 200, 250, 500,700]
+    powers = [4e-6]
 
     LDE_msmt_sweep_range = [
         (1,12,1),
@@ -53,9 +85,9 @@ if __name__ == '__main__':
             for pulse_type in LDE_first_pulses:
                 if not debug:
                     optimize()
-                    recalibrate_all()
+                    bell_check_powers()
                 for range_i, sw_rng in enumerate(LDE_msmt_sweep_range):
-                    m_name = "%s_LDE_phase_%s_C%d_pow%duW_sec%d" % (
+                    m_name = "%s_LDE_phase_p1_%s_C%d_pow%duW_sec%d" % (
                         name, pulse_type, c, int(p*1e6), range_i
                     )
                     m = {
@@ -76,8 +108,6 @@ if __name__ == '__main__':
 
                 for l in LDE_attempts:
 
-                    if c == 1 and l >101:
-                        continue
 
                     if c != 7 and l > 450:
                         continue
@@ -92,9 +122,9 @@ if __name__ == '__main__':
                         break
                     if not debug:
                         optimize()
-                        recalibrate_all()
+                        bell_check_powers()
 
-                    m_name = "%s_Sweep_Repump_time_%s_C%d_LDE%d_pow%duW_X" % (
+                    m_name = "%s_Sweep_Repump_time_p1_%s_C%d_LDE%d_pow%duW_X" % (
                         name, pulse_type, c, l, int(p*1e6)
                     )
 

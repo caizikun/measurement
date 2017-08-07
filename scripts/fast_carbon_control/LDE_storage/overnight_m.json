@@ -1,1 +1,1 @@
-{"requested_measurement": "sweep_average_repump_time", "carbons": [7], "LDE1_attempts": 500, "AWG_SP_power": 1e-06, "debug": false, "m_name": "111no2_SIL2_Sweep_Repump_time_C7_LDE500_pow1uW_X"}
+{"requested_measurement": "sweep_average_repump_time", "carbons": [7], "first_mw_pulse_type": "none", "LDE1_attempts": 700, "AWG_SP_power": 4e-06, "debug": false, "m_name": "111no2_SIL2_Sweep_Repump_time_p1_none_C7_LDE700_pow4uW_X"}
