@@ -62,8 +62,8 @@ def optimize():
 if __name__ == '__main__':
     debug = False
     # overnight section
-    carbons = [1,2,3,4,5,6,7]
-    LDE_attempts = [50, 100, 150, 200, 250, 500,700]
+    carbons = [1,3,6]
+    LDE_attempts = [20]
     powers = [4e-6]
 
     LDE_msmt_sweep_range = [
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     ]
 
     LDE_first_pulses = [
-        'pi2',
-        'pi',
-        'none'
+        'pi2'#,
+        #'pi',
+        #'none'
     ]
 
     breakst = False
@@ -86,25 +86,25 @@ if __name__ == '__main__':
                 if not debug:
                     optimize()
                     bell_check_powers()
-                for range_i, sw_rng in enumerate(LDE_msmt_sweep_range):
-                    m_name = "%s_LDE_phase_p1_%s_C%d_pow%duW_sec%d" % (
-                        name, pulse_type, c, int(p*1e6), range_i
-                    )
-                    m = {
-                        'requested_measurement': 'LDE_phase',
-                        'carbons': [c],
-                        'debug': debug,
-                        'minReps': sw_rng[0],
-                        'maxReps': sw_rng[1],
-                        'step': sw_rng[2],
-                        'phase_detuning': 0.0,
-                        'm_name': m_name,
-                        'first_mw_pulse_type': pulse_type,
-                    }
+                # for range_i, sw_rng in enumerate(LDE_msmt_sweep_range):
+                #     m_name = "%s_LDE_phase_%s_C%d_pow%duW_sec%d" % (
+                #         name, pulse_type, c, int(p*1e6), range_i
+                #     )
+                #     m = {
+                #         'requested_measurement': 'LDE_phase',
+                #         'carbons': [c],
+                #         'debug': debug,
+                #         'minReps': sw_rng[0],
+                #         'maxReps': sw_rng[1],
+                #         'step': sw_rng[2],
+                #         'phase_detuning': 0.0,
+                #         'm_name': m_name,
+                #         'first_mw_pulse_type': pulse_type,
+                #     }
 
-                    with open('overnight_m.json', 'w') as json_file:
-                        json.dump(m, json_file)
-                    execfile("./LDE_storage_sweep.py")
+                #     with open('overnight_m.json', 'w') as json_file:
+                #         json.dump(m, json_file)
+                #     execfile("./LDE_storage_sweep.py")
 
                 for l in LDE_attempts:
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
                     if c != 7 and l > 450:
                         continue
 
-                    if c == 7 and l < 201:
+                    if c == 7 and l < 49:
                         continue
 
                     if breakst:

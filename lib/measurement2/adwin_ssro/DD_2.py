@@ -3909,7 +3909,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_feedback_trigger_decoupling_element(g)
             elif g.Gate_type == 'carbon_delay_phase_feedback':
                 self.generate_carbon_delay_phase_feedback_element(g)
-        
+
         Gate_sequence = self.insert_transfer_gates(Gate_sequence,pt)
         for g in Gate_sequence:
             if (g.Gate_type == 'Transfer_element'):
