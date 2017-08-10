@@ -969,7 +969,8 @@ def sweep_LDE_attempts_before_swap(name, upload_only = False,debug=False):
     m.finish()
 
 def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_params=False, carbon_override=None,
-                        max_correction=None, crude=False, do_upload=True, override_params=None):
+                        max_correction=None, crude=False, do_upload=True, override_params=None,
+                        return_datafolder=False):
     """
     uses LDE 1 and swap to initialize the carbon in state |x>.
     Sweeps the number of repetitions (LDE2) and performs tomography of X.
@@ -1006,7 +1007,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     #### increase the detuning for more precise measurements
 
     
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 2000
 
     turn_all_sequence_elements_off(m)
 
@@ -1076,10 +1077,12 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     breakst = show_stopper()
 
     if update_msmt_params and not debug and not breakst and not upload_only:
-        update_LDE_phase_param(max_correction=max_correction)
+        update_LDE_phase_param([m.datafolder], max_correction=max_correction)
 
+    if return_datafolder:
+        return m.datafolder
 
-def update_LDE_phase_param(**kw):
+def update_LDE_phase_param(datafolders, **kw):
     import measurement.scripts.carbonspin.write_to_msmt_params as write_to_msmt_params
     reload(write_to_msmt_params)
     import analysis.lib.purification.purify_delayfb as pu_delayfb
@@ -1087,7 +1090,8 @@ def update_LDE_phase_param(**kw):
 
     max_correction = kw.pop('max_correction', None)
 
-    fit_result = pu_delayfb.calibrate_LDE_phase(
+    fit_result = pu_delayfb.calibrate_LDE_phase_stitched(
+        multi_folders=datafolders,
         do_fit=True,
         fixed=[1],
         show_guess=True,
@@ -2245,6 +2249,26 @@ if __name__ == '__main__':
                 max_correction=3.0,
                 do_upload=not debug,
             )
+        elif m_data['requested_measurement'] == 'stitched_LDE_calibration':
+            calibration_carbon = m_data['calibration_carbon']
+            m_ranges = m_data['m_ranges']
+            datafolders = []
+            for i_r, rng in enumerate(m_ranges):
+                override_params = {
+                    'minReps': rng[0],
+                    'maxReps': rng[1],
+                    'step': rng[2],
+                    'carbons': [calibration_carbon]
+                }
+                f = calibrate_LDE_phase(
+                    name + '_LDE_phase_calibration_C%d_sec%d' % (calibration_carbon, i_r),
+                    upload_only=debug,
+                    do_upload=not debug,
+                    update_msmt_params=False,
+                    override_params=override_params
+                )
+                datafolders.append(f)
+            update_LDE_phase_param(datafolders, max_correction=3.0)
         elif m_data['requested_measurement'] == 'LDE_phase':
             calibrate_LDE_phase(
                 m_data['m_name'],
@@ -2255,11 +2279,12 @@ if __name__ == '__main__':
             )
         elif m_data['requested_measurement'] == 'LDE_sweep':
             m_name = m_data['m_name']
-            if 'serial_swap' in m_name:
-                try:
-                    recalibrate_all()
-                except:
-                    print("Calibration and optimization didn't work")
+            # laser calibration hotfixxxxxx
+            # if 'serial_swap' in m_name:
+            #     try:
+            #         recalibrate_all()
+            #     except:
+            #         print("Calibration and optimization didn't work")
             apply_dynamic_phase_correction_delayline(
                 m_name,
                 upload_only=debug,
