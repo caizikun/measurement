@@ -80,3 +80,51 @@ def write_to_file_subroutine(data,search_string,param_string_override=None,round
 
     ### return the contents of msmt_params.py
     return data
+
+def write_etrans_param_to_msmt_params_file(var_name, trans, new_value, debug):
+    if not debug:
+        with open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','r') as param_file:
+            data = param_file.readlines()
+
+        data = write_etrans_param_to_file_subroutine(data, var_name, trans, new_value)
+
+        ### after compiling the new msmt_params, the are flushed to the python file.
+        f = open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','w')
+        f.writelines(data)
+        f.close()
+
+def write_etrans_param_to_file_subroutine(data, var_name, trans, new_value, raise_if_not_found=True):
+    correct_pos = False
+    correct_pos_found = False
+    correct_lines_found = 0
+
+    for ii,x in enumerate(data):
+        p1_found = False
+        m1_found = False
+        ### check if we write data to the right electron transition
+        if "electron_transition == '+1':" in x:
+            p1_found = True
+        elif "electron_transition == '-1':" in x:
+            m1_found = True
+
+        if p1_found or m1_found:
+            if (p1_found and trans == '_p1') or (m1_found and trans == '_m1'):
+                correct_pos = True
+                correct_pos_found = True
+            else:
+                correct_pos = False
+
+        if correct_pos:
+            checkstr = var_name + " = "
+            if checkstr in x:
+                correct_lines_found += 1
+                param_column = x.index(checkstr) + len(checkstr)
+                fill_in = x[:param_column] + new_value
+
+                data[ii] = fill_in
+
+    print("Correct lines found: %d" % correct_lines_found)
+    if (not correct_pos_found or correct_lines_found < 1) and raise_if_not_found:
+        raise Exception("The correct position to write parameter variable %s has not been found!" % var_name)
+    return data
+
