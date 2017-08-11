@@ -997,7 +997,7 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
         minReps = 1
         maxReps = 32
         step = 3
-        m.params['phase_detuning'] = 16.
+        m.params['phase_detuning'] = 12.
 
     if 'minReps' in override_params: minReps = override_params['minReps']
     if 'maxReps' in override_params: maxReps = override_params['maxReps']
@@ -1039,9 +1039,10 @@ def calibrate_LDE_phase(name, upload_only = False,debug=False, update_msmt_param
     carbon = m.params['carbons'][0]
 
     m.params['do_LDE_1'] = 0
-    m.params['simple_el_init'] = 0
-    m.params['carbon_init_method'] = 'MBI'
-    m.params['do_swap_onto_carbon'] = 0
+    m.params['simple_el_init'] = 1
+    m.params['carbon_init_method'] = 'swap'
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_phase_fb_delayline'] = 0
     
 
     ### define sweep
@@ -1093,9 +1094,9 @@ def update_LDE_phase_param(datafolders, **kw):
     fit_result = pu_delayfb.calibrate_LDE_phase_stitched(
         multi_folders=datafolders,
         do_fit=True,
-        fixed=[1],
+        fixed=[],
         show_guess=True,
-        phi0=180.0,
+        phi0=0.0,
         ret=True,
         show_plot=False,
         **kw
@@ -1616,7 +1617,7 @@ def apply_dynamic_phase_correction_delayline(name,debug=False,upload_only = Fals
         m.params['nuclear_phases_offset_sweep'] = nuclear_phases_offset_sweep.flatten() % 360.0
         m.params['sweep_pts'] = phase_offset_sweep_single
     
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
     m.params['do_phase_offset_sweep'] = 1 if do_phase_offset_sweep else 0
@@ -2161,24 +2162,24 @@ if __name__ == '__main__':
     # todo_cs = [5,3,6,7]
     #
     #
-    # calibration_carbon = todo_cs[0]
-    #
+    # calibration_carbon = 1
+    
     # calibrate_LDE_phase(
     #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
-    #     upload_only = True,
-    #     update_msmt_params=False,
+    #     upload_only = False,
+    #     update_msmt_params=True,
     #     carbon_override=calibration_carbon,
     #     max_correction=3.0,
     #     crude=False
     # )
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
     
-    calibration_carbon = 1
-    measure_singlet_phase(
-        name+'_singlet_phase_C%d' % calibration_carbon,
-        upload_only = False,
-        carbon_override=calibration_carbon,
-    )
+    # calibration_carbon = 1
+    # measure_singlet_phase(
+    #     name+'_singlet_phase_C%d' % calibration_carbon,
+    #     upload_only = False,
+    #     carbon_override=calibration_carbon,
+    # )
 
     # start_time = time.time()
     # optimize_time = time.time()
@@ -2231,7 +2232,10 @@ if __name__ == '__main__':
 
     # sweep_decoupling_time(name+'_Sweep_Decoupling_time_Z',do_Z = True,debug = False, upload_only=False)
 
-    if False:
+    if True:
+        breakst = show_stopper()
+        if breakst:
+            raise Exception("Someone wants to get out of here")
         import json
         with open('overnight_m.json') as json_file:
             m_data = json_load_byteified(json_file)
@@ -2265,10 +2269,13 @@ if __name__ == '__main__':
                     upload_only=debug,
                     do_upload=not debug,
                     update_msmt_params=False,
-                    override_params=override_params
+                    override_params=override_params,
+                    return_datafolder=True
                 )
+                print f
                 datafolders.append(f)
-            update_LDE_phase_param(datafolders, max_correction=3.0)
+            if not debug:
+                update_LDE_phase_param(datafolders, max_correction=5.0)
         elif m_data['requested_measurement'] == 'LDE_phase':
             calibrate_LDE_phase(
                 m_data['m_name'],
