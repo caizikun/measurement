@@ -111,6 +111,263 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
+class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
+    """
+    Class used to generate a gate set tomography sequence. 
+    generate_sequence needs to be supplied with a xpi2_pulse and a ypi2_pulse as kw.
+    """
+    mprefix = 'GateSetNoTriggers'
+
+    def autoconfig(self):
+        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+
+    def generate_decoupling_list(self):
+        """
+        This function is used to generate the decoupling sequence that we want to use
+        """
+        N = self.params['N_decoupling']
+
+        decoupling_list = []
+
+        fractions = int(N/8)
+
+        if fractions>=1:
+            for i in range(fractions):
+                decoupling_list.extend(['x', 'y', 'x', 'y', 'y', 'x', 'y', 'x'])
+                N -=8
+
+        if N ==1 :
+            decoupling_list.extend(['x'])
+
+        for i in range(3):
+            if N == 0:
+                break
+            elif N % 6 == 0:
+                decoupling_list.extend(['x', 'y', 'x', 'y', 'x', 'mx'])
+                N -=6
+
+            elif N % 4 == 0:
+                decoupling_list.extend(['x', 'y', 'x', 'y'])
+                N -=4
+
+            elif N % 2 == 0:
+                decoupling_list.extend(['x', 'mx'])
+                N -=2
+
+            else:
+                print "Only use of even multiples for the decoupling length."
+                break
+
+                ### HOW TO BREAK THE WHOLE THINGY???
+
+        return decoupling_list
+
+    def generate_pi(self, pulse_type):
+        """
+        This function builds pi pulses from pi/2 pulses around x and y.
+        """
+
+        if pulse_type == 'x':
+            dec_pls = self.pulse_xpi2
+
+        if pulse_type == 'mx':
+            dec_pls = self.pulse_mxpi2
+
+        if pulse_type == 'y':
+            dec_pls = self.pulse_ypi2
+
+        self.e1.add(pulse.cp(dec_pls),
+                            refpulse        = 'pulse%d' % (self.n-1),
+                            refpoint        = 'end',
+                            refpoint_new    = 'end',
+                            name            = 'pulse%d' % self.n,
+                            start           =  self.start_time)
+        
+
+        self.n +=1
+                
+        self.e1.add(pulse.cp(dec_pls),
+                    refpulse        = 'pulse%d' % (self.n-1),
+                    refpoint        = 'end',
+                    refpoint_new    = 'start',
+                    name            = 'pulse%d' % self.n)
+
+        self.n +=1
+                
+
+    def generate_subsequence(self, seq='x'):
+        """
+        This function is used to create the subsequences we need, i.e. fiducials and germs
+        """
+
+        ## NEED TO CODE IN THE DIFFERENCE BETWEEN FIRST FIDUCIAL AND GERM AND LAST FIDUCIAL. REALLY?
+        #In case we have the null fiducial, just return a wait pulse
+        if seq == '':
+            self.start_time = 2*self.params['tau_larmor']
+
+        else:
+            #First we should try and see how we need to do the spacing. What is the sequence length itself?
+            #Need to subtract one wait time here since 2 pulses only have one wait step in between
+            t_total_subseq = len(seq)*(self.params['Hermite_pi2_length']+self.params['wait_time'])-self.params['wait_time']
+
+            #From this we can fiure out how much time we can have before and after a sequence to space 
+            #everything symmetric around the center of a sequence
+            t_around_subseq = (2*self.params['tau_larmor'] - t_total_subseq-2*self.params['Hermite_pi2_length'])/2
+
+            self.start_time = t_around_subseq
+            
+            if self.f == 0:
+                self.start_time += self.params['Hermite_pi2_length']
+
+            
+ 
+
+            for i in range(len(seq)):
+
+                if seq[i] == 'x':
+                    self.e1.add(pulse.cp(self.pulse_xpi2),
+                                        refpulse = 'pulse%d' % (self.n-1),
+                                        refpoint = 'end',
+                                        refpoint_new = 'start',
+                                        name = 'pulse%d' % self.n,
+                                        start = self.start_time)
+                    self.n +=1
+                    self.start_time = self.params['wait_time']
+                    
+                elif seq[i] == 'y':
+                    self.e1.add(pulse.cp(self.pulse_ypi2),
+                                        refpulse = 'pulse%d' % (self.n-1),
+                                        refpoint = 'end',
+                                        refpoint_new = 'start',
+                                        name = 'pulse%d' % self.n,
+                                        start = self.start_time)
+                    self.n +=1
+                    self.start_time = self.params['wait_time']
+
+                elif seq[i] == '': 
+                    self.start_time += self.params['wait_time']
+                    self.start_time += self.params['Hermite_pi2_length']
+
+                else:
+                    print "A horrible mistake happened. Check you subsequence building routine."
+
+            #At the end we need to add the time around the sequence
+            if self.f !=2:
+                self.start_time = t_around_subseq + self.params['Hermite_pi2_length']
+
+            else:
+                self.start_time = t_around_subseq
+
+
+    def generate_sequence(self, upload=True, **kw):
+
+        ### This is a crude variable I am using to count up pulse names, s.t. I can refer to the last pulse
+        #That was created. I guess there is a better way, but i don't know it right now.
+        self.n = 1
+        print 'Larmor freq', self.params['tau_larmor']
+
+        ###
+        # First let us define the necessary pulses.
+        ###
+
+        # rotations
+        self.pulse_xpi2  =   kw.get('x_pulse_pi2', None)
+        self.pulse_ypi2  =   kw.get('y_pulse_pi2', None)
+        self.pulse_mxpi2 =   kw.get('x_pulse_mpi2', None)
+
+        # waiting element        
+        self.T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 3000e-9, amplitude = 0.)
+
+        # Adwin sync plse that we need to send out after each sequence
+        self.adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+           length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+           amplitude = 2)
+
+        ###
+        # Now let us create the decoupling sequence, including the germs. 
+        ###
+        elements = []
+
+        
+        for k in range(self.params['pts']):
+
+            self.e1 = element.Element('Single_germ_sequence_%d' % k, pulsar=qt.pulsar,
+                    global_time = True)
+
+            #Some varibales I need to keep track of what we are doing
+            a = 0
+            self.f = 0
+            last_germ = len(self.params['germ_position'])
+
+            #Make the list that we are using to know wich kind of pi pulse we are applying
+            decoupling_seq = self.generate_decoupling_list()
+
+            for i in range(self.params['N_decoupling']+1):
+                if i == 0:
+                    self.e1.add(pulse.cp(self.T, 
+                                        length = self.params['initial_msmt_delay']), 
+                                        name='pulse%d' % self.n, 
+                                        refpoint_new = 'start')
+
+                    self.n +=1
+                
+                    #Generate the first fiducial
+                    self.generate_subsequence(seq=self.params['fid_1'])
+                    self.f=1
+
+                    # We want to use two consecutive pi/2 pulses here since we want to only rely on
+                    # one calibration for the moment
+                    self.generate_pi(decoupling_seq[i])
+
+                # #If we want to test our sequence with germs at specific positions, then go here
+                # elif self.params['sequence_type']== 'specific_germ_position' and a!= last_germ and i == self.params['germ_position'][a] : 
+                #     self.generate_subsequence(seq=self.params['germ'])
+                #     self.generate_pi(decoupling_seq[i])
+
+                #     a += 1
+                
+
+                #If we want to test our sequence with germs at specific positions, then go here
+                elif self.params['sequence_type']== 'specific_germ_position' and k!= last_germ and i == self.params['germ_position'][k] : 
+                    self.generate_subsequence(seq=self.params['germ'])
+                    self.generate_pi(decoupling_seq[i])
+
+                    a += 1
+                #If we are at the last position then build the second fiducial
+                elif i == self.params['N_decoupling']:
+                    self.f = 2
+                    self.generate_subsequence(seq=self.params['fid_2'])
+
+                #If it is a germ sequence with germs everywhere then go here
+                elif self.params['sequence_type']== 'all':
+                    self.generate_subsequence(seq=self.params['germ'])
+                    self.generate_pi(decoupling_seq[i])
+
+                else:
+                    self.start_time = 2*self.params['tau_larmor']-self.params['Hermite_pi2_length']
+                    self.generate_pi(decoupling_seq[i])
+
+
+            self.e1.add(self.adwin_sync, refpulse = 'pulse%d' % (self.n-1),
+                                        refpoint = 'end',
+                                        refpoint_new = 'start')
+
+            elements.append(self.e1)
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
 
 class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
     """
@@ -122,7 +379,6 @@ class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
     def autoconfig(self):
         self.params['sequence_wait_time'] = \
             int(np.ceil(np.max(self.params['evolution_times'])*1e6)+10)
-
 
         pulsar_msmt.PulsarMeasurement.autoconfig(self)
 

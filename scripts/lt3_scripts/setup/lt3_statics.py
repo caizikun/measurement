@@ -2,10 +2,10 @@ measurement.AdwinControlledMeasurement.adwin_processes_key = 'adwin_pro_processe
 measurement.LocalAdwinControlledMeasurement.adwin = qt.instruments['adwin']
 ssro.AdwinSSRO.E_aom = qt.instruments['MatisseAOM']
 ssro.AdwinSSRO.A_aom = qt.instruments['NewfocusAOM']
+
 ssro.AdwinSSRO.green_aom = qt.instruments['GreenAOM']
 ssro.AdwinSSRO.yellow_aom = qt.instruments['YellowAOM']
 ssro.AdwinSSRO.adwin = qt.instruments['adwin']
-
 
 if qt.exp_params['protocols']['AdwinSSRO']['yellow']:
     ssro.AdwinSSRO.repump_aom = ssro.AdwinSSRO.yellow_aom

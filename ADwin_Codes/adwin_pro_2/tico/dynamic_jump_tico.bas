@@ -39,7 +39,7 @@
 #DEFINE AWG_jump_strobe_DO_channel Par_13
 
 #DEFINE awake                 Par_19
-#DEFINE current_index         Par_20
+' #DEFINE current_index         Par_20
 #DEFINE current_element       Par_21
 #DEFINE corrected_delay       Par_22
 #DEFINE max_element           Par_23
@@ -50,13 +50,15 @@
 DIM Data_1[1000] As Long ' jump table
 DIM Data_2[1000] As Long ' delay cycles
 
+DIM current_index As Long
+
 #DEFINE jump_table Data_1
 #DEFINE delay_cycles Data_2
 
 INIT:
   
   Enable = 0
-  delay_bias = 44 ' In clock cyles (*20 ns)
+  delay_bias = 41 ' In clock cyles (*20 ns)
   
   max_element = Shift_Left(15, Jump_Bit_Shift)
   
@@ -68,6 +70,7 @@ EVENT:
   Inc(Par_37)
   
   If (Enable = 1) Then
+
     ' Trigger AWG
     DIGOUT(AWG_start_DO_channel,1)
     DIGOUT(AWG_start_DO_channel,0)
@@ -91,6 +94,11 @@ EVENT:
       ' NOPS(4) ' Is this really necessary?
       Digout(AWG_jump_strobe_DO_channel, 0)
     Next current_index
+    
+    Digout_Bits(0, max_element) ' Output 0 = go back to AWG idle mode
+    NOPS(10)
+    Digout(AWG_jump_strobe_DO_channel, 1)
+    Digout(AWG_jump_strobe_DO_channel, 0)
       
     Enable = 0
 

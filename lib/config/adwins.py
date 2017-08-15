@@ -2917,6 +2917,7 @@ config['adwin_pro_processes'] = {
                     ['SSRO_stop_after_first_photon',   0],
                     ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
                     ['sweep_length'                ,   1],
+                    ['do_random_gates'             ,   0],
                     ],
                 'params_long_index'  : 20,
                 'params_long_length' : 25,
