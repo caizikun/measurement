@@ -26,14 +26,16 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     espin_funcs.prepare(m)
 
     pulse_shape = m.params['pulse_shape']
-    pts = 15
+    pts = 16
 
     m.params['pts'] = pts
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
-    m.params['repetitions'] = 1000 if multiplicity == 1 else 2000
-    rng = 0.1 if multiplicity == 1 else 0.03
+    #m.params['repetitions'] = 1000 if multiplicity == 1 else 3000
+    rng = 0.2 if multiplicity == 1 else 0.05
+    m.params['repetitions'] = 2500
+    
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
     ###             therefore, I removed them
@@ -45,7 +47,8 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     print m.params['MW_pulse_amplitudes']
     # m.params['MW_pulse_amplitudes'] = np.linspace(0,0.9,pts)
             
-    m.params['interpulse_delay'] = [7.5e-6]*pts
+    #m.params['interpulse_delay'] = [7.5e-6]*pts
+    m.params['interpulse_delay'] = [2.26e-6]*pts
     m.params['AWG_controlled_readout'] = 0
     m.params['multiplicity'] = np.ones(pts)*multiplicity
     m.params['delay_reps'] = 0
@@ -239,7 +242,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
     pts = 11
     m.params['pulse_type'] = 'Hermite'    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 2000
+    m.params['repetitions'] = 3000
 
     if mw2:
         print m.params['mw2_pulse_shape']
@@ -341,7 +344,7 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity =11, debug = False, mw2=False)
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
     # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)

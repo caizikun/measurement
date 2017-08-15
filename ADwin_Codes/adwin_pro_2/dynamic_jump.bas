@@ -44,51 +44,32 @@ LowInit:
   'P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
   'P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
   
-  current_sequence = 0
-  tico_delay_line_init(DIO_MODULE, AWG_start_DO_channel, AWG_jump_strobe_DO_channel)
-  cur_rnd_idx = 1
+  current_sequence = 1
+  tico_delay_line_init(AWG_start_DO_channel, AWG_jump_strobe_DO_channel)
   
   If (do_init_only = 1) Then 
     mode = 99
   else
-    ' tico_set_jump_and_delays(current_sequence)
+    tico_set_jump_and_delays(current_sequence)
     mode = 1
   endif
   
 Event:
-  Inc(Par_76)
   
   Selectcase mode
     case 1
       ' Enable the TICO!
-      ' tico_start_sequence()        
-      ' mode = 2
-      
-      IF (current_sequence <> Par_73) THEN
-        mode = 2
-      ENDIF
+      tico_start_sequence()   
+      END
       
     case 2
       ' Check if TICO still running
-      ' If (is_sequence_running() = 0) THEN ' Finished!!
-      '   mode = 1
-      ' ENDIF
-      
-      ' Refresh the previous sequence with random pulses
-      current_index = table_dim * (current_sequence - 1) + 1
-      Do
-        jump_table[current_index] = Data_110[cur_rnd_idx]
-        
-        Inc(current_index)
-        Inc(cur_rnd_idx)
-      Until (jump_table[current_index] = 0)
-      
-      current_sequence = Par_73
-      Par_74 = cur_rnd_idx
-      mode = 1
+      If (is_sequence_running() = 0) THEN ' Finished!!
+        tico_delay_line_finish()
+        END
+      ENDIF
       
     case 99
-      tico_delay_line_finish()
       END
       
   endselect
