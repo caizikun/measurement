@@ -376,18 +376,22 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_sce_expm.prepare(m)
 
     ### general params
-    pts = 5
+    pts = 14
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 3000
 
 
     sweep_sce_expm.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     ### --> for this measurement: none.
-    m.joint_params['LDE_attempts'] = 250
+    m.joint_params['LDE_attempts'] = 1
 
     m.joint_params['opt_pi_pulses'] = 1
-    m.params['MW_during_LDE'] = 0
+    m.params['MW_during_LDE'] = 1
+
+
+
+    m.params['MW_pi_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     if local:
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
@@ -397,11 +401,17 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     # put sweep together:
     sweep_off_voltage = False
     m.params['do_general_sweep']    = True
-
+    sweep_ms0_delay = True
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_overshoot1'
         print 'sweeping the', m.params['general_sweep_name']
         m.params['general_sweep_pts'] = np.linspace(-0.13,0.06,pts)#(-0.04,-0.02,pts)
+    elif sweep_ms0_delay:
+        m.params['general_sweep_name'] = 'MW_repump_distance'
+        m.params['LDE_SP_delay'] = 5e-6
+        print 'sweeping the', m.params['general_sweep_name']
+        m.params['general_sweep_pts'] = np.append(np.array([-2.6e-6,-2.2e-6,-2.0e-6]),np.linspace(-1.6e-6,-1.15e-6,pts-3))-60e-9
+
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -409,7 +419,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
 
     m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
     ### upload
 
     sweep_sce_expm.run_sweep(m,debug = debug,upload_only = upload_only,hist_only=False)
@@ -1049,7 +1059,7 @@ if __name__ == '__main__':
     # do_rejection(name+'_rejection',upload_only=False)
     # MW_Position(name+'_MW_position',upload_only=False)
     # ionization_non_local(name+'_ionization_opt_pi', debug = False, upload_only = False, use_yellow = False)
-    # tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.6, maxval=0.9, local=False)
+    tail_sweep(name+'_tail',debug = False,upload_only=False, minval = 0.0, maxval=0.9, local=True)
     # SPCorrs_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # test_pulses(name+'_test_pulses',debug = False,upload_only=False, local=False) 
     #check_for_projective_noise(name+'_check_for_projective_noise')
@@ -1095,8 +1105,8 @@ if __name__ == '__main__':
     # EntangleOnDemand(name+'_EntangleOnDemand',debug =False, upload_only = False)
     # EntangleOnDemand(name+'_EntangleOnDemandInclCR',debug =False, upload_only = False,include_CR = True)
 
-    EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
-    EntangleXcalibrateMWPhase(name+'_EntangleXsweepYcalib',debug = False,upload_only = False)
+    # EntangleSweepEverything(name+'EntangleSweepEverything',debug= False,upload_only=False)
+    # EntangleXcalibrateMWPhase(name+'_EntangleXsweepYcalib',debug = False,upload_only = False)
 
     if hasattr(qt,'master_script_is_running'):
         if qt.master_script_is_running:

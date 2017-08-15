@@ -203,13 +203,13 @@ def repump_speed(name,debug = False,upload_only=False):
     ### general params
     pts = 21
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 400
 
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
     
-    m.params['MW_before_LDE1'] = 1 # allows for init in -1 before LDE
+    m.params['MW_before_LDE1'] = 0 # allows for init in -1 before LDE
     m.params['LDE_1_is_init']  = 1
     m.params['input_el_state'] = 'mZ'
     m.params['MW_during_LDE'] = 0
@@ -220,14 +220,13 @@ def repump_speed(name,debug = False,upload_only=False):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(0.4e-6,1.5e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(0.1e-6,3.5e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] + ' (ns)'
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
 
 
 
     ### upload and run
-
     run_sweep(m,debug = debug,upload_only = upload_only)
 
 

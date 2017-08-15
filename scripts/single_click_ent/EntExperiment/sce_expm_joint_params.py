@@ -26,5 +26,5 @@ joint_params['opt_pulse_separation']    = 0.5e-6#250e-9 #350e-9 changed for high
 
 joint_params['LDE_attempts'] = 250 
 
-joint_params['LDE_element_length'] = 5.5e-6#3e-6 #DO NOT CHANGE THIS # PH Had to change to avoid the NF noise
+joint_params['LDE_element_length'] = 25e-6#3e-6 #DO NOT CHANGE THIS # PH Had to change to avoid the NF noise
 

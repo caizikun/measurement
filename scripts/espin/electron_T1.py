@@ -76,7 +76,7 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0',
 
 if __name__ == '__main__':
 
-    times = np.linspace(1e2,250e3,7)
+    times = np.linspace(1e2,30e3,7)
 
     
     T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 

@@ -116,15 +116,6 @@ class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_
     
 
 
-def load_BK_params(m):
-    m.joint_params['opt_pi_pulses'] = 2
-    m.params['LDE_decouple_time'] = 0.50e-6
-    m.joint_params['opt_pulse_separation'] = 0.50e-6 
-    m.joint_params['LDE_element_length'] = 6e-6
-    m.joint_params['do_final_mw_LDE'] = 1
-    m.params['PLU_during_LDE'] = 1
-    m.params['LDE_SP_duration'] = 1.5e-6
-
 
 def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = True):
     """
@@ -186,49 +177,15 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
-def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
-    """
-    Performs a regular Spin-photon correlation measurement.
-    """
-    m = purify(name)
-    
-    sweep_telcrification.prepare(m)
-    
-    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
-    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-    m.params['MIN_SYNC_BIN'] =       0
-    m.params['MAX_SYNC_BIN'] =       8e3
-    m.params['MIN_HIST_SYNC_BIN'] =  1
-    m.params['MAX_HIST_SYNC_BIN'] =  8000
-    m.params['TTTR_RepetitiveReadouts'] =  10 #
-    m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-    m.params['measurement_abort_check_interval']    = 2. #sec
-    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
-    m.params['use_live_marker_filter']=False
 
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 50000  # if bigger than 52000, ADwin will crash
-
-    sweep_telcrification.turn_all_sequence_elements_off(m)
-    ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 0
-    m.joint_params['LDE1_attempts'] = 1
-
+def load_BK_params(m):
     m.joint_params['opt_pi_pulses'] = 2
-    m.joint_params['opt_pulse_separation'] = m.params['LDE_decouple_time']
-    ### this can also be altered to the actual theta pulse by negating the if statement
-    if True:
-        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
-
-    m.params['is_two_setup_experiment'] = 0
-
-    ### upload
-
-    sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
+    m.params['LDE_decouple_time'] = 0.50e-6
+    m.joint_params['opt_pulse_separation'] = 0.50e-6 
+    m.joint_params['LDE_element_length'] = 6e-6
+    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['PLU_during_LDE'] = 1
+    m.params['LDE_SP_duration'] = 1.5e-6
 
 
 
@@ -256,18 +213,62 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     m.params['PLU_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 2
 
-    ### this can also be altered to the actual theta pulse by negating the if statement
-    if True:
-        m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-        m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+    m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
-    m.params['is_two_setup_experiment'] = 1 # XXX this has to be changed once we use one EOM only
+    m.params['is_two_setup_experiment'] = 0 
 
     ### upload
 
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
+def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    """
+
+     m = purify(name)
+    sweep_telcrification.prepare(m)
+
+
+    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
+    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       0
+    m.params['MAX_SYNC_BIN'] =       8e3
+    m.params['MIN_HIST_SYNC_BIN'] =  1
+    m.params['MAX_HIST_SYNC_BIN'] =  8000
+    m.params['TTTR_RepetitiveReadouts'] =  10 #
+    m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+    m.params['measurement_abort_check_interval']    = 2. #sec
+    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
+    m.params['use_live_marker_filter']=False
+
+    load_BK_params(m)
+
+
+    m.joint_params['do_final_mw_LDE'] = 1
+    #m.params['LDE_final_mw_amplitude'] = 0
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 5000
+
+    sweep_telcrification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.params['PLU_during_LDE'] = 1
+    m.joint_params['opt_pi_pulses'] = 2
+
+    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+    m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
+    m.params['is_two_setup_experiment'] = 0 
+
+    ### upload
+
+    sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
 def MW_Position(name,debug = False,upload_only=False):
