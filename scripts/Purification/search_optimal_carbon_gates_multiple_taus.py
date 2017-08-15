@@ -132,11 +132,11 @@ def show_stopper():
     else: return False
 
 def optimize():
-    # GreenAOM.set_power(10e-6)
-    # counters.set_is_running(1)
+    GreenAOM.set_power(10e-6)
+    counters.set_is_running(1)
     # execfile(r'testing/load_cr_linescan.py')
     optimiz0r.optimize(dims = ['x','y','z','y','x'])
-    # GreenAOM.set_power(0e-6)
+    GreenAOM.set_power(0e-6)
 
 
 def add_carbon_dictionary(C_taus = None, C_tau_rng = 10e-9, C_N = [24], C_N_steps = 10, carbon = 5):
@@ -292,52 +292,99 @@ if __name__ == '__main__':
 										
 	
 	elif qt.current_setup == 'lt4':
-		
 
-		# multi_tau_carbon_dict['C1'] = {'C_taus' 	: [5.97e-6], 
+		### -1 transition
+		# multi_tau_carbon_dict['C1'] = {'C_taus' 	: [4.900e-6], 
+		# 								'C_tau_rng'  :16e-9, # steps of 2e-9
+		# 								'C_N' 		: [38],
+		# 								'C_N_steps' : 12} # steps of 2 	
+
+		# multi_tau_carbon_dict['C2'] = {'C_taus' 	: [4.900e-6], 
+		# 								'C_tau_rng'  :16e-9, # steps of 2e-9
+		# 								'C_N' 		: [38],
+		# 								'C_N_steps' : 12} # steps of 2 	
+
+
+		# multi_tau_carbon_dict['C3'] = {'C_taus' 	: [3.688e-6,13.18e-6], 
 		# 								'C_tau_rng'  :10e-9, # steps of 2e-9
-		# 								'C_N' 		: [28],
-		# 								'C_N_steps' : 8} # steps of 2 	
-
-
-		# multi_tau_carbon_dict['C3'] = {'C_taus' 	: [3.66e-6], 
-		# 								'C_tau_rng'  :10e-9, # steps of 2e-9
-		# 								'C_N' 		: [50],
-		# 								'C_N_steps' : 8} # steps of 2 	
+		# 								'C_N' 		: [64,58],
+		# 								'C_N_steps' : 12} # steps of 2 	
 
 		
-		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.02e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
-										'C_tau_rng'  : 8e-9, # steps of 2e-9
-										'C_N' 		: [28],#,24,26,30], 
-										'C_N_steps' : 8} # steps of 2 	
+		# multi_tau_carbon_dict['C4'] = {'C_taus' 	: [6.402e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+		# 								'C_tau_rng'  : 12e-9, # steps of 2e-9
+		# 								'C_N' 		: [28],#,24,26,30], 
+		# 								'C_N_steps' : 12} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.58e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
-										'C_tau_rng'  :16e-9, # steps of 2e-9
-										'C_N' 		: [42],#[36,44], # 34,
+		# multi_tau_carbon_dict['C5'] = {'C_taus' 	: [8.656e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
+		# 								'C_tau_rng'  :16e-9, # steps of 2e-9
+		# 								'C_N' 		: [40],#[36,44], # 34,
+		# 								'C_N_steps' : 12} # steps of 2 	
+
+
+		# multi_tau_carbon_dict['C6'] = {'C_taus' 	: [3.626e-6,4.664e-6,8.812e-6],#[6.17e-6,9.355e-6,19.625e-6],#[17.175e-6, 19.395e-6, 23.838e-6 ,24.940e-6],
+		#  								'C_tau_rng' : 10e-9,
+		# 								'C_N' 		: [42,70,52], 
+		# 								'C_N_steps' : 12} 
+
+
+		# multi_tau_carbon_dict['C7'] = {'C_taus' 	: [12.796e-6,17.246e-6], #9.458e-6,11.682e-6,
+		#  								'C_tau_rng' : 10e-9,
+		# 								'C_N' 		: [60,62], #56,62,
+		# 								'C_N_steps' : 12} 
+
+
+		multi_tau_carbon_dict['C1'] = {'C_taus' 	: [10.3e-6], 
+										'C_tau_rng'  :30e-9, # steps of 2e-9
+										'C_N' 		: [4],
+										'C_N_steps' : 2} # steps of 2 	
+
+		multi_tau_carbon_dict['C2'] = {'C_taus' 	: [8.766e-6], 
+										'C_tau_rng'  :10e-9, # steps of 2e-9
+										'C_N' 		: [42],
 										'C_N_steps' : 12} # steps of 2 	
 
 
-		# multi_tau_carbon_dict['C6'] = {'C_taus' 	: [3.725e-6],#[6.17e-6,9.355e-6,19.625e-6],#[17.175e-6, 19.395e-6, 23.838e-6 ,24.940e-6],
-		#  								'C_tau_rng' : 10e-9,
-		# 								'C_N' 		: [66], 
-		# 								'C_N_steps' : 8} 
+		multi_tau_carbon_dict['C3'] = {'C_taus' 	: [11.514e-6], 
+										'C_tau_rng'  :10e-9, # steps of 2e-9
+										'C_N' 		: [50],
+										'C_N_steps' : 12} # steps of 2 	
+
+		
+		multi_tau_carbon_dict['C4'] = {'C_taus' 	: [11.564e-6],#,5.230e-6,7560e-9,8720e-9],#[5.274e-6, 6.464e-6, 7.64e-6, 8.82e-6], 
+										'C_tau_rng'  : 12e-9, # steps of 2e-9
+										'C_N' 		: [42],#,24,26,30], 
+										'C_N_steps' : 12} # steps of 2 	
 
 
-		multi_tau_carbon_dict['C8'] = {'C_taus' 	: [4.86e-6], #[3.834e-6, 4.944e-6, 6.04e-6, 7.14e-6], # 3.83e-6, 6.04e-6,
-		 								'C_tau_rng' : 16e-9,
-										'C_N' 		: [38],  #34, 42,
+		multi_tau_carbon_dict['C5'] = {'C_taus' 	: [11.474e-6],#[5.22e-6],#[6.4e-6, 8.73e-6]
+										'C_tau_rng'  :10e-9, # steps of 2e-9
+										'C_N' 		: [62],#[36,44], # 34,
+										'C_N_steps' : 12} # steps of 2 	
+
+
+		multi_tau_carbon_dict['C6'] = {'C_taus' 	: [9.248e-6],#[6.17e-6,9.355e-6,19.625e-6],#[17.175e-6, 19.395e-6, 23.838e-6 ,24.940e-6],
+		 								'C_tau_rng' : 10e-9,
+										'C_N' 		: [28], 
 										'C_N_steps' : 12} 
 
+
+		multi_tau_carbon_dict['C7'] = {'C_taus' 	: [10.858e-6], #9.458e-6,11.682e-6,
+		 								'C_tau_rng' : 10e-9,
+										'C_N' 		: [44], #56,62,
+										'C_N_steps' : 12} 
+
+
 	### choose your carbons.
-	carbons = [2]
+	carbons = [2,3,4,5,6,7,1]
 
 	### msmt loop begins here.
 	breakst = False
 	for c in carbons:
 
 		#get on NV before we start
-		# optimize()
+		optimize()
 
 		breakst = show_stopper()
 		if breakst: break
@@ -410,6 +457,6 @@ if __name__ == '__main__':
 										N_list = current_N_list,
 										debug = False)
 
-					# optimize()
+				optimize()
 
 			

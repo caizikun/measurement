@@ -66,13 +66,13 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 if __name__ == '__main__':
 
-    center_tau = 6.402e-6
+    center_tau = 4.36e-6
     tau_step = 2e-9
-    steps = 20
+    steps = 50 #has to be divisble by two.
 
     SimpleDecoupling_swp_tau(SAMPLE, 
         tau_min=center_tau - (steps/2)*tau_step,
         tau_max=center_tau + (steps/2)*tau_step,
         tau_step = tau_step,
-        N=1,
+        N=32,
         reps_per_ROsequence = 250)

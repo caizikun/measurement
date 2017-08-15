@@ -104,12 +104,14 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration'])*1e-6+50e-6
 
         # add values from AWG calibrations
-        # self.params['SP_voltage_AWG'] = \
-        #         self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
+        print('HELLO')
+        print('THERE WAS A BUG IN AUTOCONFIG THAT WOULD TURN THE NEWFOCUS ON ALWAYS NO MATTER WHAT AWG_SP_POWER WAS!')
+        self.params['SP_voltage_AWG'] = \
+                self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
-        self.params['SP_voltage_AWG'] = 0.0
+        # self.params['SP_voltage_AWG'] = 0.0
 
-        # qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
+        qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
         ### Adwin LT4 is connected to the plu. Needs to reset it.
         if self.current_setup == self.joint_params['master_setup'] and self.params['is_two_setup_experiment'] > 0:
@@ -736,7 +738,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
             Gate.go_to = None
             Gate.event_jump = 'second_next' ### the repeated LDE element has to jump over the final one.
 
-    def generate_sequence(self,upload=True,debug=False,simplify_wfnames=False):
+    def generate_sequence(self, upload=True, debug=False, simplify_wfnames=False, ret_num_elements=False):
         """
         generate the sequence for the purification experiment.
         Tries to be as general as possible in order to suffice for multiple calibration measurements
@@ -1357,6 +1359,9 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         else:
 
             print 'upload = false, no sequence uploaded to AWG'
+
+        if ret_num_elements:
+            return combined_seq.element_count()
 
 
 class FakeLDECoherenceCheck(pulsar_msmt.PulsarMeasurement):

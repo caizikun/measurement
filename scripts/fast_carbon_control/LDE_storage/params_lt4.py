@@ -38,11 +38,11 @@ params_lt4['LDE2_attempts'] = 10
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 600e-9#1000e-9
+params_lt4['AWG_SP_power']              = 4000e-9#600e-9#1000e-9
 params_lt4['LDE_SP_duration']           = 2e-6
 params_lt4['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt4['average_repump_time'] 		= 750e-9 #560e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9
-params_lt4['LDE_decouple_time']         = 2.2e-6 #round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9) + #-50e-9
+params_lt4['average_repump_time'] 		= 90e-9 #310e-9 #500e-9 #0.710e-6 #0.770e-6#0.5e-6#0.3e-6#250e-9#250e-9#350e-9#213e-9
+params_lt4['LDE_decouple_time']         = 2.256e-6 #round(1/qt.exp_params['samples'][sample_name]['C4_freq_0'],9) + #-50e-9
 params_lt4['opt_pulse_start']           = 2.5e-6 #2215e-9 - 46e-9 + 4e-9 +1e-9 
 params_lt4['MW_opt_puls1_separation']   = 100e-9#220e-9
 
@@ -110,7 +110,7 @@ params_lt4['mw_first_pulse_phase']    = qt.exp_params['protocols'][name]['pulses
 params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses']['Hermite_pi2_amp']
 
 ### Everything carbon
-params_lt4['carbons']                       = [2,4]
+params_lt4['carbons']                       = [2]
 params_lt4['reverse_carbon_inits']          = True
 params_lt4['carbon_swap_el_states']         = ['Z','Z']
 params_lt4['carbon_init_method']            = 'swap'
@@ -121,7 +121,7 @@ params_lt4['sequence_type']                 = params_lt4['carbon_encoding']
 params_lt4['dps_MBE_bases']                 = ['Y','Y']
 params_lt4['dps_MBE_readout_orientation']   = 'positive'
 params_lt4['delay_feedback_N']              = 1
-params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*4*360.0 # making sure that we have enough delay time
+params_lt4['delay_feedback_target_phase']   = params_lt4['delay_feedback_N']*8*360.0 # making sure that we have enough delay time
 params_lt4['delay_feedback_pulse_seq']      = ['X','mX']
 
 params_lt4['delay_feedback_use_calculated_phase_offsets'] = 1
@@ -160,10 +160,10 @@ params_lt4['delay_feedback_HHsync_include'] = do_PQ_msmt
 TH_HH_selector = 1 #set to 1 for HH
 params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
 params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(0e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(20.0e6)/TH_HH_selector#15 us # XXX was 15us
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(0e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(20e6)/TH_HH_selector
+params_lt4['MIN_SYNC_BIN']        =   int(4e6)/TH_HH_selector #5 us 
+params_lt4['MAX_SYNC_BIN']        =   int(8.0e6)/TH_HH_selector#15 us # XXX was 15us
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(4e6)/TH_HH_selector #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(8e6)/TH_HH_selector
 params_lt4['count_marker_channel'] = 1
 
 params_lt4['PQ_ch1_delay'] = 0

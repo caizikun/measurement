@@ -26,16 +26,14 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     espin_funcs.prepare(m)
 
     pulse_shape = m.params['pulse_shape']
-    pts = 16
+    pts = 15
 
     m.params['pts'] = pts
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
-    #m.params['repetitions'] = 1000 if multiplicity == 1 else 3000
-    rng = 0.2 if multiplicity == 1 else 0.05
-    m.params['repetitions'] = 2500
-    
+    m.params['repetitions'] = 1000 if multiplicity == 1 else 2000
+    rng = 0.1 if multiplicity == 1 else 0.06
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
     ###             therefore, I removed them
@@ -47,8 +45,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     print m.params['MW_pulse_amplitudes']
     # m.params['MW_pulse_amplitudes'] = np.linspace(0,0.9,pts)
             
-    #m.params['interpulse_delay'] = [7.5e-6]*pts
-    m.params['interpulse_delay'] = [2.26e-6]*pts
+    m.params['interpulse_delay'] = [7.5e-6]*pts
     m.params['AWG_controlled_readout'] = 0
     m.params['multiplicity'] = np.ones(pts)*multiplicity
     m.params['delay_reps'] = 0
@@ -207,7 +204,7 @@ def pi_pulse_sweepdelay(name, multiplicity=1, debug=False):
 def sweep_number_pi_pulses(name,  debug=False, pts = 30):
     m = pulsar_msmt.GeneralPiCalibration(name)
     espin_funcs.prepare(m)
-
+    ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
     m.params['multiplicity'] = np.arange(1, 1 + 2 * pts, 2)
     m.params['pulse_type'] = 'Hermite quantum memory'
     # pts = 10
@@ -218,11 +215,9 @@ def sweep_number_pi_pulses(name,  debug=False, pts = 30):
     m.params['repetitions'] = 1000 #if multiplicity == 1 else 5000
 
     # Pulse settings
-    m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
-    m.params['MW_pulse_amplitudes'] =  np.ones(pts) * m.params['Hermite_fast_pi_amp']  #XXXXX -0.05, 0.05 
-    m.params['delay_reps'] = 1000
-    m.params['mw_power'] = 20
-    
+    m.params['MW_duration'] = m.params['fast_pi_duration']
+    m.params['MW_pulse_amplitudes'] =  np.ones(pts) * m.params['fast_pi_amp']  #XXXXX -0.05, 0.05 
+    m.params['delay_reps'] = 20    
 
     # for the autoanalysis
     m.params['sweep_name'] = 'Number of pulses'
@@ -242,7 +237,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
     pts = 11
     m.params['pulse_type'] = 'Hermite'    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 3000
+    m.params['repetitions'] = 2000
 
     if mw2:
         print m.params['mw2_pulse_shape']
@@ -284,36 +279,43 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
     m.params['pulse_type'] = 'Hermite composite'
     # m.params['pulse_type'] = 'Square quantum memory'
-    pts = 16
+    pts = 30
 
     m.params['pts'] = pts
-    # m.params['repetitions'] = 3000 if multiplicity == 1 else 5000
     m.params['repetitions'] = 600
-    rng = 0.1 if multiplicity == 1 else 0.08
 
+    rng = 0.1 if multiplicity == 1 else 0.05
+
+    m.params['wait_for_AWG_done'] = 1
     ### Pulse settings
-    m.params['multiplicity'] = np.ones(pts)*multiplicity
+    # m.params['multiplicity'] = np.ones(pts)*multiplicity
+    m.params['multiplicity'] = multiplicity
+    m.params['Hermite_pi_amp'] = 0.93
+    m.params['Hermite_pi2_amp'] = 0.75
+    m.params['interpulse_delay'] = 4e-9
+    m.params['X_phase'] = 90.05
+    m.params['Y_phase'] = -0.028
+    #sweep generation
+    # m.params['general_sweep_pts'] = m.params['Hermite_pi_amp'] + np.linspace(-rng,rng,pts)
+    # m.params['general_sweep_name'] = 'Hermite_pi_amp'
 
-    # For square pulses
-    #m.params['MW_duration'] = m.params['Hermite_fast_pi_duration']
-    m.params['MW_pulse_amplitudes'] = m.params['Hermite_pi_amp'] + np.linspace(-rng, rng, pts)
-    
-    m.params['delay_reps'] = 195 ## Currently not used
-    
+    m.params['general_sweep_pts'] = np.arange(1,1+4*pts,4)
+    m.params['general_sweep_name'] = 'multiplicity'
+
+    # m.params['general_sweep_pts'] = np.linspace(m.params['Y_phase']-2,m.params['Y_phase']+2,pts)
+    # m.params['general_sweep_name'] = 'Y_phase'
+    # m.params['general_sweep_pts'] = np.round(np.linspace(0,100e-9,pts),9)
+    # m.params['general_sweep_name'] = 'interpulse_delay'
+
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'MW amplitude (V)'
-   
-    m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
-    m.params['wait_for_AWG_done'] = 1
+    m.params['sweep_name'] = m.params['general_sweep_name']
+    m.params['sweep_pts'] = m.params['general_sweep_pts']
 
-    # Add Hermite X pulse
-    
+
+    # Create pi pulse
     m.comp_pi = pulse.cp(ps.comp_pi2_pi_pi2_pulse(m),phase = 0)
-    # m.comp_pi = pulse.cp(ps.X_pulse(m),phase = 0)
 
-    #print 'duration ', m.params['MW_duration']
-    print 'amp ', m.params['MW_pulse_amplitudes'][0]
     espin_funcs.finish(m, debug=debug, pulse_pi=m.comp_pi)
 
 def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
@@ -344,10 +346,10 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 1, debug = False, mw2=False)
+    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
     # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
-    # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
+    # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=30)
     calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
-    #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)
+    # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity = 35,debug = False)

@@ -24,25 +24,37 @@ def _create_mw_pulses(msmt,Gate):
     Gate.mw_first_pulse = pulse.cp(ps.Xpi2_pulse(msmt),amplitude = msmt.params['mw_first_pulse_amp'],length = msmt.params['mw_first_pulse_length'],phase = msmt.params['mw_first_pulse_phase'])
 
     
-
-
-    if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
-        if Gate.first_pulse_is_pi2:
-            Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
-    elif hasattr(Gate,'first_pulse_is_pi2'):
-        if Gate.first_pulse_is_pi2:
+    if 'first_mw_pulse_type' in msmt.params:
+        if msmt.params['first_mw_pulse_type'] == 'pi':
+            Gate.mw_first_pulse = pulse.cp(Gate.mw_X, phase = msmt.params['mw_first_pulse_phase'])
+        elif msmt.params['first_mw_pulse_type'] == 'pi2':
             Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
-
-    if hasattr(Gate,'no_first_pulse'):
-        if Gate.no_first_pulse:
+        elif msmt.params['first_mw_pulse_type'] == 'none':
             Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+        elif msmt.params['first_mw_pulse_type'] == 'square':
+            msmt.params['pulse_shape'] = 'Square'
+            Gate.mw_first_pulse = ps.X_pulse(msmt)
+            msmt.params['pulse_shape'] = 'Hermite'
+        else:
+            raise ValueError("What are you doing first_mw_pulse_type does not make sense.")
+    else:
+        if hasattr(Gate,'first_pulse_is_pi2') and hasattr(Gate,'first_mw_pulse_phase'):
+            if Gate.first_pulse_is_pi2:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = Gate.first_mw_pulse_phase)
+        elif hasattr(Gate,'first_pulse_is_pi2'):
+            if Gate.first_pulse_is_pi2:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_pi2, phase = msmt.params['mw_first_pulse_phase'])
 
-    if hasattr(Gate,'no_mw_pulse'):
-        if Gate.no_mw_pulse:
-            Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+        if hasattr(Gate,'no_first_pulse'):
+            if Gate.no_first_pulse:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+
+        if hasattr(Gate,'no_mw_pulse'):
+            if Gate.no_mw_pulse:
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
 
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))
@@ -159,7 +171,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     start           = msmt.params['LDE_SP_delay'],
                     name            = 'spinpumping', 
                     refpulse        = 'initial_delay')
-
+    
     ### add the option to plug in a yellow laser pulse during spin pumping. not yet considered
 
     ### 2 syncs
@@ -183,7 +195,8 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
         
     if msmt.params['MW_during_LDE'] == 1: # and not ('LDE2' in Gate.name):
-        
+        if msmt.params['skip_LDE_mw_pi'] == 1:
+            Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0.)
         # we choose to build the MW pulses up from the end of the element.
         # this is more convenient when trying to preserve the coherence of the electron over several elements
         # it however becomes more complicated from a programming point of view.

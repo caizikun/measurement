@@ -777,12 +777,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             Cdecstr = 'C'+str(i)+'_freq'+self.params['electron_transition']
             try:
                 C_freq_0.append(self.params[C0str]*2*np.pi)
+            except:
+                C_freq_0.append(None)
+            try:
                 C_freq_1.append(self.params[C1str]*2*np.pi)
                 C_freq.append (self.params[Cdecstr]*2*np.pi)
             except:
-                C_freq_1.append(None)
-                C_freq_0.append(None)
                 C_freq.append (None)
+                C_freq_1.append(None)
 
         return C_freq_0, C_freq_1, C_freq
 
@@ -3907,7 +3909,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_feedback_trigger_decoupling_element(g)
             elif g.Gate_type == 'carbon_delay_phase_feedback':
                 self.generate_carbon_delay_phase_feedback_element(g)
-        
+
         Gate_sequence = self.insert_transfer_gates(Gate_sequence,pt)
         for g in Gate_sequence:
             if (g.Gate_type == 'Transfer_element'):

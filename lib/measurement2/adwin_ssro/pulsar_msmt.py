@@ -1880,7 +1880,7 @@ class CompositePiCalibrationSingleElement(GeneralPiCalibration):
     def generate_sequence(self, upload=True, **kw):
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_Imod',
-            length = 15000e-9, amplitude = 0)
+            length = 8000e-9, amplitude = 0)
 
         X=kw.get('pulse_pi', None)
 
@@ -1891,16 +1891,25 @@ class CompositePiCalibrationSingleElement(GeneralPiCalibration):
         adwin_sync = pulse.SquarePulse(channel='adwin_sync',
             length = 10e-6, amplitude = 2)
         sync_elt.append(adwin_sync)
-        if type(self.params['multiplicity']) ==int:
-            self.params['multiplicity'] = np.ones(self.params['pts'])*self.params['multiplicity']
 
         elements = []
         for i in range(self.params['pts']):
+            self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][i]
             e = element.Element('pulse-{}'.format(i), pulsar=qt.pulsar)
-            for j in range(int(self.params['multiplicity'][i])):
+            for j in range(int(self.params['multiplicity'])):
                 e.append(T,
                     pulse.cp(X,
-                        amplitude_p2=self.params['MW_pulse_amplitudes'][i]
+                        frequency = self.params['mw_mod_freq'],
+                        amplitude_p1 = self.params['Hermite_pi2_amp'],
+                        amplitude_p2 = self.params['Hermite_pi_amp'],                        
+                        amplitude_p3 = self.params['Hermite_pi2_amp'],
+                        length_p1 = self.params['Hermite_pi2_length'],
+                        length_p2 = self.params['Hermite_pi_length'],
+                        length_p3 = self.params['Hermite_pi2_length'], 
+                        pulse_delay = self.params['interpulse_delay'],
+                        phase_p1 = self.params['Y_phase'],
+                        phase_p2 = self.params['X_phase'],
+                        phase_p3 = self.params['Y_phase']
                         ))
             elements.append(e)
 
