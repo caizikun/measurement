@@ -2047,48 +2047,26 @@ config['adwin_lt2_processes'] = {
                     'index' : 9,
                     'file' : 'dynamic_jump.TB9',
                     'par' : {
+                        
                     },
                     'params_long' : [
-                        ['cycle_duration'           ,   1000],
-                        ['AWG_start_DO_channel'     ,   16  ],
-                        ['AWG_done_DI_channel'      ,   18  ],
-                        ['delay_trigger_DI_channel' ,   20  ],
-                        ['delay_trigger_DO_channel' ,   12  ],
+                        ['cycle_duration'           ,   300 ],
+                        ['AWG_start_DO_channel'     ,   1   ],
+                        ['AWG_jump_strobe_DO_channel' ,   12 ],
+                        ['do_init_only'             ,   0   ],
+                        ['jump_bit_shift'           ,   7   ],
                     ],
                     'params_long_index'  : 20,
-                    'params_long_length' : 100,
+                    # 'params_long_length' : 100,
                     'params_float' : [
                     ],
                     'params_float_index' : 21,
                     'data_long' : {
-                        'jump_table' :   10,
-                        'delay_cycles'  :   11,
-                        'next_seq_table'    :   12,
-                    },
-                },
-
-        'dynamic_jump_internal_trig' : {
-                    'index' : 9,
-                    'file' : 'dynamic_jump_internal_trig.TB9',
-                    'par' : {
-                    },
-                    'params_long' : [
-                        ['cycle_duration'           ,   1000],
-                        ['AWG_start_DO_channel'     ,   16  ],
-                        ['AWG_done_DI_channel'      ,   18  ],
-                        ['delay_trigger_DI_channel' ,   20  ],
-                        ['delay_strobe_DO_channel'  ,   12  ],
-                        ['delay_trigger_DO_channel' ,   5   ],
-                    ],
-                    'params_long_index'  : 20,
-                    'params_long_length' : 100,
-                    'params_float' : [
-                    ],
-                    'params_float_index' : 21,
-                    'data_long' : {
-                        'jump_table' :   10,
-                        'delay_cycles'  :   11,
-                        'next_seq_table'    :   12,
+                        'jump_table' :   100,
+                        'delay_cycles'  :   101,
+                        'next_seq_table'    :   102,
+                        'seq_indices'   : 103,
+                        'random_ints'   : 110,
                     },
                 },
 

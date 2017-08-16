@@ -2,7 +2,7 @@
 '<Header End>
 ' Control functions for the TiCo/EDU delay line
 
-#INCLUDE .\configuration.inc
+#INCLUDE ..\adwin_pro_2\configuration.inc
 #INCLUDE Math.inc
 
 ' TiCo parameter addresses used for communication

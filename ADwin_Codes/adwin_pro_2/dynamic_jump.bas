@@ -8,7 +8,7 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' Please note:
 
@@ -18,8 +18,7 @@
 ' Still needs some changes though
 
 #Include ADwinPro_All.inc
-#INCLUDE .\configuration.inc
-#INCLUDE .\djump_tico_helper.inc
+#INCLUDE ..\adwin_pro_2\djump_tico_helper.inc
 
 DIM DATA_20[100] AS LONG
 
@@ -41,7 +40,7 @@ LowInit:
   
   Processdelay = cycle_duration ' Clock cycle in units of 1 ns
   
-  'P2_Digprog(DIO_MODULE,0011b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
+  'P2_Digprog(DIO_MODULE,1100b)      '31:24 DI, 23:16 DI, 15:08 DO 07:00 DO
   'P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
   
   current_sequence = 1
@@ -60,13 +59,12 @@ Event:
     case 1
       ' Enable the TICO!
       tico_start_sequence()   
-      END
+      mode = 2
       
     case 2
       ' Check if TICO still running
       If (is_sequence_running() = 0) THEN ' Finished!!
-        tico_delay_line_finish()
-        END
+        mode = 1
       ENDIF
       
     case 99

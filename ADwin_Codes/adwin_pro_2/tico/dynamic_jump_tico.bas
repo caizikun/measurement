@@ -7,7 +7,7 @@
 ' TiCoBasic_Version              = 1.2.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277459  DASTUD\TUD277459
 '<Header End>
 ' Variable trigger delay line that runs on the Tico-coprocessor
 ' Author: Jesse Slim, Feb 2017
@@ -46,9 +46,18 @@
 #DEFINE delay_bias            Par_24
 #DEFINE ShortDelayErrors      Par_25
 #DEFINE max_index             Par_26
+#DEFINE counter_index         Par_27
 
 DIM Data_1[1000] As Long ' jump table
 DIM Data_2[1000] As Long ' delay cycles
+
+DIM DATA_3[1000] As Long At DRAM_Extern
+DIM DATA_4[1000] As Long At DRAM_Extern
+
+DIM DATA_5[1000] As Long At DRAM_Extern
+DIM DATA_6[1000] As Long At DRAM_Extern
+
+DIM DATA_7[1000] As Long At DRAM_Extern
 
 DIM current_index As Long
 
@@ -56,6 +65,11 @@ DIM current_index As Long
 #DEFINE delay_cycles Data_2
 
 INIT:
+  'DigProg(0011b)
+  'Dig_Fifo_Mode(0)
+  'Digin_Fifo_Enable(0)
+  'Digin_Fifo_Clear()
+  'Digin_Fifo_Enable(10000b)
   
   Enable = 0
   delay_bias = 41 ' In clock cyles (*20 ns)
@@ -63,6 +77,7 @@ INIT:
   max_element = Shift_Left(15, Jump_Bit_Shift)
   
   awake = 1
+  counter_index = 1
   
   Par_37 = 0
   Processdelay = 50 ' In clock cyles (*20 ns)
@@ -70,7 +85,17 @@ EVENT:
   Inc(Par_37)
   
   If (Enable = 1) Then
-
+    'Par_28 = Digin_Fifo_Full()
+    
+    'If ((Digin_Fifo_Full() > 1) AND counter_index < 1000) Then
+    '  Digin_Fifo_Read(DATA_5[counter_index], DATA_3[counter_index])
+    '  Digin_Fifo_Read(DATA_6[counter_index], DATA_4[counter_index])
+    '  
+    '  DATA_7[counter_index] = DATA_4[counter_index] - DATA_3[counter_index]
+    '  
+    '  Inc(counter_index)
+    'EndIf
+    
     ' Trigger AWG
     DIGOUT(AWG_start_DO_channel,1)
     DIGOUT(AWG_start_DO_channel,0)
@@ -96,7 +121,7 @@ EVENT:
     Next current_index
     
     Digout_Bits(0, max_element) ' Output 0 = go back to AWG idle mode
-    NOPS(10)
+    NOPS(50)
     Digout(AWG_jump_strobe_DO_channel, 1)
     Digout(AWG_jump_strobe_DO_channel, 0)
       
