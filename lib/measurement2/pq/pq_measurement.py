@@ -33,10 +33,12 @@ class PQMeasurement(m2.Measurement):
         pass
 
     def measurement_process_running(self):
-        return True
+        # For adwin stuff, this should be overwritten to ensure that the adwin controls when a msmt finishes!
+
+        return not(self.stop_process_running)
 
     def stop_measurement_process(self):
-        pass
+        self.stop_process_running = True
 
     def print_measurement_progress(self):
         pass
@@ -55,6 +57,7 @@ class PQMeasurement(m2.Measurement):
                 self._keystroke_check('abort')
                 if self.keystroke('abort') in ['q','Q']:
                     print 'aborted.'
+                    self.stop_process_running = True
                     self.stop_keystroke_monitor('abort')
                     break
                     
@@ -135,6 +138,8 @@ class PQMeasurement(m2.Measurement):
         self.start_measurement_process()
         _timer=time.time()
         ii=0
+
+        self.stop_process_running = False
 
         while(self.PQ_ins.get_MeasRunning()):
             if (time.time()-_timer)>self.params['measurement_abort_check_interval']:

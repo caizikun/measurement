@@ -42,7 +42,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # 82e-9 2017/08/03 #was at 80e-6 106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.616 # 0.650 #0.829 #0.8467  # 28-02
+	hermite_pi_amp =  0.617 # 0.650 #0.829 #0.8467  # 28-02
 	hermite_pi2_length = 40e-9 # 46e-9 # even
 	hermite_pi2_amp = 0.575 #  # 28-02 
 
