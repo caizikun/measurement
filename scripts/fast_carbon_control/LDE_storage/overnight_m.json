@@ -1,1 +1,1 @@
-{"debug": false, "calibration_carbon": 3, "requested_measurement": "stitched_LDE_calibration", "m_ranges": [[2, 35, 3], [35, 68, 3], [68, 101, 3]]}
+{"debug": false, "carbons": [7], "requested_measurement": "decay_curve"}

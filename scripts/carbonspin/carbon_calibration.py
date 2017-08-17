@@ -52,7 +52,7 @@ self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 

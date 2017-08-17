@@ -119,7 +119,7 @@ def write_etrans_param_to_file_subroutine(data, var_name, trans, new_value, rais
             if checkstr in x:
                 correct_lines_found += 1
                 param_column = x.index(checkstr) + len(checkstr)
-                fill_in = x[:param_column] + new_value
+                fill_in = x[:param_column] + new_value + "\n"
 
                 data[ii] = fill_in
 
