@@ -96,39 +96,39 @@ if __name__ == '__main__':
                 json.dump(m, json_file)
             execfile("./LDE_storage_sweep.py")
 
-        for i_fr, fr in enumerate(feedback_ranges):
-            bell_check_powers()
-            m_name = name + "_phase_fb_delayline_C%d_sec%d" % (c, i_fr)
-
-            m = {
-                "requested_measurement": "LDE_sweep",
-                "m_name": m_name,
-                "carbons": [c],
-                "minReps": fr[0],
-                "maxReps": fr[1],
-                "step": fr[2],
-                "Tomography_list": [
-                    ['X'],
-                    ['Y']
-                ],
-                "carbon_encoding": "serial_swap",
-                "debug": debug
-            }
-
-            with open('overnight_m.json', 'w') as json_file:
-                json.dump(m, json_file)
-            execfile("./LDE_storage_sweep.py")
-
-
-        bell_check_powers()
-        m = {
-            "requested_measurement": "decay_curve",
-            "carbons": [c],
-            "debug": debug
-        }
-        with open('overnight_m.json', 'w') as json_file:
-            json.dump(m, json_file)
-        execfile("./LDE_storage_sweep.py")
+        # for i_fr, fr in enumerate(feedback_ranges):
+        #     bell_check_powers()
+        #     m_name = name + "_phase_fb_delayline_C%d_sec%d" % (c, i_fr)
+        #
+        #     m = {
+        #         "requested_measurement": "LDE_sweep",
+        #         "m_name": m_name,
+        #         "carbons": [c],
+        #         "minReps": fr[0],
+        #         "maxReps": fr[1],
+        #         "step": fr[2],
+        #         "Tomography_list": [
+        #             ['X'],
+        #             ['Y']
+        #         ],
+        #         "carbon_encoding": "serial_swap",
+        #         "debug": debug
+        #     }
+        #
+        #     with open('overnight_m.json', 'w') as json_file:
+        #         json.dump(m, json_file)
+        #     execfile("./LDE_storage_sweep.py")
+        #
+        #
+        # bell_check_powers()
+        # m = {
+        #     "requested_measurement": "decay_curve",
+        #     "carbons": [c],
+        #     "debug": debug
+        # }
+        # with open('overnight_m.json', 'w') as json_file:
+        #     json.dump(m, json_file)
+        # execfile("./LDE_storage_sweep.py")
 
 
 

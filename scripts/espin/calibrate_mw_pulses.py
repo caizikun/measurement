@@ -1,4 +1,5 @@
 # reload all parameters and modules, import classes
+import qt
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 reload(pulsar_msmt)
 from measurement.scripts.espin import espin_funcs
@@ -8,6 +9,8 @@ reload(ps)
 from measurement.lib.pulsar import pulselib
 reload(pulselib)
 execfile(qt.reload_current_setup)
+import numpy as np
+from measurement.lib.pulsar import pulse
 
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -346,7 +349,7 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
     espin_funcs.finish(m, debug=debug, mw2=mw2)
 
 if __name__ == '__main__':
-    calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
+    # calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 11, debug = False, mw2=False)
     # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
     #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)

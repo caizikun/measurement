@@ -20,10 +20,10 @@ params_lt3['record_expm_params']  = False # by default we dont record this, only
 
 # LDE element
 params_lt3['MW_during_LDE']             = 1 
-params_lt3['AWG_SP_power']              = 80e-9#1000e-9
-params_lt3['LDE_SP_duration']           = 1.5e-6
+params_lt3['AWG_SP_power']              = 5e-9#1000e-9
+params_lt3['LDE_SP_duration']           = 0.100e-6
 params_lt3['LDE_SP_delay']			    = 0e-6 ### don't change this.
-params_lt3['MW_opt_puls1_separation']   = 120e-9 #
+params_lt3['MW_opt_puls1_separation']   = 1200e-9 #120e-9 #
 params_lt3['MW_repump_distance']		= 1200e-9
 params_lt3['LDE_decouple_time']         = 2.2e-6
 params_lt3['MW_final_delay_offset']		= 0e-9
@@ -88,10 +88,10 @@ params_lt3['sin2_theta_fit_x0']		= 0.87348842297673401
 ### Everything TimeHarp / this is copied from Bell.joint_params
 params_lt3['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
 params_lt3['BINSIZE'] =            8 #2**BINSIZE*BASERESOLUTION 
-params_lt3['MIN_SYNC_BIN'] =       2600 #2500
-params_lt3['MAX_SYNC_BIN'] =       3400 ### 
+params_lt3['MIN_SYNC_BIN'] =       0 #2500
+params_lt3['MAX_SYNC_BIN'] =       10400 ### 
 params_lt3['MIN_HIST_SYNC_BIN'] =  1600#2500
-params_lt3['MAX_HIST_SYNC_BIN'] =  3400 ### 
+params_lt3['MAX_HIST_SYNC_BIN'] =  10400 ### 
 params_lt3['TTTR_RepetitiveReadouts'] =  10 #
 params_lt3['TTTR_read_count'] = 	1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
 params_lt3['measurement_abort_check_interval']    = 2. #sec

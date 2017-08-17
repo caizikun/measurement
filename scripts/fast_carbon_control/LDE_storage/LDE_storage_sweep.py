@@ -8,6 +8,7 @@ import numpy as np
 import qt 
 import purify_slave; reload(purify_slave)
 import msvcrt
+import datetime
 import time
 name = qt.exp_params['protocols']['current']
 
@@ -1138,6 +1139,7 @@ def update_LDE_phase_param(datafolders, **kw):
     print("Done!")
     try:
         with open('LDE_calibration_log.txt', 'a') as file:
+            file.write("[%s]\n" % (str(datetime.datetime.now())))
             file.write("Updating LDE phase measurement param for C%d\n" % carbon_id)
             file.write("Detuning used: %.1f\n" % detuning)
             file.write("Previous LDE phase: %.3f\n" % previous_LDE_phase)

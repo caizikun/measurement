@@ -1,6 +1,7 @@
 # reload all parameters and modules, import classes
 import numpy as np
 import qt
+import random
 
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 reload(pulsar_msmt)
@@ -15,7 +16,7 @@ SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 name = SAMPLE_CFG
 
-def random_XY_pulsar(name, debug = False, upload = True, run_msmt = True, min_pulses = 10, max_pulses = 101):
+def random_XY_pulsar(name, debug = False, upload = True, run_msmt = True, init_tables = True, hermite_amp = 1, min_pulses = 1, max_pulses = 61):
 
     m = RandomXYFidelity(name)
 
@@ -33,67 +34,74 @@ def random_XY_pulsar(name, debug = False, upload = True, run_msmt = True, min_pu
 
     m.params['wait_for_AWG_done'] = 1
     m.params['sequence_wait_time'] = 1
-
-    m.params['pulse_amount'] = np.arange(start = min_pulses, stop = max_pulses)
+ 
     m.params['unique_no_pulses'] = 4
 
-    m.params['pts'] = max_pulses - min_pulses
-    m.params['repetitions'] = m.params['pts'] * 1000
+    pts = 16
+    m.params['pts'] = pts
+    m.params['repetitions'] = 2500
 
+    num_pulses = np.round(np.linspace(min_pulses, max_pulses, pts)).astype(np.int32)
     # for the autoanalysis
     m.params['sweep_name'] = 'number of random pulses'
-    m.params['sweep_pts'] = m.params['pulse_amount']
+    m.params['sweep_pts'] = num_pulses
 
     # lt3 params
     m.params['AWG_start_DO_channel'] = 9
     m.params['AWG_jump_strobe_DO_channel'] = 0
     m.params['jump_bit_shift'] = 4
+    m.params['do_random_gates'] = 0
 
-    m.params['table_dim'] = 256
-
-    m.params['delay_time'] = 1e-6
+    m.params['delay_time'] = 2.26e-6
     m.params['delay_clock_cycle_time'] = 20e-9
 
-    delay_cycle = np.rint(m.params['delay_time'] / m.params['delay_clock_cycle_time']).astype(np.int32)
+    m.params['Hermite_pi_amp'] = hermite_amp
 
-    m.params['jump_table'] = []
-    m.params['delay_cycles'] = []
-    m.params['next_seq_table'] = []
-
-    for i in range(min_pulses, max_pulses):
-        m.params['jump_table'].append(np.random.randint(1, high = m.params['unique_no_pulses'] + 1, size = i))
-        m.params['delay_cycles'].append(np.repeat(delay_cycle, i))
-        m.params['next_seq_table'].append([0, 0]) # unused?
-
-    # print m.params['jump_table']
-    X_pi = ps.X_pulse(m)
+    print 'Hermite amp ', m.params['Hermite_pi_amp']
+    print 'No. pulses ', num_pulses # Show the sweep pts
 
     # Start measurement
-    m.generate_sequence(upload = True, 
-        pulse_X = pulse.cp(X_pi, phase = m.params['X_phase']), 
-        pulse_Y = pulse.cp(X_pi, phase = m.params['X_phase'] + 90), 
-        pulse_minX = pulse.cp(X_pi, phase = m.params['X_phase'] + 180), 
-        pulse_minY = pulse.cp(X_pi, phase = m.params['X_phase'] + 270)
+    m.generate_sequence(
+        upload = upload, 
+        Hermite_pi = ps.X_pulse(m),
+        Hermite_pi2 = ps.Y_pulse(m),
+        # pulse_minX = ps.mX_pulse(m), 
+        # pulse_minY = ps.mY_pulse(m),
     )
     
     if run_msmt:
-        m.adwin.start_dynamic_jump(do_init_only = 1)
+        if init_tables:
+            delay_cycle = np.rint(m.params['delay_time'] / m.params['delay_clock_cycle_time']).astype(np.int32)
 
-        qt.msleep(0.05)
-        td = m.params['table_dim']
+            seq_indices = np.cumsum(np.insert(num_pulses, 0, 1))
+            random_jumps = np.random.randint(low = 1, high = m.params['unique_no_pulses'] + 1, size = 1e7)
+
+            jump_table = np.repeat(1, seq_indices[-1])
+            delay_cycles = np.repeat(delay_cycle, seq_indices[-1])
+            next_seq_table = np.repeat(0, m.params['pts'] * 2) # Unused atm
+
+            m.adwin.start_dynamic_jump(
+                cycle_duration = m.params['cycle_duration'],
+                AWG_start_DO_channel = m.params['AWG_start_DO_channel'],
+                AWG_jump_strobe_DO_channel = m.params['AWG_jump_strobe_DO_channel'],
+                do_init_only = 1,
+                jump_bit_shift = m.params['jump_bit_shift'],
+            )
+
+            qt.msleep(0.05)
        
-        m.adwin.set_dynamic_jump_var(
-            jump_table      = (2**m.params['jump_bit_shift']) * pad_and_flat(m.params['jump_table'], td, td),  
-            delay_cycles    = pad_and_flat(m.params['delay_table'], td, td), 
-            next_seq_table  = pad_and_flat(m.params['next_seq_table'], td, 2),
-            random_ints     = np.random.randint(1, high = m.params['unique_no_pulses'] + 1, size = 10e6),
-        )
+            m.adwin.set_dynamic_jump_var(
+                jump_table      = (2**m.params['jump_bit_shift']) *jump_table,
+                delay_cycles    = delay_cycles, 
+                next_seq_table  = next_seq_table,
+                seq_indices     = seq_indices,
+                random_ints     = (2**m.params['jump_bit_shift']) * random_jumps,
+            )
         qt.msleep(0.05)
-        m.adwin.start_dynamic_jump(do_init_only = 0)
            
-        #m.run()
-        #m.save()
-        #m.finish()
+        m.run()
+        m.save()
+        m.finish()
 
 def jitter_timings(name, debug = False, upload = True, old_school = False, run_msmt = True):
 
@@ -110,30 +118,25 @@ def jitter_timings(name, debug = False, upload = True, old_school = False, run_m
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     m.params['pulse_type'] = 'Square'
+    m.params['pulse_shape'] = 'Square'
 
-    m.params['pts'] = 10
+    m.params['pts'] = 1
     m.params['repetitions'] = 1000
 
-    # lt3 params
-    m.params['AWG_start_DO_channel'] = 9
-    m.params['AWG_jump_strobe_DO_channel'] = 0
-    m.params['do_init_only'] = 0
-    m.params['jump_bit_shift'] = 4
-
-    m.params['table_dim'] = 256
+    # lt2 params
+    m.params['cycle_duration'] = 300
+    m.params['AWG_start_DO_channel'] = 1
+    m.params['AWG_jump_strobe_DO_channel'] = 12
+    m.params['jump_bit_shift'] = 7
 
     m.params['minimal_delay_time'] = 0
     m.params['minimal_delay_cycles'] = 0
     m.params['delay_clock_cycle_time'] = 20e-9
 
+    m.params['delay_time'] = 2e-6;
+
     # Start measurement
-    seq, elements = m.generate_sequence(upload = old_school)
-
-    print 'Programmed old sequence; creating new'
-
-    if not(old_school):
-        generate_new_sequence(m, seq, elements, upload = upload)
-        calculate_delay_cycles(m)
+    m.generate_sequence(upload = upload, Square_X = ps.X_pulse(m), Square_Y = ps.Y_pulse(m))
 
         # Print the tables that go to the adwin
         # print m.params['jump_table']
@@ -144,14 +147,24 @@ def jitter_timings(name, debug = False, upload = True, old_school = False, run_m
     if run_msmt:
          
         if not(old_school):
+            delay_cycle = np.rint(m.params['delay_time'] / m.params['delay_clock_cycle_time']).astype(np.int32)
+
+            seq_indices = np.array([1, 3])
+            random_jumps = np.random.randint(low = 1, high = 3, size = 1e3)
+
+            jump_table = np.array([1, 2])
+            delay_cycles = np.repeat(delay_cycle, seq_indices[-1])
+            next_seq_table = np.repeat(0, 2) # Unused atm
+
             m.adwin.start_dynamic_jump(do_init_only = 1) # Necessary for init
             qt.msleep(0.05)
-            td = m.params['table_dim']
        
             m.adwin.set_dynamic_jump_var(
-            jump_table      = (2**m.params['jump_bit_shift']) * pad_and_flat(m.params['jump_table'], td, td),  
-            delay_cycles    = pad_and_flat(m.params['delay_table'], td, td), 
-            next_seq_table  = pad_and_flat(m.params['next_seq_table'], td, 2)
+                jump_table      = (2**m.params['jump_bit_shift']) * jump_table,
+                delay_cycles    = delay_cycles, 
+                next_seq_table  = next_seq_table,
+                seq_indices     = seq_indices,
+                random_ints     = (2**m.params['jump_bit_shift']) * random_jumps,
             )
 
             print 'Waiting until AWG done'
@@ -271,6 +284,7 @@ class RandomXYFidelity(pulsar_msmt.PulsarMeasurement):
 
     def generate_sequence(self, upload = True, **kw):
 
+        qt.pulsar.AWG_sequence_cfg['JUMP_TIMING'] = 0 # ASYNC
         seq = pulsar.Sequence('Random XY pulses')
         seq.set_djump(True)
 
@@ -287,7 +301,7 @@ class RandomXYFidelity(pulsar_msmt.PulsarMeasurement):
         e_wait.add(pulse.cp(empty), name = e_wait.name)
         elements.append(e_wait)
         seq.append(name = e_wait.name, wfname = e_wait.name, goto_target = e_loop.name, trigger_wait = True)
-        seq.add_djump_address(jump_index, e_wait.name)
+        # seq.add_djump_address(jump_index, e_wait.name)
 
         e_loop.add(pulse.cp(empty, length = 1e-3), name = e_loop.name)
         elements.append(e_loop)
@@ -309,7 +323,7 @@ class RandomXYFidelity(pulsar_msmt.PulsarMeasurement):
         e_sync.add(pulse.cp(adwin_sync), name = e_sync.name)
         elements.append(e_sync)
         seq.append(name = e_sync.name, wfname = e_sync.name, goto_target = e_loop.name)
-        seq.add_djump_address(jump_index + 1, e_sync.name)
+        seq.add_djump_address(0, e_sync.name)
 
         # upload the waveforms to the AWG
         if upload:
@@ -323,36 +337,48 @@ class SquarePulseJitter(pulsar_msmt.PulsarMeasurement):
 
     mprefix = 'SquarePulseJitter'
 
-    def generate_sequence(self, upload = True):
+    def generate_sequence(self, upload = True, **kw):
 
-        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
-            length = 3000e-9, amplitude = 0.)
-
-        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
-            length = 10e-6,
-            amplitude = 2)
-
-        X_pi = ps.X_pulse(self)
+        qt.pulsar.AWG_sequence_cfg['JUMP_TIMING'] = 0 # ASYNC
+        seq = pulsar.Sequence('Square Pulses')
+        seq.set_djump(True)
 
         elements = []
 
-        e = element.Element('Square_pulses', pulsar = qt.pulsar, global_time = True)
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync', length = 1e-6, amplitude = 2)
+        empty = pulse.SquarePulse(channel = 'adwin_sync', length = 1e-6, amplitude = 0)
 
-        e.append(pulse.cp(T))
+        jump_index = 0
 
-        e.append(pulse.cp(X_pi, phase = 0))
+        e_loop = element.Element('loop', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+        e_wait = element.Element('trigger_wait', pulsar = qt.pulsar, global_time = True, min_samples = 1e3) # currently not used
+    
+        e_wait.add(pulse.cp(empty), name = e_wait.name)
+        elements.append(e_wait)
+        seq.append(name = e_wait.name, wfname = e_wait.name, goto_target = e_loop.name, trigger_wait = True)
+        # seq.add_djump_address(jump_index, e_wait.name)
 
-        e.append(pulse.cp(T))
+        e_loop.add(pulse.cp(empty, length = 1e-3), name = e_loop.name)
+        elements.append(e_loop)
+        seq.append(name = e_loop.name, wfname = e_loop.name, goto_target = e_wait.name, repetitions = 65536)
 
-        pid = e.append(pulse.cp(X_pi, phase = 90))
+        for name, ps in kw.iteritems():
+            jump_index += 1
 
-        e.add(pulse.cp(adwin_sync), start = 5e-6, refpulse = pid)
+            e = element.Element(name + '-%d' % jump_index, pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+            e.add(pulse.cp(ps), name = e.name)
 
-        elements.append(e)
+            elements.append(e)
 
-        seq = pulsar.Sequence('Square pulses for jitter timing')
-        for e in elements:
-            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+            seq.append(name = e.name, wfname = e.name, goto_target = e_loop.name)
+            seq.add_djump_address(jump_index, e.name)
+
+        # For some strange reason the last pulse doenst treat goto_target correctly
+        e_sync = element.Element('sync', pulsar = qt.pulsar, global_time = True, min_samples = 1e3)
+        e_sync.add(pulse.cp(adwin_sync), name = e_sync.name)
+        elements.append(e_sync)
+        seq.append(name = e_sync.name, wfname = e_sync.name, goto_target = e_loop.name)
+        seq.add_djump_address(0, e_sync.name)
 
         # upload the waveforms to the AWG
         if upload:
@@ -361,8 +387,6 @@ class SquarePulseJitter(pulsar_msmt.PulsarMeasurement):
                 qt.pulsar.program_sequence(seq)
             else:
                 qt.pulsar.program_awg(seq,*elements)
-
-        return seq, elements
 
 class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
     """
@@ -678,6 +702,14 @@ if __name__ == '__main__':
     # range_end = 10e-6,
     # run_msmt = True)
 
-    # jitter_timings("SquarePulse_Jitter_Timings", debug = True, upload = True, old_school = False, run_msmt = True)
+    jitter_timings("SquarePulse_Jitter_Timings", debug = True, upload = True, old_school = False, run_msmt = True)
+    
+    # amp_rng = 0.15
+    # amp_pts = 16
+    # pi_amps = 0.650 + np.linspace(-amp_rng, amp_rng, amp_pts)
 
-    random_XY_pulsar("Random XY pulsar", debug = False, upload = True, run_msmt = True)
+    # for amp in pi_amps:
+    #     init = False if amp != pi_amps[0] else True
+    #     random_XY_pulsar("Random XY pulsar", debug = False, upload = True, run_msmt = True, hermite_amp = amp, init_tables = init)
+
+    # random_XY_pulsar("Random XY pulsar", debug = False, upload = True, run_msmt = False, hermite_amp = 0.67, init_tables = False)
