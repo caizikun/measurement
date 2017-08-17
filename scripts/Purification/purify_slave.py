@@ -87,7 +87,7 @@ class purify_single_setup(DD.MBI_C13):
 
         # add values from AWG calibrations
         self.params['SP_voltage_AWG'] = \
-                self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
+                self.E_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 

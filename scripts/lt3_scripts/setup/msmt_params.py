@@ -32,7 +32,7 @@ C_split  = 0.847e6
 
 pulse_shape = 'Hermite'
 #pulse_shape = 'Square'
-electron_transition = '-1'
+electron_transition = '+1'
 multiple_source = False
 
 mw1_source = ''
@@ -41,10 +41,10 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 280e-9#106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.934#0.8467  # 28-02
-	hermite_pi2_length = 150e-9 # 46e-9 # even
-	hermite_pi2_amp = 0.626 #  # 28-02 
+	hermite_pi_length = 100e-9 # 82e-9 2017/08/03 #was at 80e-6 106e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp =  0.617 # 0.650 #0.829 #0.8467  # 28-02
+	hermite_pi2_length = 40e-9 # 46e-9 # even
+	hermite_pi2_amp = 0.575 #  # 28-02 
 
 	square_pi_length = 18e-9 # even
 	square_pi_amp = 0.797 # 02-19
@@ -56,8 +56,8 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 144e-9#100e-9 
-	hermite_pi_amp = 0.933#0.394
+	hermite_pi_length = 150e-9#100e-9 
+	hermite_pi_amp = 0.95#0.394
 	hermite_pi2_length = 90e-9
 	hermite_pi2_amp = 0.475165#0.157
 
@@ -117,7 +117,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
@@ -390,7 +390,7 @@ cfg['protocols'][name]['AdwinSSRO'] = {
 		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 4e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 4e-9,#4e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -440,7 +440,7 @@ cfg['protocols'][name]['pulses'] = {
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
 		'MW_switch_risetime'	:	450e-9,
-		'MW_switch_channel'		:	'mw_switch', ### usually 'none' if you want to activate the switch, put to MW_switch
+		'MW_switch_channel'		:	'none', ### usually 'none' if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
     	'CORPSE_pi2_amp':			0.543,
@@ -483,7 +483,7 @@ cfg['protocols'][name]['pulses'] = {
         'eom_overshoot1':					-0.025, # calibration from 29-05-2017# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						16e-9,#16e-9,
+        'aom_risetime':						40e-9,#16e-9,
         'aom_amplitude':					0.7,#0.2
 }
 

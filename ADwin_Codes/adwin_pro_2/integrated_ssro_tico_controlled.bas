@@ -10,6 +10,18 @@
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
 '<Header End>
+'<ADbasic Header, Headerversion 001.001>
+' Process_Number                 = 9
+' Initial_Processdelay           = 1000
+' Eventsource                    = Timer
+' Control_long_Delays_for_Stop   = No
+' Priority                       = High
+' Version                        = 1
+' ADbasic_Version                = 5.0.8
+' Optimize                       = Yes
+' Optimize_Level                 = 1
+' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+'<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
 ' protocol:
@@ -25,7 +37,6 @@
 #INCLUDE .\configuration.inc
 #INCLUDE .\cr_mod_Bell.inc
 #INCLUDE .\djump_tico_helper.inc
-#include Math.inc
 
 #DEFINE max_SP_bins        500
 #DEFINE max_stat            10
@@ -72,6 +83,7 @@ INIT:
   SSRO_stop_after_first_photon = DATA_20[10]
   cycle_duration               = DATA_20[11] '(in processor clock cycles, 3.333ns)
   sweep_length                 = DATA_20[12]
+  do_random_gates              = DATA_20[13]
   
   E_SP_voltage                 = DATA_21[1]
   A_SP_voltage                 = DATA_21[2]
@@ -85,13 +97,12 @@ INIT:
   FOR i = 1 TO sweep_length
     DATA_25[i] = 0
   NEXT i
-   
+  Par_62= SSRO_repetitions
   AWG_done_DI_pattern = 2 ^ AWG_done_DI_channel
 
   repetition_counter  = 0
   first               = 0
   wait_after_pulse    = 0
-  do_random_gates     = 0
       
   P2_DAC(DAC_MODULE,repump_laser_DAC_channel, 3277*repump_off_voltage+32768) ' turn off repump
   P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off Ex laser
@@ -104,6 +115,8 @@ INIT:
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)
 
   sweep_index = 1
+  rand_jump_index = 1
+  rand_jump_factor = 1
   mode = 0
   timer = 0
   processdelay = cycle_duration  
@@ -157,12 +170,11 @@ EVENT:
       CASE 3    '  wait for AWG sequence or for fixed duration
         IF (timer = 0) THEN
           IF (send_AWG_start > 0) THEN
-            if (do_random_gates > 0) THEN
-              
-            else
-              tico_set_jump_and_delays(sweep_index)
-            endif
+            If (do_random_gates > 0) THEN
+              randomize_jumps(sweep_index)
+            ENDIF
             
+            tico_set_jump_and_delays(sweep_index)
             
             ' Enable the TICO!
             P2_Set_Par(DIO_MODULE, 1, TiCoDL_Enable, 1)
@@ -243,5 +255,6 @@ EVENT:
 FINISH:
   finish_CR()
   
+
 
 

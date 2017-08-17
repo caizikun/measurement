@@ -111,7 +111,7 @@ def optimize():
     stools.turn_off_all_lasers()
 
 
-def take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=2,Single_Block=False,XY_scheme=8, reps=500, optimize=True,debug=False):
+def take_DD_Data(larmor_min,larmor_max,N,pts,larmor_step=2,Single_Block=False,XY_scheme=8, reps=500, optimize=True, larmor_offset=0 ,debug=False):
     ## loop function for data acquisition.
 
     Continue_bool = True 
