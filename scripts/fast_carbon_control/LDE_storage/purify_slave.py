@@ -923,7 +923,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     #     )
                     #
                     #     self.dynamic_phase_correct_list_per_carbon[i].append(electron_pi_gate)
-            else:
+            elif self.params['do_phase_correction'] > 0:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
                 final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses

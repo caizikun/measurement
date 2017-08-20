@@ -51,14 +51,14 @@ elif electron_transition == '-1':
 
 	hermite_pi_length = 104e-9 # divisible by 2
 	# 0.526 #0.630 #0.889 # 0.893 # for a single pi pulse
-	hermite_pi_amp = 0.879
+	hermite_pi_amp = 0.869
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
 	# 0.421 #0.543 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
-	hermite_pi2_amp = 0.637
+	hermite_pi2_amp = 0.630
 
 
 ### General settings for AdwinSSRO
@@ -247,13 +247,13 @@ cfg['samples'][sample_name] = {
 	'C1_T2star_0'		: 10.76e-3,
 	'C1_T2star_1_m1'	: 9.16e-3,
 
-	'C1_freq_m1'        : (443333.51 + 819802.72)/2,
-	'C1_freq_0' 		: 443333.51,
-	'C1_freq_1_m1' 		: 819802.72,
+	'C1_freq_m1'        : (443342.77 + 819801.47)/2,
+	'C1_freq_0' 		: 443342.77,
+	'C1_freq_1_m1' 		: 819801.47,
 
 	'C1_Ren_tau_m1'    :   [5.936e-6],
 	'C1_Ren_N_m1'      :   [20],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-11.17] + [-5.54] + [2.57] + [1.19] + [6.55] + [2.0] + [-3.79] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-11.59] + [-5.54] + [2.57] + [1.19] + [6.55] + [2.0] + [-3.79] + [0.0] + [0.0] + [0.0]),
 
 	'C1_phase_per_LDE_sequence_m1'	: 344.184,
 	'C1_init_phase_correction_m1': 0.0,
@@ -273,13 +273,13 @@ cfg['samples'][sample_name] = {
 	'C2_T2star_0'		: 11.79e-3,
 	'C2_T2star_1_m1'	: 10.76e-3,
 
-	'C2_freq_m1'        : (443018.05 + 475444.97)/2,
-	'C2_freq_0' 		: 443018.05,
-	'C2_freq_1_m1' 		: 475444.97,
+	'C2_freq_m1'        : (443010.04 + 475428.94)/2,
+	'C2_freq_0' 		: 443010.04,
+	'C2_freq_1_m1' 		: 475428.94,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [46], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [209.5] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [208.19] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
 
 	'C2_phase_per_LDE_sequence_m1'	: 62.425,
 	'C2_init_phase_correction_m1': 0.0,
@@ -303,13 +303,13 @@ cfg['samples'][sample_name] = {
 	'C3_T2star_0'		: 10.05e-3,
 	'C3_T2star_1_m1'	: 9.71e-3,
 
-	'C3_freq_m1'        : (442973.76 + 505392.20)/2,
-	'C3_freq_0' 		: 442973.76,
-	'C3_freq_1_m1' 		: 505392.2,
+	'C3_freq_m1'        : (442975.69 + 505392.40)/2,
+	'C3_freq_0' 		: 442975.69,
+	'C3_freq_1_m1' 		: 505392.4,
 
 	'C3_Ren_tau_m1'    :   [3.692e-6],
 	'C3_Ren_N_m1'      :   [66],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [44.94] + [-3.89] + [-2.17] + [2.83] + [-0.92] + [0.0] + [0.0] + [0.0]),
+	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [45.86] + [-3.89] + [-2.17] + [2.83] + [-0.92] + [0.0] + [0.0] + [0.0]),
 
 	'C3_phase_per_LDE_sequence_m1'	: 86.667,
 	'C3_init_phase_correction_m1': 0.0,
@@ -329,13 +329,13 @@ cfg['samples'][sample_name] = {
 	'C4_T2star_0'		: 18.98e-3,
 	'C4_T2star_1_m1'	: 16.05e-3,
 
-	'C4_freq_m1'        : (442820.40 + 416207.77)/2,
-	'C4_freq_0' 		: 442820.4,
-	'C4_freq_1_m1' 		: 416207.77,
+	'C4_freq_m1'        : (442818.24 + 416226.94)/2,
+	'C4_freq_0' 		: 442818.24,
+	'C4_freq_1_m1' 		: 416226.94,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-1.63] + [13.34] + [2.39] + [-2.62] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-3.46] + [13.34] + [2.39] + [-2.62] + [0.0] + [0.0]),
 
 	'C4_phase_per_LDE_sequence_m1'	: 14.614,
 	'C4_init_phase_correction_m1'	: 0.0,
@@ -357,13 +357,13 @@ cfg['samples'][sample_name] = {
 	'C5_T2star_0'		: 4.46e-3,
 	'C5_T2star_1_m1'	: 4.53e-3,
 
-	'C5_freq_m1'        : (443718.45 + 422772.87)/2,
-	'C5_freq_0' 		: 443718.45,
-	'C5_freq_1_m1' 		: 422772.87,
+	'C5_freq_m1'        : (443725.48 + 422778.43)/2,
+	'C5_freq_0' 		: 443725.48,
+	'C5_freq_1_m1' 		: 422778.43,
 
 	'C5_Ren_tau_m1'    :   [8.656e-6], #[10.964e-6], #8.826
 	'C5_Ren_N_m1'      :   [40], # [46],  #,
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-14.45] + [7.49] + [0.79] + [-0.04] + [0.0] + [0.0]),
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-14.45] + [6.14] + [0.79] + [-0.04] + [0.0] + [0.0]),
 
 	'C5_phase_per_LDE_sequence_m1'	: 21.345,
 	'C5_init_phase_correction_m1': 0.0,
@@ -384,13 +384,13 @@ cfg['samples'][sample_name] = {
 	'C6_T2star_0'		: 9.89e-3,
 	'C6_T2star_1_m1'	: 9.20e-3,
 
-	'C6_freq_m1'        : (443838.67 + 520886.82)/2,
-	'C6_freq_0' 		: 443838.67,
-	'C6_freq_1_m1' 		: 520886.82,
+	'C6_freq_m1'        : (443838.95 + 520870.58)/2,
+	'C6_freq_0' 		: 443838.95,
+	'C6_freq_1_m1' 		: 520870.58,
 
 	'C6_Ren_tau_m1'    :   [3.632e-6],
 	'C6_Ren_N_m1'      :   [52],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [99.48] + [-18.99] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [99.81] + [-18.99] + [0.0] + [0.0] + [0.0]),
 
 	'C6_phase_per_LDE_sequence_m1'	: 100.295,
 	'C6_init_phase_correction_m1': 0.0,
@@ -410,13 +410,13 @@ cfg['samples'][sample_name] = {
 	'C7_T2star_0'		: 7.65e-3,
 	'C7_T2star_1_m1'	: 6.45e-3,
 
-	'C7_freq_m1'        : (443244.10 + 455439.68)/2,
-	'C7_freq_0' 		: 443244.1,
-	'C7_freq_1_m1' 		: 455439.68,
+	'C7_freq_m1'        : (443228.89 + 455444.86)/2,
+	'C7_freq_0' 		: 443228.89,
+	'C7_freq_1_m1' 		: 455444.86,
 
 	'C7_Ren_tau_m1'    :   [11.678e-6],
 	'C7_Ren_N_m1'      :   [60],
-	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [226.55] + [0.0] + [0.0]),
+	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [226.49] + [0.0] + [0.0]),
 
 	'C7_phase_per_LDE_sequence_m1'	: 46.813,
 	'C7_init_phase_correction_m1': 0.0,
