@@ -250,3 +250,141 @@ Updated pi pulse amplitude to: 0.879
 Pi/2 calibration optima: [ 0.63880222  0.63516656  0.63834905]
 Updated pi/2 pulse amplitude to: 0.637
 
+[2017-08-17 13:33:45.510000]
+Pi calibration optima: [ 0.883  0.884  0.884]
+Updated pi pulse amplitude to: 0.884
+Pi/2 calibration optima: [ 0.64066002  0.64395448  0.63993438]
+Updated pi/2 pulse amplitude to: 0.642
+
+[2017-08-17 14:15:02.551000]
+Pi calibration optima: [ 0.878  0.881  0.879]
+Updated pi pulse amplitude to: 0.879
+Pi/2 calibration optima: [ 0.63427809  0.6401058   0.63947889]
+Updated pi/2 pulse amplitude to: 0.638
+
+[2017-08-17 14:19:52.660000]
+Pi calibration optima: [ 0.878  0.881  0.88 ]
+Updated pi pulse amplitude to: 0.880
+Pi/2 calibration optima: [ 0.63825557  0.6400258   0.63988072]
+Updated pi/2 pulse amplitude to: 0.639
+
+[2017-08-17 14:50:45.252000]
+Pi calibration optima: [ 0.882  0.883  0.884]
+Updated pi pulse amplitude to: 0.883
+Pi/2 calibration optima: [ 0.63669086  0.64102803  0.64083655]
+Updated pi/2 pulse amplitude to: 0.640
+
+[2017-08-17 15:23:33.659000]
+Pi calibration optima: [ 0.878  0.879  0.878]
+Updated pi pulse amplitude to: 0.878
+Pi/2 calibration optima: [ 0.64432269  0.63885033  0.63766638]
+Updated pi/2 pulse amplitude to: 0.640
+
+[2017-08-17 15:58:07.837000]
+Pi calibration optima: [ 0.879  0.879  0.88 ]
+Updated pi pulse amplitude to: 0.879
+Pi/2 calibration optima: [ 0.63645466  0.6414384   0.64176293]
+Updated pi/2 pulse amplitude to: 0.640
+
+[2017-08-17 16:33:43.154000]
+Pi calibration optima: [ 0.878  0.88   0.88 ]
+Updated pi pulse amplitude to: 0.879
+Pi/2 calibration optima: [ 0.6366103   0.63920108  0.63522113]
+Updated pi/2 pulse amplitude to: 0.637
+
+[2017-08-17 17:12:18.512000]
+Pi calibration optima: [ 0.881  0.878  0.877]
+Updated pi pulse amplitude to: 0.879
+Pi/2 calibration optima: [ 0.63419255  0.63766571  0.63922268]
+Updated pi/2 pulse amplitude to: 0.637
+
+[2017-08-17 17:46:36.974000]
+Pi calibration optima: [ 0.878  0.88   0.879]
+Updated pi pulse amplitude to: 0.879
+Pi/2 calibration optima: [ 0.638033    0.63882243  0.63757617]
+Updated pi/2 pulse amplitude to: 0.638
+
+[2017-08-17 18:45:05.400000]
+Pi calibration optima: [ 0.876  0.876  0.875]
+Updated pi pulse amplitude to: 0.876
+Pi/2 calibration optima: [ 0.63516516  0.64056154  0.63661227]
+Updated pi/2 pulse amplitude to: 0.637
+
+[2017-08-17 18:50:36.273000]
+Pi calibration optima: [ 0.878  0.876  0.874]
+Updated pi pulse amplitude to: 0.876
+Pi/2 calibration optima: [ 0.64033568  0.63676017  0.63538719]
+Updated pi/2 pulse amplitude to: 0.637
+
+[2017-08-17 19:23:52.301000]
+Pi calibration optima: [ 0.874  0.871  0.873]
+Updated pi pulse amplitude to: 0.873
+Pi/2 calibration optima: [ 0.63496434  0.63345765  0.6386305 ]
+Updated pi/2 pulse amplitude to: 0.636
+
+[2017-08-17 20:00:12.872000]
+Pi calibration optima: [ 0.874  0.874  0.872]
+Updated pi pulse amplitude to: 0.873
+Pi/2 calibration optima: [ 0.63627322  0.63509939  0.63495989]
+Updated pi/2 pulse amplitude to: 0.635
+
+[2017-08-17 20:35:31.543000]
+Pi calibration optima: [ 0.874  0.877  0.872]
+Updated pi pulse amplitude to: 0.874
+Pi/2 calibration optima: [ 0.63445143  0.63340523  0.63647664]
+Updated pi/2 pulse amplitude to: 0.635
+
+[2017-08-17 21:10:08.055000]
+Pi calibration optima: [ 0.874  0.873  0.876]
+Updated pi pulse amplitude to: 0.874
+Pi/2 calibration optima: [ 0.63398661  0.63745414  0.64121407]
+Updated pi/2 pulse amplitude to: 0.638
+
+[2017-08-17 21:45:13.458000]
+Pi calibration optima: [ 0.87   0.869  0.871]
+Updated pi pulse amplitude to: 0.870
+Pi/2 calibration optima: [ 0.63749701  0.63767675  0.63441173]
+Updated pi/2 pulse amplitude to: 0.637
+
+[2017-08-17 22:17:52.966000]
+Pi calibration optima: [ 0.873  0.874  0.874]
+Updated pi pulse amplitude to: 0.874
+Pi/2 calibration optima: [ 0.6332759   0.63460986  0.63891129]
+Updated pi/2 pulse amplitude to: 0.636
+
+[2017-08-18 16:19:51.100000]
+Pi calibration optima: [ 0.88   0.883  0.881]
+Updated pi pulse amplitude to: 0.881
+Pi/2 calibration optima: [ 0.64203175  0.63988239  0.63877327]
+Updated pi/2 pulse amplitude to: 0.640
+
+[2017-08-18 16:43:36.836000]
+Pi calibration optima: [ 0.883  0.884  0.884]
+Updated pi pulse amplitude to: 0.884
+Pi/2 calibration optima: [ 0.64478252  0.64289185  0.63930361]
+Updated pi/2 pulse amplitude to: 0.642
+
+[2017-08-20 19:06:42.090000]
+Pi calibration optima: [ 0.873  0.874  0.874]
+Updated pi pulse amplitude to: 0.874
+Pi/2 calibration optima: [ 0.64000041  0.63393483  0.6332911 ]
+Updated pi/2 pulse amplitude to: 0.636
+
+[2017-08-20 19:10:39.430000]
+Pi calibration optima: [ 0.875  0.874  0.873]
+Updated pi pulse amplitude to: 0.874
+Pi/2 calibration optima: [ 0.63228549  0.63681633  0.63540547]
+Updated pi/2 pulse amplitude to: 0.635
+
+[2017-08-20 19:49:17.587000]
+Pi calibration optima: [ 0.873  0.871  0.873]
+Updated pi pulse amplitude to: 0.872
+Pi/2 calibration optima: [ 0.62785309  0.63008352  0.63137267]
+Updated pi/2 pulse amplitude to: 0.630
+
+[2017-08-20 23:12:38.660000]
+Pi calibration optima: [ 0.867  0.87   0.869]
+Updated pi pulse amplitude to: 0.869
+Pi/2 calibration optima: [ 0.62715816  0.63050745  0.63295302]
+Updated pi/2 pulse amplitude to: 0.630
+

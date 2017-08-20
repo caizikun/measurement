@@ -34,7 +34,7 @@ n = 1
 
 qt.exp_params['simplify_wfnames'] = True
 
-carbons = [1,2,3,4,5,6,7]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
+carbons = [2,4]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -43,6 +43,7 @@ The measured values are directly written into msmt_params.py
 """
 use_queue = False
 
+do_update_msmt_params = True
 f_ms0 = True
 f_ms1 = True
 update_average_freq = True
@@ -690,7 +691,7 @@ if cross_phase_calibration and len(carbons)>1:
 # print phase_overview
 
 # write to msmt_params.py if the calibration was finished succesfully.
-if n== 1 and not debug:
+if n== 1 and not debug and do_update_msmt_params:
     update_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,self_unc_phase_calibration,self_unc_phase_offset_calibration,debug)
 else:
     print 'Sequence was aborted: I did not save the calibration results'
