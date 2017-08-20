@@ -267,6 +267,8 @@ cfg['samples'][sample_name] = {
 
 	'C1_phase_per_LDE_sequence_p1'	:	0.0,
 	'C1_init_phase_correction_p1': 0.0,
+
+	'C1_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C2(A ~ -26)  #
 	###############
@@ -297,6 +299,7 @@ cfg['samples'][sample_name] = {
 	'C2_phase_per_LDE_sequence_p1'	: 0.0,
 	'C2_init_phase_correction_p1': 0.0,
 
+	'C2_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C3 (A ~ -58)#
 	###############
@@ -323,6 +326,8 @@ cfg['samples'][sample_name] = {
 
 	'C3_phase_per_LDE_sequence_p1'	: 0.0, #84.126,
 	'C3_init_phase_correction_p1': 0.0,
+
+	'C3_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C4 (A ~ 33) #
 	###############
@@ -351,6 +356,7 @@ cfg['samples'][sample_name] = {
 	'C4_phase_per_LDE_sequence_p1'	: 0.0, #15.795,
 	'C4_init_phase_correction_p1'	: 0.0,
 
+	'C4_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C5 (A ~ 26) #
 	###############
@@ -378,6 +384,7 @@ cfg['samples'][sample_name] = {
 	'C5_phase_per_LDE_sequence_p1'	: 0.0, #22.336,
 	'C5_init_phase_correction_p1': 0.0,
 
+	'C5_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C6(A ~ -72) #
 	###############
@@ -404,6 +411,8 @@ cfg['samples'][sample_name] = {
 
 	'C6_phase_per_LDE_sequence_p1'	: 0.0, #97.5,
 	'C6_init_phase_correction_p1': 0.0,
+
+	'C6_LDE_phase_matching_time_m1' : 100e-9,
 	###############
 	# C7(A ~ -11)  #
 	###############
@@ -431,6 +440,8 @@ cfg['samples'][sample_name] = {
 	'C7_phase_per_LDE_sequence_p1'	: 0.0, #46.184,
 	'C7_init_phase_correction_p1': 0.0,
 
+	'C7_LDE_phase_matching_time_m1' : 100e-9,
+
 	###############
 	# C8(A ~ -10)  #
 	############### ### only low control fidelity.
@@ -454,6 +465,8 @@ cfg['samples'][sample_name] = {
 
 	'C8_phase_per_LDE_sequence_p1'	:	0.0,
 	'C8_init_phase_correction_p1': 0.0,
+
+	'C8_LDE_phase_matching_time_m1' : 100e-9,
 	}
 
 

@@ -467,7 +467,9 @@ def ionzation_sweep_pi_amp(name,upload_only = False, debug = False):
     run_sweep(m,debug = debug, upload_only = upload_only)
     m.finish()
 
-def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False, carbon_override=None, override_params=None, do_upload=True):
+def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False, carbon_override=None,
+                              override_params=None, do_upload=True,
+                              return_datafolder=False):
     """
     sweeps the average repump time.
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
@@ -569,8 +571,56 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
 
     m.finish()
 
+    if return_datafolder:
+        return m.datafolder
 
-def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, carbon_override=None, override_params=None, do_upload=True):
+
+def update_average_repump_time(**kw):
+    import measurement.scripts.carbonspin.write_to_msmt_params as write_to_msmt_params
+    reload(write_to_msmt_params)
+    import analysis.lib.purification.purify_delayfb as pu_delayfb
+    reload(pu_delayfb)
+
+    fit_result = pu_delayfb.average_repump_time(
+        do_fit=True,
+        ret=True,
+        show_plot=False,
+        fit_x0 = None
+        **kw
+    )
+
+    carbon_id = fit_result['carbon_id']
+    print("Updating average repump time param for C%d" % carbon_id)
+
+    sample_name = qt.exp_params['samples']['current']
+    electron_transition_string = qt.exp_params['samples'][sample_name]['electron_transition']
+
+    LDE_param_key = "C%d_LDE_phase_matching_time%s" % (carbon_id, electron_transition_string)
+
+    gauss_x0 = fit_result['params_dict']['x0'] * 1e-6
+    gauss_x0_u = fit_result['error_dict']['x0'] * 1e-6
+
+    print("Measured average repump time: %.3f +/- %.3f ns" % (gauss_x0*1e9, gauss_x0_u*1e9) )
+
+    try:
+        with open('repump_calibration_log.txt', 'a') as file:
+            file.write("[%s]\n" % (str(datetime.datetime.now())))
+            file.write("Updating average repump time param for C%d\n" % carbon_id)
+            file.write("Measured average repump time: %.3f +/- %.3f ns\n" % (gauss_x0 * 1e9, gauss_x0_u * 1e9))
+    except:
+        print("Writing to log file failed")
+
+    if gauss_x0_u > 0.5e-6:
+        print("Too much uncertainty in calibrated value, skipping")
+
+    qt.exp_params['samples'][sample_name][LDE_param_key] = gauss_x0
+    print("Writing to msmt_params.py...")
+    write_to_msmt_params.write_to_msmt_params_file([LDE_param_key], ["%de-9" % (round(gauss_x0*1e9))], False)
+    print("Done!")
+
+
+def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, carbon_override=None, override_params=None,
+                         do_upload=True):
 
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
