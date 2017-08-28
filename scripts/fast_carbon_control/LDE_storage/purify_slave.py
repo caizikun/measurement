@@ -1103,6 +1103,10 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     gate_seq.append(el_init_repump_gate)
 
                     el_state = self.params['carbon_swap_el_states'][i]
+                    print("WARNING WARNING WARNING")
+                    print("It seems that the sign of the X and Y states are switched!")
+                    print("Beware!")
+                    print("By the way, I'm in LDE_storage/purify_slave.py")
                     if el_state == 'Z':
                         Gate_operation = 'no_pulse'
                         phase = 0.0
