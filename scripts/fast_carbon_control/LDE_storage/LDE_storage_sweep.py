@@ -301,6 +301,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_fb_delayline']   = 0
     m.params['do_delay_fb_pulses']      = 0
     m.params['skip_LDE_mw_pi']          = 0
+    m.params['do_carbon_hahn_echo']     = 0 
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -496,7 +497,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['do_carbon_init']  = 1 
     m.params['do_carbon_readout']  = 1
     m.params['do_LDE_1'] = 1
-
+    m.params['do_carbon_hahn_echo'] = 0
     if 'LDE1_attempts' not in override_params:
         m.params['LDE1_attempts'] = 50
 
@@ -580,6 +581,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
     #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
     #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    m.params['do_carbon_hahn_echo'] = 0
     m.joint_params['opt_pi_pulses'] = 0
 
     ### calculate the sweep array
