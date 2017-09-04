@@ -60,7 +60,7 @@ def bell_check_powers():
 if __name__ == '__main__':
     debug = False
     # overnight section
-    carbons = [1,2,3,4,5,6,7]
+    carbons = [5,4]#[1,2,3,4,5,6,7]
     C13_X_phase = 0.0
 
     msmt_sweep_limits = [
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     breakst = False
     recalibrate_LDE = True
 
-    start_from_combi = 19
+    start_from_combi = 0
 
     print("I'm going to do carbon combinations: " + str(carbon_combis[start_from_combi:]))
 
@@ -144,6 +144,7 @@ if __name__ == '__main__':
     #
     #         with open('overnight_m.json', 'w') as json_file:
     #             json.dump(m, json_file)
+    #         do_overnight_msmt = True
     #         execfile("./LDE_storage_sweep.py")
 
 # if False:
@@ -165,15 +166,17 @@ if __name__ == '__main__':
                 if not debug:
                     bell_check_powers()
 
-                m = {
-                    "requested_measurement": "stitched_LDE_calibration",
-                    "calibration_carbon": c,
-                    "m_ranges": LDE_calibration_range,
-                    "debug": debug
-                }
-                with open('overnight_m.json', 'w') as json_file:
-                    json.dump(m, json_file)
-                execfile("./LDE_storage_sweep.py")
+                for i in range(2):
+                    m = {
+                        "requested_measurement": "stitched_LDE_calibration",
+                        "calibration_carbon": c,
+                        "m_ranges": LDE_calibration_range,
+                        "debug": debug
+                    }
+                    with open('overnight_m.json', 'w') as json_file:
+                        json.dump(m, json_file)
+                    do_overnight_msmt = True
+                    execfile("./LDE_storage_sweep.py")
 
         for d_i, d in enumerate(msmt_sweep_limits):
             if breakst:
@@ -215,71 +218,76 @@ if __name__ == '__main__':
 
                 with open('overnight_m.json', 'w') as json_file:
                     json.dump(m, json_file)
+                do_overnight_msmt = True
                 execfile("./LDE_storage_sweep.py")
 
-    for c in carbons:
-        if breakst:
-            break
-        breakst = show_stopper()
-        if breakst:
-            break
-        if not debug:
-            optimize()
-            recalibrate_all()
-            execfile(r"espin_calibrations.py")
+    # for c in carbons:
+    #     if breakst:
+    #         break
+    #     breakst = show_stopper()
+    #     if breakst:
+    #         break
+    #     if not debug:
+    #         optimize()
+    #         recalibrate_all()
+    #         execfile(r"espin_calibrations.py")
 
-        # m = {
-        #     'requested_measurement': 'sweep_average_repump_time',
-        #     'carbons': [c],
-        #     'debug': debug
-        # }
-        #
-        # with open('overnight_m.json', 'w') as json_file:
-        #     json.dump(m, json_file)
-        # execfile("./LDE_storage_sweep.py")
+    #     # m = {
+    #     #     'requested_measurement': 'sweep_average_repump_time',
+    #     #     'carbons': [c],
+    #     #     'debug': debug
+    #     # }
+    #     #
+    #     # with open('overnight_m.json', 'w') as json_file:
+    #     #     json.dump(m, json_file)
+    #     # do_overnight_msmt = True
+    #     # execfile("./LDE_storage_sweep.py")
 
-        m = {
-            "requested_measurement": "stitched_LDE_calibration",
-            "calibration_carbon": c,
-            "m_ranges": LDE_calibration_range,
-            "debug": debug
-        }
-        with open('overnight_m.json', 'w') as json_file:
-            json.dump(m, json_file)
-        execfile("./LDE_storage_sweep.py")
+    #     m = {
+    #         "requested_measurement": "stitched_LDE_calibration",
+    #         "calibration_carbon": c,
+    #         "m_ranges": LDE_calibration_range,
+    #         "debug": debug
+    #     }
+    #     with open('overnight_m.json', 'w') as json_file:
+    #         json.dump(m, json_file)
+    #     # do_overnight_msmt = True
+    #     execfile("./LDE_storage_sweep.py")
 
-        for i_fr, fr in enumerate(msmt_sweep_limits):
-            if not debug:
-                bell_check_powers()
-            m_name = name + "_phase_fb_delayline_C%d_sec%d" % (c, i_fr)
+    #     for i_fr, fr in enumerate(msmt_sweep_limits):
+    #         if not debug:
+    #             bell_check_powers()
+    #         m_name = name + "_phase_fb_delayline_C%d_sec%d" % (c, i_fr)
 
-            m = {
-                "requested_measurement": "LDE_sweep",
-                "m_name": m_name,
-                "carbons": [c],
-                "minReps": fr[0],
-                "maxReps": fr[1],
-                "step": fr[2],
-                "Tomography_list": [
-                    ['X'],
-                    ['Y']
-                ],
-                "carbon_encoding": "serial_swap",
-                "debug": debug
-            }
+    #         m = {
+    #             "requested_measurement": "LDE_sweep",
+    #             "m_name": m_name,
+    #             "carbons": [c],
+    #             "minReps": fr[0],
+    #             "maxReps": fr[1],
+    #             "step": fr[2],
+    #             "Tomography_list": [
+    #                 ['X'],
+    #                 ['Y']
+    #             ],
+    #             "carbon_encoding": "serial_swap",
+    #             "debug": debug
+    #         }
 
-            with open('overnight_m.json', 'w') as json_file:
-                json.dump(m, json_file)
-            execfile("./LDE_storage_sweep.py")
+    #         with open('overnight_m.json', 'w') as json_file:
+    #             json.dump(m, json_file)
+    #         do_overnight_msmt = True
+    #         execfile("./LDE_storage_sweep.py")
 
-        if not debug:
-            bell_check_powers()
-        m = {
-            'requested_measurement': 'decay_curve',
-            'carbons': [c],
-            'debug': debug
-        }
+    #     if not debug:
+    #         bell_check_powers()
+    #     m = {
+    #         'requested_measurement': 'decay_curve',
+    #         'carbons': [c],
+    #         'debug': debug
+    #     }
 
-        with open('overnight_m.json', 'w') as json_file:
-            json.dump(m, json_file)
-        execfile("./LDE_storage_sweep.py")
+    #     with open('overnight_m.json', 'w') as json_file:
+    #         json.dump(m, json_file)
+    #     do_overnight_msmt = True
+    #     execfile("./LDE_storage_sweep.py")

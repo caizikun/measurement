@@ -36,13 +36,13 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 220e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.8701#0.935 #Not calibrated
+	hermite_pi_amp = 0.872
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
 
 	hermite_pi2_length = 100e-9 #Not calibrated
-	hermite_pi2_amp = 0.763#0.915 #Not calibrated
+	hermite_pi2_amp = 0.764
 
 elif electron_transition == '-1':
 	electron_transition_string = '_m1'
@@ -51,14 +51,14 @@ elif electron_transition == '-1':
 
 	hermite_pi_length = 104e-9 # divisible by 2
 	# 0.526 #0.630 #0.889 # 0.893 # for a single pi pulse
-	hermite_pi_amp = 0.869
+	hermite_pi_amp = 0.870
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
 	# 0.421 #0.543 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
-	hermite_pi2_amp = 0.630
+	hermite_pi2_amp = 0.634
 
 
 ### General settings for AdwinSSRO
@@ -275,15 +275,15 @@ cfg['samples'][sample_name] = {
 	'C2_T2star_0'		: 11.79e-3,
 	'C2_T2star_1_m1'	: 10.76e-3,
 
-	'C2_freq_m1'        : (443010.04 + 475428.94)/2,
-	'C2_freq_0' 		: 443010.04,
-	'C2_freq_1_m1' 		: 475428.94,
+	'C2_freq_m1'        : (443010.86 + 475456.31)/2,
+	'C2_freq_0' 		: 443010.86,
+	'C2_freq_1_m1' 		: 475456.31,
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [46], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [208.19] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [209.51] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
 
-	'C2_phase_per_LDE_sequence_m1'	: 62.425,
+	'C2_phase_per_LDE_sequence_m1'	: 60.883,
 	'C2_init_phase_correction_m1': 0.0,
 	# 'C2_init_phase_correction_serial_swap_m1': 0.0, #182.740, # C2,C4 serial swap sequence offset
 	# 'C2_init_phase_correction_m1': 252.779, # single carbon sequence offset
@@ -299,22 +299,22 @@ cfg['samples'][sample_name] = {
 	'C2_phase_per_LDE_sequence_p1'	: 0.0,
 	'C2_init_phase_correction_p1': 0.0,
 
-	'C2_LDE_phase_matching_time_m1' : 100e-9,
+	'C2_LDE_phase_matching_time_m1' : 366e-9,
 	###############
 	# C3 (A ~ -58)#
 	###############
 	'C3_T2star_0'		: 10.05e-3,
 	'C3_T2star_1_m1'	: 9.71e-3,
 
-	'C3_freq_m1'        : (442975.69 + 505392.40)/2,
-	'C3_freq_0' 		: 442975.69,
-	'C3_freq_1_m1' 		: 505392.4,
+	'C3_freq_m1'        : (443004.38 + 505392.39)/2,
+	'C3_freq_0' 		: 443004.38,
+	'C3_freq_1_m1' 		: 505392.39,
 
 	'C3_Ren_tau_m1'    :   [3.692e-6],
 	'C3_Ren_N_m1'      :   [66],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [45.86] + [-3.89] + [-2.17] + [2.83] + [-0.92] + [0.0] + [0.0] + [0.0]),
+	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [44.7] + [-3.89] + [-2.17] + [2.83] + [-0.92] + [0.0] + [0.0] + [0.0]),
 
-	'C3_phase_per_LDE_sequence_m1'	: 86.667,
+	'C3_phase_per_LDE_sequence_m1'	: 84.63,
 	'C3_init_phase_correction_m1': 0.0,
 
 	'C3_freq_p1'        : (442993.52 + 382245.66)/2,
@@ -327,26 +327,26 @@ cfg['samples'][sample_name] = {
 	'C3_phase_per_LDE_sequence_p1'	: 0.0, #84.126,
 	'C3_init_phase_correction_p1': 0.0,
 
-	'C3_LDE_phase_matching_time_m1' : 100e-9,
+	'C3_LDE_phase_matching_time_m1' : 282e-9,
 	###############
 	# C4 (A ~ 33) #
 	###############
 	'C4_T2star_0'		: 18.98e-3,
 	'C4_T2star_1_m1'	: 16.05e-3,
 
-	'C4_freq_m1'        : (442818.24 + 416226.94)/2,
-	'C4_freq_0' 		: 442818.24,
-	'C4_freq_1_m1' 		: 416226.94,
+	'C4_freq_m1'        : (442824.08 + 416202.95)/2,
+	'C4_freq_0' 		: 442824.08,
+	'C4_freq_1_m1' 		: 416202.95,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-3.46] + [13.34] + [2.39] + [-2.62] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-4.0] + [7.64] + [2.39] + [-2.62] + [0.0] + [0.0]),
 
-	'C4_phase_per_LDE_sequence_m1'	: 14.614,
+	'C4_phase_per_LDE_sequence_m1'	: 14.616,
 	'C4_init_phase_correction_m1'	: 0.0,
 
-	'C4_freq_p1'        : (442804.48 + 464208.9)/2,
-	'C4_freq_1_p1' 		: 464208.9,
+	'C4_freq_p1'        : (441374.13 + 464341.28)/2,
+	'C4_freq_1_p1' 		: 464341.28,
 
 
 	'C4_Ren_tau_p1'    :   [11.558e-6],#[1.745e-6],##[6.386e-6],
@@ -356,26 +356,26 @@ cfg['samples'][sample_name] = {
 	'C4_phase_per_LDE_sequence_p1'	: 0.0, #15.795,
 	'C4_init_phase_correction_p1'	: 0.0,
 
-	'C4_LDE_phase_matching_time_m1' : 100e-9,
+	'C4_LDE_phase_matching_time_m1' : 305e-9,
 	###############
 	# C5 (A ~ 26) #
 	###############
 	'C5_T2star_0'		: 4.46e-3,
 	'C5_T2star_1_m1'	: 4.53e-3,
 
-	'C5_freq_m1'        : (443725.48 + 422778.43)/2,
-	'C5_freq_0' 		: 443725.48,
-	'C5_freq_1_m1' 		: 422778.43,
+	'C5_freq_m1'        : (443669.98 + 422802.79)/2,
+	'C5_freq_0' 		: 443669.98,
+	'C5_freq_1_m1' 		: 422802.79,
 
 	'C5_Ren_tau_m1'    :   [8.656e-6], #[10.964e-6], #8.826
 	'C5_Ren_N_m1'      :   [40], # [46],  #,
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-14.45] + [6.14] + [0.79] + [-0.04] + [0.0] + [0.0]),
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-5.84] + [10.16] + [0.79] + [-0.04] + [0.0] + [0.0]),
 
-	'C5_phase_per_LDE_sequence_m1'	: 21.345,
+	'C5_phase_per_LDE_sequence_m1'	: 21.329,
 	'C5_init_phase_correction_m1': 0.0,
 
-	'C5_freq_p1'        : (443720.00 + 472328.27)/2,
-	'C5_freq_1_p1' 		: 472323.63,
+	'C5_freq_p1'        : (442792.00 + 472344.32)/2,
+	'C5_freq_1_p1' 		: 472344.32,
 
 	'C5_Ren_tau_p1'    :   [11.474e-6], #[10.964e-6], #8.826
 	'C5_Ren_N_p1'      :   [60], # [46],  #,
@@ -384,26 +384,26 @@ cfg['samples'][sample_name] = {
 	'C5_phase_per_LDE_sequence_p1'	: 0.0, #22.336,
 	'C5_init_phase_correction_p1': 0.0,
 
-	'C5_LDE_phase_matching_time_m1' : 100e-9,
+	'C5_LDE_phase_matching_time_m1' : 272e-9,
 	###############
 	# C6(A ~ -72) #
 	###############
 	'C6_T2star_0'		: 9.89e-3,
 	'C6_T2star_1_m1'	: 9.20e-3,
 
-	'C6_freq_m1'        : (443838.95 + 520870.58)/2,
-	'C6_freq_0' 		: 443838.95,
-	'C6_freq_1_m1' 		: 520870.58,
+	'C6_freq_m1'        : (443857.90 + 520879.39)/2,
+	'C6_freq_0' 		: 443851.64,
+	'C6_freq_1_m1' 		: 520836.83,
 
 	'C6_Ren_tau_m1'    :   [3.632e-6],
 	'C6_Ren_N_m1'      :   [52],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [99.81] + [-18.99] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [98.73] + [-18.99] + [0.0] + [0.0] + [0.0]),
 
-	'C6_phase_per_LDE_sequence_m1'	: 100.295,
+	'C6_phase_per_LDE_sequence_m1'	: 100.51,
 	'C6_init_phase_correction_m1': 0.0,
 
 	'C6_freq_p1'        : (443849.06 + 367087)/2,
-	'C6_freq_1_p1' 		: 367016.67,
+	'C6_freq_1_p1' 		: 367053.62,
 	#367087
 	'C6_Ren_tau_p1'    :   [9.238e-6],
 	'C6_Ren_N_p1'      :   [24],
@@ -412,20 +412,20 @@ cfg['samples'][sample_name] = {
 	'C6_phase_per_LDE_sequence_p1'	: 0.0, #97.5,
 	'C6_init_phase_correction_p1': 0.0,
 
-	'C6_LDE_phase_matching_time_m1' : 100e-9,
+	'C6_LDE_phase_matching_time_m1' : 201e-9,
 	###############
 	# C7(A ~ -11)  #
 	###############
 	'C7_T2star_0'		: 7.65e-3,
 	'C7_T2star_1_m1'	: 6.45e-3,
 
-	'C7_freq_m1'        : (443228.89 + 455444.86)/2,
-	'C7_freq_0' 		: 443228.89,
-	'C7_freq_1_m1' 		: 455444.86,
+	'C7_freq_m1'        : (443247.28 + 455460.10)/2,
+	'C7_freq_0' 		: 443247.28,
+	'C7_freq_1_m1' 		: 455460.1,
 
 	'C7_Ren_tau_m1'    :   [11.678e-6],
 	'C7_Ren_N_m1'      :   [60],
-	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [226.49] + [0.0] + [0.0]),
+	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [230.27] + [0.0] + [0.0]),
 
 	'C7_phase_per_LDE_sequence_m1'	: 46.813,
 	'C7_init_phase_correction_m1': 0.0,
@@ -440,7 +440,7 @@ cfg['samples'][sample_name] = {
 	'C7_phase_per_LDE_sequence_p1'	: 0.0, #46.184,
 	'C7_init_phase_correction_p1': 0.0,
 
-	'C7_LDE_phase_matching_time_m1' : 100e-9,
+	'C7_LDE_phase_matching_time_m1' : 413e-9,
 
 	###############
 	# C8(A ~ -10)  #

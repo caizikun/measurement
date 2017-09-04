@@ -1,1 +1,1 @@
-{"LDE1_attempts": 100, "requested_measurement": "sweep_average_repump_time", "AWG_SP_power": 4e-06, "debug": false, "carbons": [2], "m_name": "111no2_SIL2_Sweep_Repump_time_pi2_C2_LDE100_pow4uW_X", "first_mw_pulse_type": "pi2", "LDE2_attempts": 100}
+{"carbon_encoding": "MBE", "requested_measurement": "LDE_sweep", "carbons": [5, 4], "maxReps": 850, "step": 120, "minReps": 340, "debug": false, "m_name": "111no2_SIL2_phase_fb_delayline_C54_MBE_-X_sec2", "Tomography_list": [["X", "X"], ["Y", "Y"], ["Z", "Z"], ["X", "Y"], ["Y", "X"]], "carbon_swap_el_states": ["-X"]}

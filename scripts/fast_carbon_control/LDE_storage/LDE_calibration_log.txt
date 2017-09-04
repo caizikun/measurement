@@ -825,3 +825,157 @@ Previous LDE phase: 46.799
 Detuning compensated acquired phase per repetition: -0.014 +/- 0.009
 Updated LDE phase: 46.813
 
+[2017-08-21 01:21:14.909000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 62.425
+Detuning compensated acquired phase per repetition: 1.165 +/- 0.183
+Updated LDE phase: 61.260
+
+[2017-08-21 01:34:55.689000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 61.260
+Detuning compensated acquired phase per repetition: 0.003 +/- 0.147
+Updated LDE phase: 61.257
+
+[2017-08-21 03:33:10.813000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 61.257
+Detuning compensated acquired phase per repetition: -1.198 +/- 0.015
+Updated LDE phase: 62.455
+
+[2017-08-21 03:46:32.060000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 62.455
+Detuning compensated acquired phase per repetition: 0.053 +/- 0.015
+Updated LDE phase: 62.402
+
+[2017-08-21 04:49:54.872000]
+Updating LDE phase measurement param for C3
+Detuning used: 12.0
+Previous LDE phase: 86.667
+Detuning compensated acquired phase per repetition: 0.028 +/- 0.024
+Updated LDE phase: 86.639
+
+[2017-08-21 05:04:47.774000]
+Updating LDE phase measurement param for C3
+Detuning used: 12.0
+Previous LDE phase: 86.639
+Detuning compensated acquired phase per repetition: 0.011 +/- 0.030
+Updated LDE phase: 86.628
+
+[2017-08-21 06:03:35.539000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 14.614
+Detuning compensated acquired phase per repetition: -0.012 +/- 0.012
+Updated LDE phase: 14.626
+
+[2017-08-21 06:15:11.746000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 14.626
+Detuning compensated acquired phase per repetition: -0.016 +/- 0.008
+Updated LDE phase: 14.642
+
+[2017-08-21 07:17:55.761000]
+Updating LDE phase measurement param for C5
+Detuning used: 12.0
+Previous LDE phase: 21.345
+Detuning compensated acquired phase per repetition: -0.014 +/- 0.009
+Updated LDE phase: 21.359
+
+[2017-08-21 07:34:37.368000]
+Updating LDE phase measurement param for C5
+Detuning used: 12.0
+Previous LDE phase: 21.359
+Detuning compensated acquired phase per repetition: 0.032 +/- 0.008
+Updated LDE phase: 21.327
+
+[2017-08-21 08:35:06.665000]
+Updating LDE phase measurement param for C6
+Detuning used: 12.0
+Previous LDE phase: 100.295
+Detuning compensated acquired phase per repetition: -0.247 +/- 0.033
+Updated LDE phase: 100.542
+
+[2017-08-21 08:47:05.672000]
+Updating LDE phase measurement param for C6
+Detuning used: 12.0
+Previous LDE phase: 100.542
+Detuning compensated acquired phase per repetition: 0.032 +/- 0.034
+Updated LDE phase: 100.510
+
+[2017-08-21 10:17:26.615000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 62.402
+Detuning compensated acquired phase per repetition: 1.467 +/- 0.009
+Updated LDE phase: 60.935
+
+[2017-08-21 10:30:27.792000]
+Updating LDE phase measurement param for C2
+Detuning used: 12.0
+Previous LDE phase: 60.935
+Detuning compensated acquired phase per repetition: 0.052 +/- 0.013
+Updated LDE phase: 60.883
+
+[2017-08-21 11:18:15.168000]
+Updating LDE phase measurement param for C3
+Detuning used: 12.0
+Previous LDE phase: 86.628
+Detuning compensated acquired phase per repetition: 1.973 +/- 0.025
+Updated LDE phase: 84.655
+
+[2017-08-21 11:32:23.135000]
+Updating LDE phase measurement param for C3
+Detuning used: 12.0
+Previous LDE phase: 84.655
+Detuning compensated acquired phase per repetition: 0.025 +/- 0.027
+Updated LDE phase: 84.630
+
+[2017-08-21 12:19:16.936000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 14.642
+Detuning compensated acquired phase per repetition: -1.110 +/- 0.012
+Updated LDE phase: 15.752
+
+[2017-08-21 12:31:06.828000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 15.752
+Detuning compensated acquired phase per repetition: -0.039 +/- 0.010
+Updated LDE phase: 15.791
+
+[2017-08-24 18:05:38.027000]
+Updating LDE phase measurement param for C5
+Detuning used: 12.0
+Previous LDE phase: 21.327
+Detuning compensated acquired phase per repetition: -0.007 +/- 0.010
+Updated LDE phase: 21.334
+
+[2017-08-24 18:25:40.655000]
+Updating LDE phase measurement param for C5
+Detuning used: 12.0
+Previous LDE phase: 21.334
+Detuning compensated acquired phase per repetition: 0.005 +/- 0.010
+Updated LDE phase: 21.329
+
+[2017-08-24 18:41:42.705000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 15.791
+Detuning compensated acquired phase per repetition: 1.163 +/- 0.013
+Updated LDE phase: 14.628
+
+[2017-08-24 18:59:32.394000]
+Updating LDE phase measurement param for C4
+Detuning used: 12.0
+Previous LDE phase: 14.628
+Detuning compensated acquired phase per repetition: 0.012 +/- 0.011
+Updated LDE phase: 14.616
+

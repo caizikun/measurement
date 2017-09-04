@@ -214,6 +214,12 @@ def prepare_carbon_params(m):
     else:
         m.params['Carbon_LDE_init_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
+    if m.params['use_avg_repump_time_from_msmt_params'] > 0:
+        carbon = m.params['carbons'][0]
+        etrans = m.params['electron_transition']
+        m.params['average_repump_time'] = m.params['C%d_LDE_phase_matching_time%s' % (carbon, etrans)]
+        print("Average repump time set to %.f ns" % (m.params['average_repump_time'] * 1e9))
+
 def run_sweep(m,debug=True, upload_only=True,save_name='adwindata',multiple_msmts=False,autoconfig = True,mw=True,simplify_wfnames=False,
               do_upload=True):
 
@@ -486,7 +492,7 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     ### general params
     pts = 26
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 4000
+    m.params['reps_per_ROsequence'] = 2000
 
     turn_all_sequence_elements_off(m)
 
@@ -585,7 +591,7 @@ def update_average_repump_time(**kw):
         do_fit=True,
         ret=True,
         show_plot=False,
-        fit_x0 = None
+        fit_x0 = None,
         **kw
     )
 
@@ -609,6 +615,9 @@ def update_average_repump_time(**kw):
             file.write("Measured average repump time: %.3f +/- %.3f ns\n" % (gauss_x0 * 1e9, gauss_x0_u * 1e9))
     except:
         print("Writing to log file failed")
+
+    if gauss_x0 < 0.0e-6 or gauss_x0 > 1.0e-6:
+        print("Optimal repump time outside of safe range (0-1 us). Take a look at the data yourself")
 
     if gauss_x0_u > 0.5e-6:
         print("Too much uncertainty in calibrated value, skipping")
@@ -636,7 +645,7 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     ### general params
     pts = 20
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 1000
 
     turn_all_sequence_elements_off(m)
 
@@ -2238,12 +2247,12 @@ if __name__ == '__main__':
     # todo_cs = [5,3,6,7]
     #
     #
-    # calibration_carbon = 1
-    
+    # calibration_carbon = 2
+    #
     # calibrate_LDE_phase(
     #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
     #     upload_only = False,
-    #     update_msmt_params=True,
+    #     update_msmt_params=False,
     #     carbon_override=calibration_carbon,
     #     max_correction=3.0,
     #     crude=False
@@ -2314,7 +2323,13 @@ if __name__ == '__main__':
 
     # sweep_decoupling_time(name+'_Sweep_Decoupling_time_Z',do_Z = True,debug = False, upload_only=False)
 
-    if True:
+    try:
+        do_overnight_msmt
+    except:
+        do_overnight_msmt = False
+
+    if do_overnight_msmt:
+        do_overnight_msmt = False
         breakst = show_stopper()
         if breakst:
             raise Exception("Someone wants to get out of here")
@@ -2357,7 +2372,7 @@ if __name__ == '__main__':
                 print f
                 datafolders.append(f)
             if not debug:
-                update_LDE_phase_param(datafolders, max_correction=5.0)
+                update_LDE_phase_param(datafolders, max_correction=None)
         elif m_data['requested_measurement'] == 'LDE_phase':
             calibrate_LDE_phase(
                 m_data['m_name'],
@@ -2394,6 +2409,8 @@ if __name__ == '__main__':
                 override_params=m_data,
                 do_upload =not debug
             )#, carbon_override=2)
+            if m_data.get('do_update_msmt_params', False) and not debug:
+                update_average_repump_time()
         elif m_data['requested_measurement'] == 'decay_curve':
             c_str = "".join([str(c) for c in m_data['carbons']])
             sweep_number_of_reps(
