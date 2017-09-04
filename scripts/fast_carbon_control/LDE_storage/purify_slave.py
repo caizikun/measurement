@@ -902,7 +902,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
 
                     self.dynamic_phase_correct_list_per_carbon[i].append(delay_feedback_gate)
 
-            else:
+            elif self.params['do_phase_correction'] > 0:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
                 final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
@@ -1108,6 +1108,10 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     gate_seq.append(el_init_repump_gate)
 
                     el_state = self.params['carbon_swap_el_states'][i]
+                    print("WARNING WARNING WARNING")
+                    print("It seems that the sign of the X and Y states are switched!")
+                    print("Beware!")
+                    print("By the way, I'm in LDE_storage/purify_slave.py")
                     if el_state == 'Z':
                         Gate_operation = 'no_pulse'
                         phase = 0.0

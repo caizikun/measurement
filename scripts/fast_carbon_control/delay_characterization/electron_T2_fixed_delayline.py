@@ -49,7 +49,7 @@ def electronT2_NoTriggers(name, debug = False, range_start = 0e-6, range_end=100
 
     pts = 51
     m.params['pts'] = pts
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 500
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
     # range from 0 to 1000 us
@@ -175,16 +175,16 @@ if __name__ == '__main__':
     #     print('Starting delay line refocussing run with no trigger offsets from {} ns to {} ns'.format(bins[i] * 1e9, bins[i+1] * 1e9))
     #     electronRefocussingTriggered("NoTrigger_" + name, debug=False, range_start = bins[i], range_end = bins[i+1], evolution_1_self_trigger = False)
 
-    hahn_echo_range = [3.5e-6, 53.5e-6]
-    defocussing_range = [-0.5e-6, 0.5e-6]
+    hahn_echo_range = [1.0e-6, 10.0e-6]
+    # defocussing_range = [-0.5e-6, 0.5e-6]
 
-    # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
+    electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
     # reoptimize()
-    electronRefocussingTriggered("HahnEchoNoTrigger_" + name, debug=True, 
-        range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
-        evolution_1_self_trigger = False, evolution_2_self_trigger=False,
-        vary_refocussing_time = True)
+    # electronRefocussingTriggered("HahnEchoNoTrigger_" + name, debug=True, 
+    #     range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
+    #     evolution_1_self_trigger = False, evolution_2_self_trigger=False,
+    #     vary_refocussing_time = True)
     
     # reoptimize()    
     # electronRefocussingTriggered("DefocussingNoTrigger_" + name, debug=False, 
