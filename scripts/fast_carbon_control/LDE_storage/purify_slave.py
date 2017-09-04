@@ -104,8 +104,6 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         self.params['Carbon_init_RO_wait'] = (self.params['C13_MBI_RO_duration'])*1e-6+50e-6
 
         # add values from AWG calibrations
-        print('HELLO')
-        print('THERE WAS A BUG IN AUTOCONFIG THAT WOULD TURN THE NEWFOCUS ON ALWAYS NO MATTER WHAT AWG_SP_POWER WAS!')
         self.params['SP_voltage_AWG'] = \
                 self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
@@ -904,25 +902,6 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
 
                     self.dynamic_phase_correct_list_per_carbon[i].append(delay_feedback_gate)
 
-                    # if self.params['delay_feedback_N'] % 2 == 1:
-                    #     last_el_pulse = self.params['delay_feedback_pulse_seq'][self.params['delay_feedback_N'] - 1]
-                    #     if last_el_pulse == 'X':
-                    #         backflip_phase = self.params['X_phase'] + 180.0
-                    #     elif last_el_pulse == 'mX':
-                    #         backflip_phase = self.params['X_phase']
-                    #     elif last_el_pulse == 'Y':
-                    #         backflip_phase = self.params['Y_phase'] + 180.0
-                    #     elif last_el_pulse == 'mY':
-                    #         backflip_phase = self.params['Y_phase']
-                    #     # the electron is flipped after feedback, flip it back
-                    #     electron_pi_gate = DD.Gate(
-                    #         'C%d_delayfb%d_elflip_pt%d' % (c_id, i, pt),
-                    #         'electron_Gate',
-                    #         Gate_operation='pi',
-                    #         phase=backflip_phase
-                    #     )
-                    #
-                    #     self.dynamic_phase_correct_list_per_carbon[i].append(electron_pi_gate)
             elif self.params['do_phase_correction'] > 0:
                 if (self.params['number_of_carbons'] > 1):
                     print "WARNING: the old feedback method doesn't work for more than one carbon"
@@ -1079,9 +1058,35 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
             for i in range(number_of_LDE1_or_init_sections):
                 if self.params['do_LDE_1'] > 0:
                     ### needs corresponding adwin parameter
-                    if gate_seq == []:
-                        LDE1_gate_list[i].wait_for_trigger = True
-                    gate_seq.append(LDE1_gate_list[i])
+
+                    #### norbert's dirty hack for symmetric carbon hahn echoes
+                    ### ONLY WORKS WITH A SINGLE CARBON!
+                    if self.params['do_carbon_hahn_echo'] > 0 and i ==0: ### only applies to the first run of this forloop
+
+                        
+                        LDE1_first_part = cp.deepcopy(LDE1_gate_list[i])
+                        reps = int((LDE1_gate_list[i]+1)/2.)
+                        LDE1_first_part.reps = reps
+                        if gate_seq == []:
+                            LDE1_first_part.wait_for_trigger = True
+                        gate_seq.append(LDE1_first_part)
+                        carbon_nr = self.params['carbons'][0] ### only works with a single carbon
+                        ### now add carbon pi pulse
+                        Cpi2_1 = DD_2.Gate(str(carbon_nr) + '_C13_pi_a_' + str(pt), 'Carbon_Gate',
+                        Carbon_ind = carbon_nr, phase = 'reset')
+                        Cpi2_2 = DD_2.Gate(str(carbon_nr) + '_C13_pi_b_' + str(pt), 'Carbon_Gate',Carbon_ind = carbon_nr) ### has to be additive in terms of phase
+                        gate_seq.append(LDE1_repump_list[0])
+                        gate_seq.append(CPi2_1)
+                        gate_seq.append(CPi2_2)
+
+                        ## now add the rest of the LDE1.
+                        LDE1_second_part = cp.deepcopy(LDE1_first_part)
+                        LDE1_second_part.reps = reps -1
+
+                    else:
+                        if gate_seq == []:
+                            LDE1_gate_list[i].wait_for_trigger = True
+                        gate_seq.append(LDE1_gate_list[i])
 
                     # print 'LDE1 reps',LDE1.reps
                     ### append last adwin synchro element
@@ -1103,6 +1108,10 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     gate_seq.append(el_init_repump_gate)
 
                     el_state = self.params['carbon_swap_el_states'][i]
+                    print("WARNING WARNING WARNING")
+                    print("It seems that the sign of the X and Y states are switched!")
+                    print("Beware!")
+                    print("By the way, I'm in LDE_storage/purify_slave.py")
                     if el_state == 'Z':
                         Gate_operation = 'no_pulse'
                         phase = 0.0
