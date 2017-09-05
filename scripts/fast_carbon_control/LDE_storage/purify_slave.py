@@ -1064,24 +1064,36 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     if self.params['do_carbon_hahn_echo'] > 0 and i ==0: ### only applies to the first run of this forloop
 
                         
-                        LDE1_first_part = cp.deepcopy(LDE1_gate_list[i])
-                        reps = int((LDE1_gate_list[i]+1)/2.)
+                        LDE1_first_part = copy.deepcopy(LDE1_gate_list[i])
+                        reps = int((LDE1_gate_list[i].reps+1)/2.)
                         LDE1_first_part.reps = reps
                         if gate_seq == []:
                             LDE1_first_part.wait_for_trigger = True
+                        # wait_time = reps*self.joint_params['LDE_element_length']
+                        # LDE1_first_part = DD_2.Gate('wait_name1'+str(pt),'passive_elt',wait_time = wait_time)
+                        # LDE1_first_part.no_mw_pulse = True
                         gate_seq.append(LDE1_first_part)
+
                         carbon_nr = self.params['carbons'][0] ### only works with a single carbon
                         ### now add carbon pi pulse
                         Cpi2_1 = DD_2.Gate(str(carbon_nr) + '_C13_pi_a_' + str(pt), 'Carbon_Gate',
                         Carbon_ind = carbon_nr, phase = 'reset')
                         Cpi2_2 = DD_2.Gate(str(carbon_nr) + '_C13_pi_b_' + str(pt), 'Carbon_Gate',Carbon_ind = carbon_nr) ### has to be additive in terms of phase
-                        gate_seq.append(LDE1_repump_list[0])
-                        gate_seq.append(CPi2_1)
-                        gate_seq.append(CPi2_2)
+                        repump = copy.deepcopy(LDE1_repump_list[0])
+                        repump.name = repump.name + '1' 
+                        repump.prefix = repump.prefix + '1' 
+                        gate_seq.append(repump)
+                        gate_seq.append(Cpi2_1)
+                        gate_seq.append(Cpi2_2)
 
                         ## now add the rest of the LDE1.
-                        LDE1_second_part = cp.deepcopy(LDE1_first_part)
+                        LDE1_second_part = copy.deepcopy(LDE1_first_part)
+                        LDE1_second_part.name = LDE1_second_part.name+ '1'
+                        LDE1_second_part.prefix = LDE1_second_part.prefix+ '1'
                         LDE1_second_part.reps = reps -1
+                        # LDE1_second_part.no_mw_pulse = True
+                        # LDE1_second_part = DD_2.Gate('wait_name2'+str(pt),'passive_elt',wait_time = wait_time)
+                        gate_seq.append(LDE1_second_part)
 
                     else:
                         if gate_seq == []:

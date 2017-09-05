@@ -56,5 +56,5 @@ joint_params['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for high
 joint_params['LDE1_attempts'] = 1000 
 joint_params['LDE2_attempts'] = 500
 
-joint_params['LDE_element_length'] = 7e-6#100e-6 #3*params_lt4.params_lt4['LDE_decouple_time'] #6.75e-6 #DO NOT CHANGE THIS # JS: did so anyway (2017-07-18)
+joint_params['LDE_element_length'] = 7e-6#+2*5*2.256e-6 #100e-6 #3*params_lt4.params_lt4['LDE_decouple_time'] #6.75e-6 #DO NOT CHANGE THIS # JS: did so anyway (2017-07-18)
 

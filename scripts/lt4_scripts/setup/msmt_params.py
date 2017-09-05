@@ -50,15 +50,13 @@ elif electron_transition == '-1':
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	# 0.526 #0.630 #0.889 # 0.893 # for a single pi pulse
-	hermite_pi_amp = 0.870
+	hermite_pi_amp = 0.863
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	# 0.421 #0.543 # 0.638 #0.609 #0.632 #0.617 #0.634#0.605
-	hermite_pi2_amp = 0.634
+	hermite_pi2_amp = 0.628
 
 
 ### General settings for AdwinSSRO
@@ -281,7 +279,7 @@ cfg['samples'][sample_name] = {
 
 	'C2_Ren_tau_m1'    :   [4.892e-06], #3.87
 	'C2_Ren_N_m1'      :   [46], #36
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [209.51] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
+	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.48] + [208.57] + [1.88] + [-2.37] + [6.73] + [-0.38] + [-11.9] + [223.37] + [0.0]),
 
 	'C2_phase_per_LDE_sequence_m1'	: 60.883,
 	'C2_init_phase_correction_m1': 0.0,
@@ -391,13 +389,13 @@ cfg['samples'][sample_name] = {
 	'C6_T2star_0'		: 9.89e-3,
 	'C6_T2star_1_m1'	: 9.20e-3,
 
-	'C6_freq_m1'        : (443857.90 + 520879.39)/2,
-	'C6_freq_0' 		: 443851.64,
-	'C6_freq_1_m1' 		: 520836.83,
+	'C6_freq_m1'        : (443866.55 + 520877.99)/2,
+	'C6_freq_0' 		: 443866.55,
+	'C6_freq_1_m1' 		: 520877.99,
 
 	'C6_Ren_tau_m1'    :   [3.632e-6],
 	'C6_Ren_N_m1'      :   [52],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [98.73] + [-18.99] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [98.83] + [-18.99] + [0.0] + [0.0] + [0.0]),
 
 	'C6_phase_per_LDE_sequence_m1'	: 100.51,
 	'C6_init_phase_correction_m1': 0.0,
@@ -425,7 +423,7 @@ cfg['samples'][sample_name] = {
 
 	'C7_Ren_tau_m1'    :   [11.678e-6],
 	'C7_Ren_N_m1'      :   [60],
-	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [230.27] + [0.0] + [0.0]),
+	'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-0.47] + [-6.33] + [9.12] + [15.65] + [10.23] + [1.08] + [226.6] + [0.0] + [0.0]),
 
 	'C7_phase_per_LDE_sequence_m1'	: 46.813,
 	'C7_init_phase_correction_m1': 0.0,

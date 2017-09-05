@@ -308,6 +308,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_fb_delayline']   = 0
     m.params['do_delay_fb_pulses']      = 0
     m.params['skip_LDE_mw_pi']          = 0
+    m.params['do_carbon_hahn_echo']     = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -490,9 +491,9 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 26
+    pts = 5
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 2000
+    m.params['reps_per_ROsequence'] = 200
 
     turn_all_sequence_elements_off(m)
 
@@ -501,22 +502,33 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    # m.params['do_general_sweep']    = 1
+    # m.params['do_carbon_init']  = 1 
+    # m.params['do_carbon_readout']  = 1
+    # m.params['do_LDE_2'] = 1
     m.params['do_general_sweep']    = 1
-    m.params['do_carbon_init']  = 1 
+    m.params['do_carbon_init']  = 1
+    m.params['do_LDE_1'] = 1
     m.params['do_carbon_readout']  = 1
-    m.params['do_LDE_2'] = 1
-
+    # m.params['mw_first_pulse_amp'] = 0
+    m.params['MW_during_LDE'] = 1
+    # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
+    #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
+    #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    m.joint_params['opt_pi_pulses'] = 0
+    m.params['do_carbon_hahn_echo']     = 1
     if 'LDE2_attempts' not in override_params:
         m.params['LDE2_attempts'] = 100
 
-    m.joint_params['LDE2_attempts'] = m.params['LDE2_attempts']
+    m.params['LDE1_attempts'] = m.joint_params['LDE1_attempts'] = m.joint_params['LDE2_attempts'] = m.params['LDE2_attempts']
+
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-0.3e-6,1.5e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.0e-6,1e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
     m.params['do_phase_correction'] = 0
@@ -643,9 +655,9 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 20
+    pts = 10
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 200
 
     turn_all_sequence_elements_off(m)
 
@@ -660,10 +672,10 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
     #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
     m.joint_params['opt_pi_pulses'] = 0
-
+    m.params['do_carbon_hahn_echo']     = 1
     ### calculate the sweep array
-    minReps = 2
-    maxReps = 600
+    minReps = 10
+    maxReps = 1000
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE1_attempts'
@@ -2227,15 +2239,15 @@ if __name__ == '__main__':
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
     # sweep_average_repump_time(
-    #     name+'_Sweep_Repump_time_X_C2',do_Z = False,debug=False,
+    #     name+'_Sweep_Repump_time_Z_C6',do_Z = True,debug=False,
     #     override_params={
-    #         'carbons': [2],
-    #         'LDE2_attempts': 100
+    #         'carbons': [6],
+    #         'LDE2_attempts': 300
     #     }
     # )
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False,carbon_override=7)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True,carbon_override = 6)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = False)
     # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
