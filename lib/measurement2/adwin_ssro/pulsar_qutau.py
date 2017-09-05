@@ -43,6 +43,9 @@ class QuTauPulsarMeasurement(PulsarMeasurement,  qutau.QuTauMeasurement ):
 
     def run(self, **kw):
         #pq.PQ_Threaded_Measurement.run(self, **kw)
+        if kw.get('debug', False):
+            return
+            
         qutau.QuTauMeasurement.run(self,**kw)
     def print_measurement_progress(self):
         reps_completed = self.adwin_var('completed_reps')    

@@ -29,7 +29,7 @@ qt.pulsar.define_channel(id='ch4', name='EOM_Matisse', type='analog', high=2.0,
 # qt.pulsar.define_channel(id='ch1_marker1', name='sync', type='marker', # TH sync
 #     high=2.0, low=0, offset=0., delay=0., active=True)   
 
-qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Yellow', type='marker', 
+qt.pulsar.define_channel(id='ch1_marker1', name='AOM_Green', type='marker', 
     high=0.6, low=0, offset=0., delay=0., active=True)   
 qt.pulsar.define_channel(id='ch1_marker2', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=269e-9-16e-9, active=True) #269 or SGS100. was a delay of 302 for SMB100
@@ -49,9 +49,10 @@ qt.pulsar.define_channel(id='ch4_marker1', name='HHsync', type='marker',  #Purif
    high=2.0, low=0, offset=0., delay=0., active=True)
 # qt.pulsar.define_channel(id='ch4_marker2', name='plu_sync', type='marker',  #Purification: Plu synced by other setup
 #    high=2.0, low=0, offset=0., delay=102e-9-21e-9-1e-9, active=True)
-qt.pulsar.define_channel(id='ch4_marker2', name='tico_sync', type='marker',
+# qt.pulsar.define_channel(id='ch4_marker2', name='tico_sync', type='marker',
+#     high=2.0, low=0, offset=0., delay=0., active=True)
+qt.pulsar.define_channel(id='ch4_marker2', name='sync', type='marker',
     high=2.0, low=0, offset=0., delay=0., active=True)
-
 
 # define optical voltages
 qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM'].get_sec_V_off())
@@ -59,8 +60,8 @@ qt.pulsar.set_channel_opt('EOM_AOM_Matisse','offset', qt.instruments['PulseAOM']
 qt.pulsar.set_channel_opt('AOM_Newfocus','high', qt.instruments['NewfocusAOM'].get_sec_V_max())
 qt.pulsar.set_channel_opt('AOM_Newfocus','low',  qt.instruments['NewfocusAOM'].get_sec_V_off())
 # qt.pulsar.set_channel_opt('AOM_Newfocus','low',  0.1)
-qt.pulsar.set_channel_opt('AOM_Yellow','high', qt.instruments['YellowAOM'].get_sec_V_max())
-qt.pulsar.set_channel_opt('AOM_Yellow','low',  qt.instruments['YellowAOM'].get_sec_V_off())
+qt.pulsar.set_channel_opt('AOM_Green','high', qt.instruments['GreenAOM'].get_sec_V_max())
+qt.pulsar.set_channel_opt('AOM_Green','low',  qt.instruments['GreenAOM'].get_sec_V_off())
 
 qt.pulsar.AWG_sequence_cfg={
         'SAMPLING_RATE'             :   qt.pulsar.clock,
