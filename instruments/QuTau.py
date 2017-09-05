@@ -92,7 +92,7 @@ class QuTau(Instrument):
                            flags = Instrument.FLAG_GETSET)
 
         #Open a connection    
-        self.initialize()
+        a = self.initialize()
         self.set_is_writing(False)
         self.switch_termination(False)
         
@@ -102,10 +102,10 @@ class QuTau(Instrument):
         self.set_buffer_size(1E6)
         self.set_active_channels(range(8))
         
-        print "Initialized with QuTau DLL v%f"%(self.get_version())
-        # # override from config       
+        # print "Initialized with QuTau DLL v%f"%(self.get_version())
+        # # # override from config       
         # cfg_fn = os.path.join(qt.config['ins_cfg_path'], name+'.cfg')
-
+        # print cfg_fn
         # if not os.path.exists(cfg_fn):
         #     _f = open(cfg_fn, 'w')
         #     _f.write('')
@@ -773,11 +773,11 @@ Number of events on channel (%d, %d) = (%d, %d).'\
         channels = np.zeros(int(self._buffer_size),dtype=np.int8)
         #channels = ctypes.ARRAY(ctypes.c_int8, int(self._buffer_size))() 
         valid = ctypes.c_int32()
-
+        qt.msleep(0.5)
         ans = self.qutools_dll.TDC_getLastTimestamps(reset, 
                 timestamps.ctypes.data, channels.ctypes.data,
                 ctypes.byref(valid))
-
+        qt.msleep(0.5)
         if ans != 0:
             return self.err_dict[ans]
         else:

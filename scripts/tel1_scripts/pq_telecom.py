@@ -3,7 +3,7 @@ PQ measurement performed for the QTelecom project
 """
 
 
-# import qt
+import qt
 # import numpy as np
 import time
 # import logging

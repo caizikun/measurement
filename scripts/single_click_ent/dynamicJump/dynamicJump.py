@@ -11,6 +11,8 @@ from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
 execfile(qt.reload_current_setup)
 from analysis.lib.sim.pulse_sim import pulse_sim
 reload(pulse_sim)
+from measurement.scripts.tel1_scripts import pq_telecom as pqt
+reload(pqt)
 
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -103,7 +105,7 @@ def random_XY_pulsar(name, debug = False, upload = True, run_msmt = True, init_t
         m.save()
         m.finish()
 
-def jitter_timings(name, debug = False, upload = True, old_school = False, run_msmt = True):
+def jitter_timings(name, debug = False, upload = True, run_msmt = True):
 
     m = SquarePulseJitter(name)
 
@@ -120,23 +122,27 @@ def jitter_timings(name, debug = False, upload = True, old_school = False, run_m
     m.params['pulse_type'] = 'Square'
     m.params['pulse_shape'] = 'Square'
 
-    m.params['pts'] = 1
-    m.params['repetitions'] = 1000
+    m.params['pts'] = 14
+    m.params['repetitions'] = 1e4
 
-    # lt2 params
-    m.params['cycle_duration'] = 300
-    m.params['AWG_start_DO_channel'] = 1
-    m.params['AWG_jump_strobe_DO_channel'] = 12
-    m.params['jump_bit_shift'] = 7
+    # lt3 params
+    m.params['AWG_start_DO_channel'] = 9
+    m.params['AWG_jump_strobe_DO_channel'] = 0
+    m.params['jump_bit_shift'] = 4
+    m.params['sweep_length'] = m.params['pts']
+    m.params['reps'] = m.params['repetitions'] * m.params['pts']
 
     m.params['minimal_delay_time'] = 0
     m.params['minimal_delay_cycles'] = 0
     m.params['delay_clock_cycle_time'] = 20e-9
 
-    m.params['delay_time'] = 2e-6;
+    # m.params['delay_time'] = 2e-6;
+
+    pulseA = pulse.SquarePulse(channel='HHsync', amplitude = 5, length = 40e-9);
+    pulseB = pulse.SquarePulse(channel='tico_sync', amplitude = 5, length = 40e-9);
 
     # Start measurement
-    m.generate_sequence(upload = upload, Square_X = ps.X_pulse(m), Square_Y = ps.Y_pulse(m))
+    m.generate_sequence(upload = upload, Square_A = pulseA, Square_B = pulseB)
 
         # Print the tables that go to the adwin
         # print m.params['jump_table']
@@ -145,34 +151,47 @@ def jitter_timings(name, debug = False, upload = True, old_school = False, run_m
         # print [round(var, 12) for var in delays]
     
     if run_msmt:
-         
-        if not(old_school):
-            delay_cycle = np.rint(m.params['delay_time'] / m.params['delay_clock_cycle_time']).astype(np.int32)
+        #delay_cycle = np.rint(m.params['delay_time'] / m.params['delay_clock_cycle_time']).astype(np.int32)
+        min_delay = 47
+        delay_cycles = np.zeros(m.params['pts'] * 2)
+        delay_cycles[0::2] = 100
+        delay_cycles[1::2] = np.array(range(min_delay, min_delay + m.params['pts']))
 
-            seq_indices = np.array([1, 3])
-            random_jumps = np.random.randint(low = 1, high = 3, size = 1e3)
+        delay_cycles = delay_cycles.astype(np.int32)
+        print delay_cycles
 
-            jump_table = np.array([1, 2])
-            delay_cycles = np.repeat(delay_cycle, seq_indices[-1])
-            next_seq_table = np.repeat(0, 2) # Unused atm
+        seq_indices = np.arange(m.params['pts']+1)*2+1
+        random_jumps = np.random.randint(low = 1, high = 2, size = 1e3) # Unused atm
 
-            m.adwin.start_dynamic_jump(do_init_only = 1) # Necessary for init
-            qt.msleep(0.05)
-       
-            m.adwin.set_dynamic_jump_var(
-                jump_table      = (2**m.params['jump_bit_shift']) * jump_table,
-                delay_cycles    = delay_cycles, 
-                next_seq_table  = next_seq_table,
-                seq_indices     = seq_indices,
-                random_ints     = (2**m.params['jump_bit_shift']) * random_jumps,
+        jump_table = np.array([1, 2] * m.params['pts'])
+        next_seq_table = np.repeat(0, 1) # Unused atm
+
+        m.adwin.start_dynamic_jump(do_init_only = 1) # Necessary for init
+        qt.msleep(0.05)
+   
+        m.adwin.set_dynamic_jump_var(
+            jump_table      = (2**m.params['jump_bit_shift']) * jump_table,
+            delay_cycles    = delay_cycles, 
+            next_seq_table  = next_seq_table,
+            seq_indices     = seq_indices,
+            random_ints     = (2**m.params['jump_bit_shift']) * random_jumps,
+        )
+
+        print 'Waiting until AWG done'
+        qt.msleep(7)
+
+        m.awg.start()
+        qt.msleep(2)
+        print 'Starting msmt'
+        m.adwin.start_dynamic_jump(
+            AWG_start_DO_channel = m.params['AWG_start_DO_channel'],
+            AWG_jump_strobe_DO_channel = m.params['AWG_jump_strobe_DO_channel'],
+            do_init_only = 0, 
+            jump_bit_shift = m.params['jump_bit_shift'],
+            sweep_length = m.params['sweep_length'],
+            reps = m.params['reps'],
             )
-
-            print 'Waiting until AWG done'
-            qt.msleep(7)
-            print 'Starting msmt'
-            m.awg.start()
-            qt.msleep(1)
-            m.adwin.start_dynamic_jump(do_init_only = 0)
+        pqt.run_HH('getTHdata')
 
 def hahn_echo_with_djump(name, debug=False, upload = False,old_school=False, range_start = -2e-6, range_end = 2e6, run_msmt = True):
 
@@ -702,7 +721,7 @@ if __name__ == '__main__':
     # range_end = 10e-6,
     # run_msmt = True)
 
-    jitter_timings("SquarePulse_Jitter_Timings", debug = True, upload = True, old_school = False, run_msmt = True)
+    jitter_timings("SquarePulse_Jitter_Timings", debug = True, upload = True, run_msmt = True)
     
     # amp_rng = 0.15
     # amp_pts = 16

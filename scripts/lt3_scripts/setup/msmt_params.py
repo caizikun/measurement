@@ -119,6 +119,19 @@ cfg['protocols']['cr_mod']={
 
 yellow = False
 
+cfg['protocols']['GreenRO+PQ'] = {
+    'sync_counter_idx':4,   # counter channel on ADwin that recieves pulse from AWG everytime a sync is sent to PQ, to compare sync nr's
+    'Green_RO_power'    : 55e-6,
+    'GreenAOM_pulse_length' : 2e-6,
+    'measurement_time':                         1200,#sec
+    'measurement_abort_check_interval':         1,#sec
+    'pq_sync_length':                           75e-9,
+    'time_between_syncs':                       50e-9,
+    'syncs_per_sweep':                          2,
+    'summed_binsize':                           250,
+    'RO_start':                                 500,#ns
+    'RO_stop':                                  1000, 
+        }
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']

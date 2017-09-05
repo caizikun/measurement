@@ -7,8 +7,8 @@ name='ESR_Pippin_SIL3_RT_HighField'
 central_freqs = [1.720]#,4.062]#[4.14]#[1.8,1.9,2.,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8]
 
 for cent in central_freqs:
-    start_f = cent - 0.04#1.85#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
-    stop_f  = cent + 0.04#1.95#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
+    start_f = cent - 0.02#1.85#2.878 - 0.08 #   2.853 #2.85 #  #in GHz
+    stop_f  = cent + 0.02#1.95#2.878 + 0.08 #   2.864 #2.905 #   #in GHz
     steps   = 101
     mw_power = -19 #in dBm, never above -10
     green_power = 2e-6 #20e-6
