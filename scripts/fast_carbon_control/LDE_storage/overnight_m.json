@@ -1,1 +1,1 @@
-{"debug": false, "carbons": [7], "requested_measurement": "decay_curve"}
+{"LDE1_attempts": 100, "requested_measurement": "sweep_average_repump_time", "AWG_SP_power": 4e-06, "debug": false, "carbons": [2], "m_name": "111no2_SIL2_Sweep_Repump_time_pi2_C2_LDE100_pow4uW_X", "first_mw_pulse_type": "pi2", "LDE2_attempts": 100}

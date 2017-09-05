@@ -112,7 +112,7 @@ params_lt4['LDE_final_mw_amplitude']  = qt.exp_params['protocols'][name]['pulses
 ### Everything carbon
 params_lt4['carbons']                       = [2]
 params_lt4['reverse_carbon_inits']          = True
-params_lt4['carbon_swap_el_states']         = ['Z','Z']
+params_lt4['carbon_swap_el_states']         = ['X','X']
 params_lt4['carbon_init_method']            = 'swap'
 params_lt4['carbon_readout_orientation']    = 'positive'
 # carbon_encoding: serial_swap or MBE
