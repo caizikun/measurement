@@ -116,19 +116,21 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
     Class used to generate a gate set tomography sequence. 
     generate_sequence needs to be supplied with a xpi2_pulse and a ypi2_pulse as kw.
     """
-    mprefix = 'GateSetNoTriggers'
+    mprefix = 'GateSetTomography'
 
     def autoconfig(self):
         pulsar_msmt.PulsarMeasurement.autoconfig(self)
 
-    def generate_decoupling_list(self):
+    def generate_decoupling_list(self, pos):
         """
         This function is used to generate the decoupling sequence that we want to use
         """
-        N = self.params['N_decoupling']
+
+        N = self.params['N_decoupling'][pos]
 
         decoupling_list = []
 
+        #Determine how many multiples of 8 pulses we have since we want to use xy8 here
         fractions = int(N/8)
 
         if fractions>=1:
@@ -136,27 +138,47 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                 decoupling_list.extend(['x', 'y', 'x', 'y', 'y', 'x', 'y', 'x'])
                 N -=8
 
-        if N ==1 :
+        if N == 1:
             decoupling_list.extend(['x'])
 
         for i in range(3):
+
             if N == 0:
                 break
-            elif N % 6 == 0:
+            elif int(N/6) == 1:
                 decoupling_list.extend(['x', 'y', 'x', 'y', 'x', 'mx'])
                 N -=6
 
-            elif N % 4 == 0:
+            elif int(N/4) == 1:
                 decoupling_list.extend(['x', 'y', 'x', 'y'])
                 N -=4
 
-            elif N % 2 == 0:
+            elif int(N/2) == 1:
                 decoupling_list.extend(['x', 'mx'])
                 N -=2
 
+            elif N == 1:
+
+                # print decoupling_list[-1]
+
+                if decoupling_list[-1] == 'x':
+                    decoupling_list.extend(['mx'])
+                    break
+
+                elif decoupling_list[-1] == 'mx':
+                    decoupling_list.extend(['x'])
+                    break
+
+                elif decoupling_list[-1] == 'y':
+                    decoupling_list.extend(['my'])
+                    break
+
+                else: 
+                    sys.exit("There was a problem generating your decoupling list, last pulse not x, mx, y.")
+
+
             else:
-                print "Only use of even multiples for the decoupling length."
-                break
+                sys.exit("There was a problem generating your decoupling list.")
 
                 ### HOW TO BREAK THE WHOLE THINGY???
 
@@ -175,6 +197,9 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
 
         if pulse_type == 'y':
             dec_pls = self.pulse_ypi2
+
+        if pulse_type == 'my':
+            dec_pls = self.pulse_mypi2
 
         self.e1.add(pulse.cp(dec_pls),
                             refpulse        = 'pulse%d' % (self.n-1),
@@ -202,7 +227,7 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
 
         ## NEED TO CODE IN THE DIFFERENCE BETWEEN FIRST FIDUCIAL AND GERM AND LAST FIDUCIAL. REALLY?
         #In case we have the null fiducial, just return a wait pulse
-        if seq == '':
+        if seq == 'e':
             self.start_time = 2*self.params['tau_larmor']
 
         else:
@@ -244,12 +269,14 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                     self.n +=1
                     self.start_time = self.params['wait_time']
 
-                elif seq[i] == '': 
+                elif seq[i] == 'e': 
                     self.start_time += self.params['wait_time']
                     self.start_time += self.params['Hermite_pi2_length']
 
+
                 else:
-                    print "A horrible mistake happened. Check you subsequence building routine."
+                    print "Seq exception", seq[i]
+                    sys.exit("A horrible mistake happened. Check you subsequence building routine.")
 
             #At the end we need to add the time around the sequence
             if self.f !=2:
@@ -274,6 +301,7 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
         self.pulse_xpi2  =   kw.get('x_pulse_pi2', None)
         self.pulse_ypi2  =   kw.get('y_pulse_pi2', None)
         self.pulse_mxpi2 =   kw.get('x_pulse_mpi2', None)
+        self.pulse_mypi2 =   kw.get('y_pulse_mpi2', None)
 
         # waiting element        
         self.T = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -291,8 +319,8 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
 
         
         for k in range(self.params['pts']):
-
-            self.e1 = element.Element('Single_germ_sequence_%d' % k, pulsar=qt.pulsar,
+            # print self.params['run_numbers'][k]
+            self.e1 = element.Element('Single_germ_sequence_%d' % self.params['run_numbers'][k], pulsar=qt.pulsar,
                     global_time = True)
 
             #Some varibales I need to keep track of what we are doing
@@ -300,10 +328,10 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
             self.f = 0
             last_germ = len(self.params['germ_position'])
 
-            #Make the list that we are using to know wich kind of pi pulse we are applying
-            decoupling_seq = self.generate_decoupling_list()
+            #Make the list that we are using to know which kind of pi pulse we are applying
+            decoupling_seq = self.generate_decoupling_list(k)
 
-            for i in range(self.params['N_decoupling']+1):
+            for i in range(self.params['N_decoupling'][k]+1):
                 if i == 0:
                     self.e1.add(pulse.cp(self.T, 
                                         length = self.params['initial_msmt_delay']), 
@@ -313,35 +341,30 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                     self.n +=1
                 
                     #Generate the first fiducial
-                    self.generate_subsequence(seq=self.params['fid_1'])
+                    self.generate_subsequence(seq=self.params['fid_1'][k])
                     self.f=1
 
                     # We want to use two consecutive pi/2 pulses here since we want to only rely on
                     # one calibration for the moment
                     self.generate_pi(decoupling_seq[i])
 
+
+                # Currently not working after upgrading for list of fiducials of germs!!!
+
                 # #If we want to test our sequence with germs at specific positions, then go here
-                # elif self.params['sequence_type']== 'specific_germ_position' and a!= last_germ and i == self.params['germ_position'][a] : 
+                # elif self.params['sequence_type']== 'specific_germ_position' and k!= last_germ and i == self.params['germ_position'][k] : 
                 #     self.generate_subsequence(seq=self.params['germ'])
                 #     self.generate_pi(decoupling_seq[i])
 
                 #     a += 1
-                
-
-                #If we want to test our sequence with germs at specific positions, then go here
-                elif self.params['sequence_type']== 'specific_germ_position' and k!= last_germ and i == self.params['germ_position'][k] : 
-                    self.generate_subsequence(seq=self.params['germ'])
-                    self.generate_pi(decoupling_seq[i])
-
-                    a += 1
                 #If we are at the last position then build the second fiducial
-                elif i == self.params['N_decoupling']:
+                elif i == self.params['N_decoupling'][k]:
                     self.f = 2
-                    self.generate_subsequence(seq=self.params['fid_2'])
+                    self.generate_subsequence(seq=self.params['fid_2'][k])
 
                 #If it is a germ sequence with germs everywhere then go here
                 elif self.params['sequence_type']== 'all':
-                    self.generate_subsequence(seq=self.params['germ'])
+                    self.generate_subsequence(seq=self.params['germ'][k])
                     self.generate_pi(decoupling_seq[i])
 
                 else:
