@@ -13,7 +13,7 @@ reload(telcrify_slave);reload(sweep_telcrification)
 
 name = qt.exp_params['protocols']['current']
 
-class Telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
+class telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'Telcrification'
     adwin_process = 'purification'
     
@@ -121,7 +121,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     """
     Performs a tail_sweep in the LDE_1 element
     """
-    m = Telcrify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
     ### general params
@@ -179,11 +179,11 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
 
 def load_BK_params(m):
-    m.joint_params['opt_pi_pulses'] = 2
+    m.params['opt_pi_pulses'] = 2
     m.params['LDE_decouple_time'] = 0.50e-6
-    m.joint_params['opt_pulse_separation'] = 0.50e-6 
-    m.joint_params['LDE_element_length'] = 6e-6
-    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['opt_pulse_separation'] = 0.50e-6 
+    m.params['LDE_element_length'] = 6e-6
+    m.params['do_final_mw_LDE'] = 1
     m.params['PLU_during_LDE'] = 1
     m.params['LDE_SP_duration'] = 1.5e-6
 
@@ -194,13 +194,13 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
 
     """
-    m = purify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
     load_BK_params(m)
 
 
-    m.joint_params['do_final_mw_LDE'] = 1
+    m.params['do_final_mw_LDE'] = 1
     #m.params['LDE_final_mw_amplitude'] = 0
 
     ### general params
@@ -211,7 +211,7 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
     m.params['PLU_during_LDE'] = 1
-    m.joint_params['opt_pi_pulses'] = 2
+    m.params['opt_pi_pulses'] = 2
 
     m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
     m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
@@ -228,7 +228,7 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     Performs a regular Spin-photon correlation measurement.
     """
 
-     m = purify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
 
@@ -279,7 +279,7 @@ def MW_Position(name,debug = False,upload_only=False):
     NK 2016
     """
 
-    m = Telcrify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
     # load_TH_params(m)
@@ -337,7 +337,7 @@ def MW_Position(name,debug = False,upload_only=False):
 
 def TPQI(name,debug = False,upload_only=False):
     
-    m = Telcrify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
     print 'Starting TPQI seq.'
@@ -396,7 +396,7 @@ def TPQI(name,debug = False,upload_only=False):
 
 def measureInterferometerDelay(name,debug = False,upload_only=False):
     
-    m = Telcrify(name)
+    m = telcrify(name)
     sweep_telcrification.prepare(m)
 
     print 'Starting TPQI seq.'
@@ -474,7 +474,7 @@ if __name__ == '__main__':
 
 
     ###### non-local measurements // Barrett Kok parameters
-    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  False)
+    BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  True)
     #TPQI(name+'_HBT_red',debug = False,upload_only=False)
     # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)

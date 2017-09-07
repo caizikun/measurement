@@ -94,7 +94,7 @@ def _create_syncs_and_triggers(msmt,Gate):
     if setup == 'lt3': #XXX get rid of LT1 later on.
         plu_amp = 1.0
     else:
-        plu_amp = 0.0
+        plu_amp = 1.0
     Gate.plu_gate = pulse.SquarePulse(channel = 'plu_sync', amplitude = plu_amp, 
                                     length = msmt.params['PLU_gate_duration'])
 
@@ -300,7 +300,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
                     name = 'plu gate 4', 
                     start = msmt.params['PLU_4_delay'],
                     refpulse = 'plu gate 3')
-    
+
     #### gives a done trigger that has to be timed accordingly, is referenced to the PLU if the PLU is used by this setup.
     if Gate.is_final:
         ## one can time accurately if we use the plu during the experiment
