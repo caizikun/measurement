@@ -190,10 +190,10 @@ if __name__ == '__main__':
 
 
     if n==1 and Cont:
-        n_pulses = '128'
+        n_pulses = '8'
         N = DD_parameters_dict[n_pulses][0] ### number of pulses
         pts =DD_parameters_dict[n_pulses][1] ### number of points per loading of the AWG
-        larmor_freq = 1/qt.exp_params['samples']['Pippin']['C1_freq_0']
+        larmor_freq = 1/qt.exp_params['samples']['111no2']['C1_freq_0']
         larmor_max = DD_parameters_dict[n_pulses][2] ### the order of the last revival
         larmor_min = DD_parameters_dict[n_pulses][3]
         larmor_step = DD_parameters_dict[n_pulses][4]

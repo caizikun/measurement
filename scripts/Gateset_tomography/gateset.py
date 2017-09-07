@@ -6,6 +6,7 @@ import qt
 import numpy as np
 import msvcrt
 from Creating_exp_list_gateset import gateset_helpers
+import measurement.scripts.mbi.mbi_funcs as funcs
 # import Creating_exp_list_gateset
 
 #reload all parameters and modules
@@ -230,6 +231,19 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
     m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+
+
+    m.params['E_RO_durations']      = [m.params['SSRO_duration']]
+    m.params['E_RO_amplitudes']     = [m.params['Ex_RO_amplitude']]
+    m.params['send_AWG_start']      = [1]
+    m.params['sequence_wait_time']  = [0]
+
+
+
+
 
     m.params['pulse_type'] = 'Hermite'
 
@@ -239,10 +253,9 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
     m.params['initial_msmt_delay'] = 000.0e-9
 
     #The total number of sequence repetitions
-    m.params['repetitions'] = 10000
+    m.params['reps_per_ROsequence'] = 5000
 
-    m.params['sweep_name'] = 'Run number'
-    m.params['sweep_pts'] = run_numbers
+
 
     m.params['fid_1']               = fid_1
     m.params['fid_2']               = fid_2
@@ -267,13 +280,25 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
     if 2*tau_larmor <= sequence_length:
         tau_larmor *= np.ceil(sequence_length/(2*tau_larmor))
 
+    tau_larmor *= 4
+
     m.params['tau_larmor'] = tau_larmor
+
+    m.params['sweep_name'] = 'Total evolution time [ms]'
+    m.params['sweep_pts'] = run_numbers*np.ones(len(run_numbers))*tau_larmor*1.e3
 
     #Set up the pulses we want to use in the experiment
     X_pi2   = ps.Xpi2_pulse(m)
     Y_pi2   = ps.Ypi2_pulse(m)
     mX_pi2  = ps.mXpi2_pulse(m)
     mY_pi2  = ps.mYpi2_pulse(m)
+
+    #Only for now
+
+    X_pi    = ps.X_pulse(m)
+    Y_pi    = ps.Y_pulse(m)
+    mX_pi   = ps.mX_pulse(m)
+    mY_pi   = ps.mY_pulse(m)
 
     # for the autoanalysis
     # m.params['sweep_name']  = 'Run number'
@@ -293,14 +318,15 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
 
     # Start measurement
     m.autoconfig()
-    m.generate_sequence(upload=True, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2)
+    m.generate_sequence(upload=True, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2, x_pulse_pi = X_pi, y_pulse_pi = Y_pi, x_pulse_mpi = mX_pi, y_pulse_mpi = mY_pi)
 
     if not debug:
         m.run(autoconfig=False)
-        m.save(str(run_numbers[0]))
+        m.save()
 
-        if sequence_type == 'specific_germ_position':
-            m.finish()
+    m.finish()
+        # if sequence_type == 'specific_germ_position':
+        #     m.finish()
 
 
 def individual_awg_write_ro(filename, debug = True, awg_size = 50):
@@ -438,7 +464,11 @@ if __name__ == '__main__':
     # gateset_NoTriggers(name, debug = True, fid_1 =['e', 'e'], fid_2 = ['e', 'e'], sequence_type = 'all', germ = ['e', 'e'], germ_position = [1, 2, 3], N_decoupling = [4, 5], run_numbers=[5, 10])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", awg_size = 50)
+    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", awg_size = 50)
+
+    gateset_NoTriggers(pulsar_delay.GateSetNoTriggers(name), debug = False, fid_1 = ['x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e'], N_decoupling = [16, 32, 64, 128], run_numbers=[16, 32, 64, 128])
+
+    # gateset_NoTriggers(pulsar_delay.GateSetNoTriggers(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
 
 
     # reoptimize()

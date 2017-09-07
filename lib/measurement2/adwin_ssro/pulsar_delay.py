@@ -111,7 +111,8 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
             else:
                 qt.pulsar.program_awg(seq,*elements)
 
-class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
+# class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
+class GateSetNoTriggers(pulsar_msmt.MBI):
     """
     Class used to generate a gate set tomography sequence. 
     generate_sequence needs to be supplied with a xpi2_pulse and a ypi2_pulse as kw.
@@ -119,7 +120,7 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
     mprefix = 'GateSetTomography'
 
     def autoconfig(self):
-        pulsar_msmt.PulsarMeasurement.autoconfig(self)
+        pulsar_msmt.MBI.autoconfig(self)
 
     def generate_decoupling_list(self, pos):
         """
@@ -188,37 +189,75 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
         """
         This function builds pi pulses from pi/2 pulses around x and y.
         """
+        # For using pi2 pulses
+        # if pulse_type == 'x':
+        #     dec_pls = self.pulse_xpi2
+
+        # if pulse_type == 'mx':
+        #     dec_pls = self.pulse_mxpi2
+
+        # if pulse_type == 'y':
+        #     dec_pls = self.pulse_ypi2
+
+        # if pulse_type == 'my':
+        #     dec_pls = self.pulse_mypi2
+
+
+        # self.e1.add(pulse.cp(dec_pls),
+        #                     refpulse        = 'pulse%d' % (self.n-1),
+        #                     refpoint        = 'end',
+        #                     refpoint_new    = 'end',
+        #                     name            = 'pulse%d' % self.n,
+        #                     start           =  self.start_time)
+        
+
+        # self.n +=1
+                
+        # self.e1.add(pulse.cp(dec_pls),
+        #             refpulse        = 'pulse%d' % (self.n-1),
+        #             refpoint        = 'end',
+        #             refpoint_new    = 'start',
+        #             name            = 'pulse%d' % self.n)
+
+        # self.n +=1
 
         if pulse_type == 'x':
-            dec_pls = self.pulse_xpi2
+            dec_pls = self.pulse_xpi
 
         if pulse_type == 'mx':
-            dec_pls = self.pulse_mxpi2
+            dec_pls = self.pulse_mxpi
 
         if pulse_type == 'y':
-            dec_pls = self.pulse_ypi2
+            dec_pls = self.pulse_ypi
 
         if pulse_type == 'my':
-            dec_pls = self.pulse_mypi2
+            dec_pls = self.pulse_mypi
 
-        self.e1.add(pulse.cp(dec_pls),
-                            refpulse        = 'pulse%d' % (self.n-1),
-                            refpoint        = 'end',
-                            refpoint_new    = 'end',
-                            name            = 'pulse%d' % self.n,
-                            start           =  self.start_time)
+        if self.v == 0:
+            if self.pithing ==1:
+                self.start_time -=50.0e-9
+                
+            self.e1.add(pulse.cp(dec_pls),
+                                refpulse        = 'pulse%d' % (self.n-1),
+                                refpoint        = 'end',
+                                refpoint_new    = 'center',
+                                name            = 'pulse%d' % self.n,
+                                start           =  self.start_time)
+            self.v +=1
+
+        else:
+            self.e1.add(pulse.cp(dec_pls),
+                    refpulse        = 'pulse%d' % (self.n-1),
+                    refpoint        = 'end',
+                    refpoint_new    = 'end',
+                    name            = 'pulse%d' % self.n,
+                    start           =  self.start_time)
+            self.v = 0
         
 
         self.n +=1
                 
-        self.e1.add(pulse.cp(dec_pls),
-                    refpulse        = 'pulse%d' % (self.n-1),
-                    refpoint        = 'end',
-                    refpoint_new    = 'start',
-                    name            = 'pulse%d' % self.n)
 
-        self.n +=1
-                
 
     def generate_subsequence(self, seq='x'):
         """
@@ -269,6 +308,17 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                     self.n +=1
                     self.start_time = self.params['wait_time']
 
+                elif seq[i] == 'm':
+                    self.e1.add(pulse.cp(self.pulse_mxpi2),
+                                        refpulse = 'pulse%d' % (self.n-1),
+                                        refpoint = 'end',
+                                        refpoint_new = 'start',
+                                        name = 'pulse%d' % self.n,
+                                        start = self.start_time)
+                    self.n +=1
+                    self.start_time = self.params['wait_time']
+                    
+
                 elif seq[i] == 'e': 
                     self.start_time += self.params['wait_time']
                     self.start_time += self.params['Hermite_pi2_length']
@@ -297,11 +347,17 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
         # First let us define the necessary pulses.
         ###
 
-        # rotations
+        # rotations pi2
         self.pulse_xpi2  =   kw.get('x_pulse_pi2', None)
         self.pulse_ypi2  =   kw.get('y_pulse_pi2', None)
         self.pulse_mxpi2 =   kw.get('x_pulse_mpi2', None)
         self.pulse_mypi2 =   kw.get('y_pulse_mpi2', None)
+
+        # rotations pi
+        self.pulse_xpi  =   kw.get('x_pulse_pi', None)
+        self.pulse_ypi  =   kw.get('y_pulse_pi', None)
+        self.pulse_mxpi =   kw.get('x_pulse_mpi', None)
+        self.pulse_mypi =   kw.get('y_pulse_mpi', None)
 
         # waiting element        
         self.T = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -328,6 +384,12 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
             self.f = 0
             last_germ = len(self.params['germ_position'])
 
+            ####
+            #A variable i only need for spacing the pi pulses correctly
+            #####
+            self.v = 0
+            self.pithing = 0
+
             #Make the list that we are using to know which kind of pi pulse we are applying
             decoupling_seq = self.generate_decoupling_list(k)
 
@@ -347,6 +409,7 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                     # We want to use two consecutive pi/2 pulses here since we want to only rely on
                     # one calibration for the moment
                     self.generate_pi(decoupling_seq[i])
+                    self.pithing = 1
 
 
                 # Currently not working after upgrading for list of fiducials of germs!!!
@@ -376,10 +439,14 @@ class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
                                         refpoint = 'end',
                                         refpoint_new = 'start')
 
+            print self.e1.length()
+            print self.e1.samples()
+
             elements.append(self.e1)
 
         # create a sequence from the pulses
         seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
