@@ -3625,6 +3625,24 @@ config['adwin_pro_processes'] = {
                             'expm_mon_repump_counts'    : 45, 
                             },
                         },
+                
+                'green_readout' : {
+                    'index' : 9,
+                    'file'  : 'green_readout.TB9',
+                    'params_long' : [
+                        ['AWG_start_DO_channel'         ,   16],
+                        ['AWG_event_jump_DO_channel'    ,   8 ],
+                        ['total_sync_nr'                ,   5], 
+                        ['sync_counter_idx'             ,   4],
+                        ['AWG_done_DI_channel'          ,   16]
+                    ],
+                    'params_long_index' : 20,
+                    'params_long_length': 10,
+                    'par'               : {
+                        'completed_reps'    : 73,
+                    },
+                    },
+
                 'test_sin_scan' : {
                 'index' : 8,
                 'file' : 'test_sin_scan_wavelength.TB8',
@@ -3711,6 +3729,8 @@ config['adwin_pro_processes'] = {
                         ['AWG_jump_strobe_DO_channel' ,   0 ],
                         ['do_init_only'             ,   0   ],
                         ['jump_bit_shift'           ,   4   ],
+                        ['sweep_length'             ,   1   ],
+                        ['reps'                     ,   1000],
                     ],
                     'params_long_index'  : 20,
                     # 'params_long_length' : 100,

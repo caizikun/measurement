@@ -15,10 +15,12 @@ import qt
 import measurement.lib.measurement2.measurement as m2
 import time
 import logging
-from measurement.lib.cython.PQ_T2_tools import T2_tools_v3
+from measurement.lib.cython.PQ_T2_tools import T2_tools_v3  #; reload(T2_tools_v3)
 import hdf5_data as h5
 import msvcrt
 
+
+import matplotlib.pyplot as plt
 #Creating a qutau instance in 80_create_instruments: qutau = qt.instruments.create('QuTau', 'QuTau')
 
 
@@ -62,6 +64,7 @@ class QuTauMeasurement(m2.Measurement):
 
 
     def run_debug(self):
+        print 'hi im conor'
         self.start_keystroke_monitor('abort',timer=False)
         self.start_measurement_process()
         _timer=time.time()
@@ -372,6 +375,8 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
         t_ofl = 0
         t_lastsync = 0
         last_sync_number = 0
+
+        myl=0
         ### _length!?    
 
         MIN_SYNC_BIN = np.uint64(0)     #np.uint64(self.params['MIN_SYNC_BIN'])# no longer needed as the data is in absolute time
@@ -434,10 +439,13 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
                 
             _timestamps, _channels, _length = qutau.get_last_timestamps() 
 
-            
+            qt.msleep(1)
             _npchannels=np.frombuffer(buffer(_channels), dtype=np.uint8).astype(np.uint32)
-            print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
+            
 
+
+            
+            print 'Events in Channels [2,4]: ' ,len(np.where(_npchannels==1)[0]),len(np.where(_npchannels==3)[0])
             if _length > 0:
                 if _length == buffer_size: #was previously T2_READMAX;
                     logging.warning('extracted data length equal to the buffer_size, \
@@ -458,7 +466,7 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
                 current_dset_length+=newlength
             print 'QuTau current datasets, events in last dataset, last sync number:', rawdata_idx, current_dset_length, last_sync_number        
             
-            
+            #print len(_s)
             for j in np.arange(self.params['pts']):
                 Signal[j]=(sum(hist1[int(self.params['RO_start']/0.081):int(self.params['RO_stop']/.081),j]))
 
@@ -483,7 +491,7 @@ class QuTauMeasurementIntegrated(QuTauMeasurement):
                 break
                 
             if (self.params['do_spatial_optimize']) and i % 100 == 0: # every hundred cycles one spatial optimize
-                GreenAOM.set_power(600e-6)
+                GreenAOM.set_power(10e-6)
                 qt.msleep(2)
                 optimiz0r.optimize(dims=['x','y','z','x','y'])
                 GreenAOM.turn_off()

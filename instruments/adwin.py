@@ -490,7 +490,6 @@ class adwin(Instrument):
         if 'set_dac' in self.processes:
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)
-
             self._dac_voltages[name] = value
             self.save_cfg()
             return True

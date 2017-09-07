@@ -51,10 +51,10 @@ def _create_mw_pulses(msmt,Gate):
 
         if hasattr(Gate,'no_mw_pulse'):
             if Gate.no_mw_pulse:
-                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0)
-                Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-                Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0)
-                Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0)
+                Gate.mw_first_pulse = pulse.cp(Gate.mw_X,amplitude = 0,  length = 0)
+                Gate.mw_pi2 = pulse.cp(Gate.mw_X,amplitude = 0,          length = 0)
+                Gate.mw_mpi2 = pulse.cp(Gate.mw_X,amplitude = 0,         length = 0)
+                Gate.mw_X = pulse.cp(Gate.mw_X,amplitude = 0,            length = 0)
 
     ### only use this if you want two proper pi pulses.
     # Gate.mw_first_pulse = pulse.cp(ps.X_pulse(msmt))

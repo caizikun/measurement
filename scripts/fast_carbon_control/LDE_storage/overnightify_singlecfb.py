@@ -30,7 +30,7 @@ def bell_check_powers():
     setpoints = [qt.exp_params['protocols'][prot_name]['AdwinSSRO']['Ex_RO_amplitude'],
                 4000e-9, # The amount for repumping in purification
                 10e-6]
-    relative_thresholds = [0.15,0.15,0.15]
+    relative_thresholds = [0.05,0.05,0.15]
     qt.instruments['PMServo'].move_in()
     qt.msleep(2)
     qt.stools.init_AWG()
@@ -60,9 +60,14 @@ def optimize():
     GreenAOM.turn_off()
 
 if __name__ == '__main__':
+    optimize()
+    recalibrate_all()
+    execfile(r"espin_calibrations.py")
+    # execfile(r"../../carbonspin/carbon_calibration.py")
+
     debug = False
     # overnight section
-    carbons = [1,2,3,4,5,6,7]
+    carbons = [2,3,4,5,6,7]
 
     LDE_calibration_range = [
         (2,35,3),
@@ -82,6 +87,23 @@ if __name__ == '__main__':
         if not debug:
             optimize()
             recalibrate_all()
+            execfile(r"espin_calibrations.py")
+
+        # m = {
+        #     'requested_measurement': 'sweep_average_repump_time',
+        #     'carbons': [c],
+        #     'debug': debug,
+        #     'do_update_msmt_params': True,
+        #     'LDE1_attempts': 100,
+        #     'LDE2_attempts': 100,
+        # }
+        #
+        # with open('overnight_m.json', 'w') as json_file:
+        #     json.dump(m, json_file)
+        # do_overnight_msmt = True
+        # execfile("./LDE_storage_sweep.py")
+
+        # optimize()
 
         for rpt in range(2):
             # do the calibration twice for good measure #yolo
@@ -94,9 +116,11 @@ if __name__ == '__main__':
             }
             with open('overnight_m.json', 'w') as json_file:
                 json.dump(m, json_file)
+            do_overnight_msmt = True
             execfile("./LDE_storage_sweep.py")
 
         for i_fr, fr in enumerate(feedback_ranges):
+            optimize()
             bell_check_powers()
             m_name = name + "_phase_fb_delayline_C%d_sec%d" % (c, i_fr)
 
@@ -117,9 +141,10 @@ if __name__ == '__main__':
 
             with open('overnight_m.json', 'w') as json_file:
                 json.dump(m, json_file)
+            do_overnight_msmt = True
             execfile("./LDE_storage_sweep.py")
 
-
+        optimize()
         bell_check_powers()
         m = {
             "requested_measurement": "decay_curve",
@@ -128,44 +153,5 @@ if __name__ == '__main__':
         }
         with open('overnight_m.json', 'w') as json_file:
             json.dump(m, json_file)
+        do_overnight_msmt = True
         execfile("./LDE_storage_sweep.py")
-
-
-
-
-        # for l in LDE_attempts:
-
-
-        #     if c != 7 and l > 450:
-        #         continue
-
-        #     if c == 7 and l < 49:
-        #         continue
-
-        #     if breakst:
-        #         break
-        #     breakst = show_stopper()
-        #     if breakst:
-        #         break
-        #     if not debug:
-        #         optimize()
-        #         bell_check_powers()
-
-        #     m_name = "%s_Sweep_Repump_time_p1_%s_C%d_LDE%d_pow%duW_X" % (
-        #         name, pulse_type, c, l, int(p*1e6)
-        #     )
-
-        #     m = {
-        #         'requested_measurement': 'sweep_average_repump_time',
-        #         'carbons': [c],
-        #         'debug': debug,
-        #         'LDE1_attempts': l,
-        #         'AWG_SP_power': p,
-        #         'm_name': m_name,
-        #         'first_mw_pulse_type': pulse_type,
-        #     }
-
-        #     with open('overnight_m.json', 'w') as json_file:
-        #         json.dump(m, json_file)
-        #     execfile("./LDE_storage_sweep.py")
-

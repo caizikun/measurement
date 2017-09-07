@@ -8,6 +8,7 @@ import numpy as np
 import qt 
 import purify_slave; reload(purify_slave)
 import msvcrt
+import datetime
 import time
 name = qt.exp_params['protocols']['current']
 
@@ -213,6 +214,12 @@ def prepare_carbon_params(m):
     else:
         m.params['Carbon_LDE_init_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
+    if m.params['use_avg_repump_time_from_msmt_params'] > 0:
+        carbon = m.params['carbons'][0]
+        etrans = m.params['electron_transition']
+        m.params['average_repump_time'] = m.params['C%d_LDE_phase_matching_time%s' % (carbon, etrans)]
+        print("Average repump time set to %.f ns" % (m.params['average_repump_time'] * 1e9))
+
 def run_sweep(m,debug=True, upload_only=True,save_name='adwindata',multiple_msmts=False,autoconfig = True,mw=True,simplify_wfnames=False,
               do_upload=True):
 
@@ -301,6 +308,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_phase_fb_delayline']   = 0
     m.params['do_delay_fb_pulses']      = 0
     m.params['skip_LDE_mw_pi']          = 0
+    m.params['do_carbon_hahn_echo']     = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -466,7 +474,9 @@ def ionzation_sweep_pi_amp(name,upload_only = False, debug = False):
     run_sweep(m,debug = debug, upload_only = upload_only)
     m.finish()
 
-def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False, carbon_override=None, override_params=None, do_upload=True):
+def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False, carbon_override=None,
+                              override_params=None, do_upload=True,
+                              return_datafolder=False):
     """
     sweeps the average repump time.
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
@@ -481,9 +491,9 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 26
+    pts = 5
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 200
 
     turn_all_sequence_elements_off(m)
 
@@ -492,24 +502,38 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     m.params['PLU_during_LDE'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    # m.params['do_general_sweep']    = 1
+    # m.params['do_carbon_init']  = 1 
+    # m.params['do_carbon_readout']  = 1
+    # m.params['do_LDE_2'] = 1
     m.params['do_general_sweep']    = 1
-    m.params['do_carbon_init']  = 1 
-    m.params['do_carbon_readout']  = 1
+    m.params['do_carbon_init']  = 1
     m.params['do_LDE_1'] = 1
+    m.params['do_carbon_readout']  = 1
+    # m.params['mw_first_pulse_amp'] = 0
+    m.params['MW_during_LDE'] = 1
+    # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
+    #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
+    #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+    m.joint_params['opt_pi_pulses'] = 0
+    m.params['do_carbon_hahn_echo']     = 1
+    if 'LDE2_attempts' not in override_params:
+        m.params['LDE2_attempts'] = 100
 
-    if 'LDE1_attempts' not in override_params:
-        m.params['LDE1_attempts'] = 50
+    m.params['LDE1_attempts'] = m.joint_params['LDE1_attempts'] = m.joint_params['LDE2_attempts'] = m.params['LDE2_attempts']
 
-    m.joint_params['LDE1_attempts'] = m.params['LDE1_attempts']
     m.params['MW_during_LDE'] = 1
     m.joint_params['opt_pi_pulses'] = 0
 
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-1.3e-6,3.8e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.0e-6,1e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
+    m.params['do_phase_correction'] = 0
+
+    multi_carbon_expm = len(m.params['carbons']) > 1
     
     ### loop over tomography bases and RO directions upload & run
     breakst = False
@@ -532,25 +556,92 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
                 autoconfig = False
 
     else:
-        for t in ['X','Y']:
+        if multi_carbon_expm:
+            tomo_list = ['XX','YY','XY','YX']
+        else:
+            tomo_list = ['X', 'Y']
+        for t in tomo_list:
             if breakst:
                 break
-            for ro in ['positive','negative']:
+            for ro in ['positive', 'negative']:
                 breakst = show_stopper()
                 if breakst:
                     break
-                m.params['carbon_init_method'] = 'MBI'
-                # m.params['do_C_init_SWAP_wo_SSRO'] = 1
+                # m.params['carbon_init_method'] = 'MBI'
+                if multi_carbon_expm:
+                    m.params['carbon_init_method'] = 'swap'
+                    m.params['do_C_init_SWAP_wo_SSRO'] = 1
+                    m.params['simple_el_init'] = 1
+                    m.params['carbon_encoding'] = 'MBE'
+                    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+                    m.params['do_repump_after_LDE2'] = 1
+                    m.params['do_swap_onto_carbon'] = 1
+                    print "preparing MBE experiment"
+                else:
+                    m.params['carbon_init_method'] = 'MBI'
+                    m.params['do_C_init_SWAP_wo_SSRO'] = 0
                 save_name = t+'_'+ro
-                m.params['Tomography_bases'] = [t]
+                m.params['Tomography_bases'] = list(t)
+                print(m.params['Tomography_bases'])
                 m.params['carbon_readout_orientation'] = ro
                 run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig=autoconfig, do_upload=do_upload)
                 autoconfig = False
 
     m.finish()
 
+    if return_datafolder:
+        return m.datafolder
 
-def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, carbon_override=None, override_params=None, do_upload=True):
+
+def update_average_repump_time(**kw):
+    import measurement.scripts.carbonspin.write_to_msmt_params as write_to_msmt_params
+    reload(write_to_msmt_params)
+    import analysis.lib.purification.purify_delayfb as pu_delayfb
+    reload(pu_delayfb)
+
+    fit_result = pu_delayfb.average_repump_time(
+        do_fit=True,
+        ret=True,
+        show_plot=False,
+        fit_x0 = None,
+        **kw
+    )
+
+    carbon_id = fit_result['carbon_id']
+    print("Updating average repump time param for C%d" % carbon_id)
+
+    sample_name = qt.exp_params['samples']['current']
+    electron_transition_string = qt.exp_params['samples'][sample_name]['electron_transition']
+
+    LDE_param_key = "C%d_LDE_phase_matching_time%s" % (carbon_id, electron_transition_string)
+
+    gauss_x0 = fit_result['params_dict']['x0'] * 1e-6
+    gauss_x0_u = fit_result['error_dict']['x0'] * 1e-6
+
+    print("Measured average repump time: %.3f +/- %.3f ns" % (gauss_x0*1e9, gauss_x0_u*1e9) )
+
+    try:
+        with open('repump_calibration_log.txt', 'a') as file:
+            file.write("[%s]\n" % (str(datetime.datetime.now())))
+            file.write("Updating average repump time param for C%d\n" % carbon_id)
+            file.write("Measured average repump time: %.3f +/- %.3f ns\n" % (gauss_x0 * 1e9, gauss_x0_u * 1e9))
+    except:
+        print("Writing to log file failed")
+
+    if gauss_x0 < 0.0e-6 or gauss_x0 > 1.0e-6:
+        print("Optimal repump time outside of safe range (0-1 us). Take a look at the data yourself")
+
+    if gauss_x0_u > 0.5e-6:
+        print("Too much uncertainty in calibrated value, skipping")
+
+    qt.exp_params['samples'][sample_name][LDE_param_key] = gauss_x0
+    print("Writing to msmt_params.py...")
+    write_to_msmt_params.write_to_msmt_params_file([LDE_param_key], ["%de-9" % (round(gauss_x0*1e9))], False)
+    print("Done!")
+
+
+def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, carbon_override=None, override_params=None,
+                         do_upload=True):
 
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
@@ -564,9 +655,9 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 20
+    pts = 10
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 200
 
     turn_all_sequence_elements_off(m)
 
@@ -581,10 +672,10 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
     #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
     #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
     m.joint_params['opt_pi_pulses'] = 0
-
+    m.params['do_carbon_hahn_echo']     = 1
     ### calculate the sweep array
-    minReps = 2
-    maxReps = 600
+    minReps = 10
+    maxReps = 1000
     step = int((maxReps-minReps)/pts)+1
     ### define sweep
     m.params['general_sweep_name'] = 'LDE1_attempts'
@@ -1138,6 +1229,7 @@ def update_LDE_phase_param(datafolders, **kw):
     print("Done!")
     try:
         with open('LDE_calibration_log.txt', 'a') as file:
+            file.write("[%s]\n" % (str(datetime.datetime.now())))
             file.write("Updating LDE phase measurement param for C%d\n" % carbon_id)
             file.write("Detuning used: %.1f\n" % detuning)
             file.write("Previous LDE phase: %.3f\n" % previous_LDE_phase)
@@ -2146,11 +2238,16 @@ if __name__ == '__main__':
     # repump_speed(name+'_repump_speed',upload_only = True)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
-    # sweep_average_repump_time(name+'_Sweep_Repump_time_X',do_Z = False,debug=False,
-    #                           carbon_override=1)
+    # sweep_average_repump_time(
+    #     name+'_Sweep_Repump_time_Z_C6',do_Z = True,debug=False,
+    #     override_params={
+    #         'carbons': [6],
+    #         'LDE2_attempts': 300
+    #     }
+    # )
 
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False)
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True)
+    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False,carbon_override=7)
+    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True,carbon_override = 6)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = False)
     # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
@@ -2162,12 +2259,12 @@ if __name__ == '__main__':
     # todo_cs = [5,3,6,7]
     #
     #
-    # calibration_carbon = 1
-    
+    # calibration_carbon = 2
+    #
     # calibrate_LDE_phase(
     #     name+'_LDE_phase_calibration_C%d' % calibration_carbon,
     #     upload_only = False,
-    #     update_msmt_params=True,
+    #     update_msmt_params=False,
     #     carbon_override=calibration_carbon,
     #     max_correction=3.0,
     #     crude=False
@@ -2211,8 +2308,14 @@ if __name__ == '__main__':
     # #
     # apply_dynamic_phase_correction_delayline(
     #     name + '_phase_fb_delayline',
-    #     upload_only=False,
+    #     upload_only=True,
     #     dry_run=False,
+    #     extra_params={
+    #         'minReps': 10,
+    #         'maxReps': 12,
+    #         'step': 10,
+    #         'Tomography_list': [['X', 'X']]
+    #     },
     # )
 
     # apply_dynamic_phase_correction_delayline_tomo(
@@ -2232,7 +2335,13 @@ if __name__ == '__main__':
 
     # sweep_decoupling_time(name+'_Sweep_Decoupling_time_Z',do_Z = True,debug = False, upload_only=False)
 
-    if True:
+    try:
+        do_overnight_msmt
+    except:
+        do_overnight_msmt = False
+
+    if do_overnight_msmt:
+        do_overnight_msmt = False
         breakst = show_stopper()
         if breakst:
             raise Exception("Someone wants to get out of here")
@@ -2275,7 +2384,7 @@ if __name__ == '__main__':
                 print f
                 datafolders.append(f)
             if not debug:
-                update_LDE_phase_param(datafolders, max_correction=5.0)
+                update_LDE_phase_param(datafolders, max_correction=None)
         elif m_data['requested_measurement'] == 'LDE_phase':
             calibrate_LDE_phase(
                 m_data['m_name'],
@@ -2312,6 +2421,8 @@ if __name__ == '__main__':
                 override_params=m_data,
                 do_upload =not debug
             )#, carbon_override=2)
+            if m_data.get('do_update_msmt_params', False) and not debug:
+                update_average_repump_time()
         elif m_data['requested_measurement'] == 'decay_curve':
             c_str = "".join([str(c) for c in m_data['carbons']])
             sweep_number_of_reps(

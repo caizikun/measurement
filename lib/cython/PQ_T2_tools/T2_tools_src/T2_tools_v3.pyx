@@ -227,6 +227,8 @@ def T2_live_filter_integrated_RT(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] tim
     cdef cnp.uint64_t _sync_time
     cdef cnp.uint64_t _sweep_idx
 
+   # cdef cnp.uint64_t myl=0
+
     cdef cnp.uint64_t length = time.shape[0]
     for k in range(length):
         if channel[k] == 63:
@@ -266,5 +268,5 @@ def T2_live_filter_integrated_RT(cnp.ndarray[cnp.uint32_t, ndim=1, mode='c'] tim
         elif channel[k] == 1:
             hist1[_sync_time,_sweep_idx] += 1
         l += 1      
-
+   # print 'myl:', myl
     return hist0, hist1, l, t_ofl, t_lastsync, last_sync_number

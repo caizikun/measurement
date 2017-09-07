@@ -540,7 +540,7 @@ def Rabi(name):
     m.params['SSRO_repetitions'] = m.params['total_sync_nr']
 
     print 'ro start and stop',m.params['RO_start'],m.params['RO_stop']
-    missed_syncs,total_syncs=m.measure(debug=False,upload=True)
+    missed_syncs,total_syncs=m.measure(debug=True,upload=True)
     return missed_syncs,total_syncs
 
 def Dark_ESR(name):

@@ -42,7 +42,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 100e-9 # 82e-9 2017/08/03 #was at 80e-6 106e-9 #even #was 120e-9 for SIL 2.
-	hermite_pi_amp =  0.616 # 0.650 #0.829 #0.8467  # 28-02
+	hermite_pi_amp =  0.617 # 0.650 #0.829 #0.8467  # 28-02
 	hermite_pi2_length = 40e-9 # 46e-9 # even
 	hermite_pi2_amp = 0.575 #  # 28-02 
 
@@ -119,6 +119,19 @@ cfg['protocols']['cr_mod']={
 
 yellow = False
 
+cfg['protocols']['GreenRO+PQ'] = {
+    'sync_counter_idx':4,   # counter channel on ADwin that recieves pulse from AWG everytime a sync is sent to PQ, to compare sync nr's
+    'Green_RO_power'    : 55e-6,
+    'GreenAOM_pulse_length' : 2e-6,
+    'measurement_time':                         1200,#sec
+    'measurement_abort_check_interval':         1,#sec
+    'pq_sync_length':                           75e-9,
+    'time_between_syncs':                       50e-9,
+    'syncs_per_sweep':                          2,
+    'summed_binsize':                           250,
+    'RO_start':                                 500,#ns
+    'RO_stop':                                  1000, 
+        }
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
