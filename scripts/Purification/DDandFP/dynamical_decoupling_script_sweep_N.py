@@ -24,6 +24,8 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
     Number_of_pulses =NoP
 
+    tau = np.round(4./m.params['C1_freq_0'],9)
+
     pts = len(Number_of_pulses)
 
     if tau == None: 
@@ -48,7 +50,7 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
 
     m.params['DD_in_eigenstate'] = False
 
-    funcs.finish(m, upload =True, debug=False)
+    funcs.finish(m, upload =True, debug=True)
 
 def interrupt_script(wait = 5):
     print 'press q now to exit measurement script'
@@ -59,13 +61,13 @@ def interrupt_script(wait = 5):
 if __name__ == '__main__':
 
     # tau = 10.3e-6 #6.406e-6
-    tau = 4/qt.exp_params['samples']['111no2']['C1_freq_0']
-    print tau1
-    NoP1=[16, 32, 64, 128, 256, 512, 1024] #np.arange(2,20,2)
+    
+
+    NoP1=[8, 16, 32, 64, 128,256] #np.arange(2,20,2)
     SimpleDecoupling_swp_N(
         SAMPLE+'_sweep_N_positive',
         NoP=NoP1,
-        tau =tau, 
+        tau =1, 
         reps_per_ROsequence = 5000,
         readout_pulse='-y'
     )
