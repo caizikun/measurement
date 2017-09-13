@@ -16,12 +16,12 @@ params_lt4['do_LDE_1']                  = 1 # we always do this.
 
 # LDE element
 params_lt4['MW_during_LDE']             = 1 
-params_lt4['AWG_SP_power']              = 50e-9#1000e-9
-params_lt4['LDE_SP_duration']           = 2e-6
+params_lt4['AWG_SP_power']              = 100e-9#1000e-9
+params_lt4['LDE_SP_duration']           = 1.5e-6
 params_lt4['LDE_SP_delay']              = 0e-6 ### don't change this.
 params_lt4['average_repump_time']       = 0.22e-6#0.27e-6#0.254e-6 # XXX put repump AOM delay here!
-params_lt4['LDE_decouple_time']         = 1/qt.exp_params['samples'][sample_name]['C1_freq_0']
-params_lt4['MW_opt_puls1_separation']   = 70e-9 #
+params_lt4['LDE_decouple_time']         = 400e-9
+params_lt4['MW_opt_puls1_separation']   = 430e-9 #
 
 
 #adwin params defs:
@@ -39,20 +39,20 @@ params_lt4['phase_feedback_resolution'] = 4.5
 
 # channels
 #params_lt4['wait_for_AWG_done'] = 1 # not used in adwin script
-params_lt4['PLU_event_di_channel'] = 20 
-params_lt4['PLU_which_di_channel'] = 21 # not used on slave
+params_lt4['PLU_event_di_channel'] = 21 
+params_lt4['PLU_which_di_channel'] = 20 # not used on slave
 #params_lt4['AWG_start_DO_channel'] =  defined in msmt params
 #params_lt4['AWG_done_DI_channel']= defined in msmt params
 params_lt4['wait_for_awg_done_timeout_cycles'] = 1e7  # 10ms
 #params_lt4['AWG_event_jump_DO_channel'] =  defined in msmt params
-params_lt4['AWG_repcount_DI_channel'] = 16 
-params_lt4['remote_adwin_di_success_channel'] = 19 
-params_lt4['remote_adwin_di_fail_channel'] = 18
-params_lt4['remote_adwin_do_success_channel'] = 13
-params_lt4['remote_adwin_do_fail_channel'] = 8
+params_lt4['AWG_repcount_DI_channel'] = 19 
+params_lt4['remote_adwin_di_success_channel'] = 22 
+params_lt4['remote_adwin_di_fail_channel'] = 23
+params_lt4['remote_adwin_do_success_channel'] = 14
+params_lt4['remote_adwin_do_fail_channel'] = 15
 params_lt4['adwin_comm_safety_cycles'] = 15
 params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1ms 
-params_lt4['remote_awg_trigger_channel'] = 1 # not used on slave
+params_lt4['remote_awg_trigger_channel'] = 13 # not used on slave
 params_lt4['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns
 
@@ -112,12 +112,12 @@ params_lt4['initial_delay']           = 10e-9 #DONT CHANGE THIS
 params_lt4['do_final_mw_LDE']         = 0 # only used for B&K
 
 params_lt4['opt_pi_pulses'] = 1
-params_lt4['opt_pulse_separation']    = 2.5e-6#250e-9 #350e-9 changed for higher visibility of 
+params_lt4['opt_pulse_separation']    = 0.2e-6#250e-9 #350e-9 changed for higher visibility of 
 
 params_lt4['LDE1_attempts'] = 1000 
 params_lt4['LDE2_attempts'] = 500
 
-params_lt4['LDE_element_length'] = 7.0e-6 #DO NOT CHANGE THIS
+params_lt4['LDE_element_length'] = 6.0e-6 #DO NOT CHANGE THIS
 
 
 #### added for the adwin process

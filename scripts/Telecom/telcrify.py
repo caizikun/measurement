@@ -125,7 +125,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     sweep_telcrification.prepare(m)
 
     ### general params
-    pts = 13
+    pts = 8
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -145,10 +145,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
         m.params['is_two_setup_experiment'] = 0 ## set to 1 in case you want to do optical pi pulses on lt4!
     else:
         m.params['is_two_setup_experiment'] = 1 ## set to 1 in case you want to do optical pi pulses on lt4!
-    ### need to find this out!
-    m.params['MIN_SYNC_BIN'] =       000
-    m.params['MAX_SYNC_BIN'] =       7000e3
-
+    
     # put sweep together:
     sweep_off_voltage = False
     sweep_on_voltage = False
@@ -158,11 +155,11 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(0.4,0.5,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(0.5,0.8,pts)#(-0.04,-0.02,pts)
     elif sweep_on_voltage:
         m.params['general_sweep_name'] = 'eom_pulse_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(0.0,4.0,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(-2.0,2.0,pts)#(-0.04,-0.02,pts)
     
     else:
         m.params['general_sweep_name'] = 'aom_amplitude'
@@ -223,6 +220,8 @@ def BarretKok_SPCorrs(name, debug = False, upload_only = False):
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
 
 
+
+
 def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
@@ -232,40 +231,26 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     sweep_telcrification.prepare(m)
 
 
-    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N'] ### overwrites the use of the HH_400
-    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-    m.params['MIN_SYNC_BIN'] =       0
-    m.params['MAX_SYNC_BIN'] =       8e3
-    m.params['MIN_HIST_SYNC_BIN'] =  1
-    m.params['MAX_HIST_SYNC_BIN'] =  8000
-    m.params['TTTR_RepetitiveReadouts'] =  10 #
-    m.params['TTTR_read_count'] =   1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-    m.params['measurement_abort_check_interval']    = 2. #sec
-    m.params['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
-    m.params['use_live_marker_filter']=False
-
-    load_BK_params(m)
-
-
-    m.joint_params['do_final_mw_LDE'] = 1
-    #m.params['LDE_final_mw_amplitude'] = 0
-
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 5000
+    m.params['reps_per_ROsequence'] = 50000
 
     sweep_telcrification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
     m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 1
-    m.joint_params['opt_pi_pulses'] = 2
+    m.params['PLU_during_LDE'] = 0
+
+    m.params['opt_pi_pulses'] = 2
+
+    m.params['LDE1_attempts'] = 1
 
     m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
     m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
 
     m.params['is_two_setup_experiment'] = 0 
 
+    m.params['do_final_mw_LDE'] = 1
+    m.params['LDE_final_mw_amplitude'] = 0
     ### upload
 
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
@@ -281,6 +266,9 @@ def MW_Position(name,debug = False,upload_only=False):
 
     m = telcrify(name)
     sweep_telcrification.prepare(m)
+
+    old_ins = pq_measurement.PQMeasurement.PQ_ins
+    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N']
 
     # load_TH_params(m)
     #load_BK_params(m)
@@ -334,6 +322,8 @@ def MW_Position(name,debug = False,upload_only=False):
     ### upload and run
 
     sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
+
+    pq_measurement.PQMeasurement.PQ_ins = old_ins
 
 def TPQI(name,debug = False,upload_only=False):
     
@@ -464,17 +454,17 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=True, minval = 0.0, maxval=0.8, local=True)
+    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
     # TPQI(name+'_HOM_test_red',debug = True,upload_only=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
-    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     # measureInterferometerDelay(name,debug = False,upload_only=False)
     
 
 
 
     ###### non-local measurements // Barrett Kok parameters
-    BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  True)
+    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  True)
     #TPQI(name+'_HBT_red',debug = False,upload_only=False)
     # TPQI(name+'_ionisation',debug = False,upload_only=False)
     #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)

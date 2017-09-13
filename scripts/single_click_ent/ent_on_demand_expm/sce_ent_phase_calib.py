@@ -1,3 +1,9 @@
+"""
+PH 2017
+Script that attempts to calibrate the phase of the MW pulse so that the entangled state has the correct phase
+In practice we didnt use this
+"""
+
 import qt
 import data
 from analysis.lib.fitting import fit, common

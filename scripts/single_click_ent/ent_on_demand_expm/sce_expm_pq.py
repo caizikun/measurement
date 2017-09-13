@@ -1,3 +1,12 @@
+"""
+This is the master class for the single click entanglement and deterministic entanglement generation experiment.
+Combines the sce_expm class with the PQ class necessary for time correlated measurements
+
+Also has all of the experiments that we run
+
+PH NK 2017 / NK 2016
+"""
+
 import qt
 import numpy as np
 import time

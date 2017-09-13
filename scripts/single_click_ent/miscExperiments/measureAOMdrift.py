@@ -1,3 +1,8 @@
+"""
+PH 2017
+This script plots the AOM frequency over time (measured using the signal hound), to investigate how stable it is 
+"""
+
 import qt
 import msvcrt
 import numpy as np

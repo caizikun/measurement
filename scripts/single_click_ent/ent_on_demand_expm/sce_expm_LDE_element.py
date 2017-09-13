@@ -1,11 +1,12 @@
 '''
-Generates AWG elements from locally stored parameters for the purifcation project.
+Generates AWG elements from locally stored parameters for the single click ent project.
 Specifically contains the following output possiblities:
     - Barrett & Kok Entangling element
     - Single Optical Pi pulse entangling element
 
 This setting is changed by merely adapting the local parameters adequately.
 
+Updated PH NK 2017
 Norbert Kalb 2016
 '''
 

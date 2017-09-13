@@ -56,7 +56,7 @@ elif electron_transition == '-1':
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.628
+	hermite_pi2_amp = 0.632
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
@@ -630,16 +630,16 @@ cfg['protocols'][name]['pulses'] = {
       	'mw2_Square_pi2_length' :   0,
     	'mw2_Square_pi2_amp' :		0,
 
-    	'eom_pulse_amplitude'		 : 2.5, # calibration PH 2017-02-24
+    	'eom_pulse_amplitude'		 : -2.0, # calibration PH 2017-02-24
     	'eom_pulse_duration'         : 2e-9,
     	'eom_off_duration'           : 50e-9,
-    	'eom_off_amplitude'          : 0.43, # calibration PH 2017-02-24
+    	'eom_off_amplitude'          : 0.71, # calibration PH 2017-02-24
     	'eom_overshoot_duration1'    : 20e-9,
     	'eom_overshoot1'             : -0.04,
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
-    	'aom_risetime'               : 20e-9, #17e-9
-    	'aom_amplitude'              : 0.9, 
+    	'aom_risetime'               : 24e-9, #17e-9
+    	'aom_amplitude'              : 0.8, 
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
