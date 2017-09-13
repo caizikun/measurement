@@ -219,10 +219,11 @@ def create_experiment_list_pyGSTi(filename):
 
 
 
-def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
+def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
 
     if sequence_type == 'specific_germ_position':
-        m = pulsar_delay.GateSetNoTriggers(name)
+        m = pulsar_delay.GateSetWithDecoupling(name)
+
 
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
@@ -242,7 +243,10 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
     m.params['sequence_wait_time']  = [0]
 
 
+    #Specigfic to make it work on LT2
 
+    m.params['Shutter_rise_time']   = 2500
+    m.params['Shutter_fall_time']   = 2500
 
 
     m.params['pulse_type'] = 'Hermite'
@@ -264,28 +268,35 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
     m.params['germ_position']       = germ_position
     m.params['N_decoupling']        = N_decoupling
     m.params['run_numbers']         = run_numbers
-            
-    #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
-    tau_larmor = np.round(1/m.params['C1_freq_0'],9)
-
-    #The spacing in between germ pulses
-    t_bw_germs = 50e-9
-    m.params['wait_time'] = t_bw_germs
     
-    #We need to check that our germ / fiducial pulses fit between two larmor times, and otherwise make it an
-    #integer multiple of the initial value. Strictly the fiducial does not go in here. In the end this is probably not necessary since
-    #our sequences are very short.
-    sequence_length = max(len(max(fid_1, key=len)), len(max(fid_2, key=len)), len(max(germ, key=len)))*(m.params['Hermite_pi2_length']+t_bw_germs)+t_bw_germs
 
-    if 2*tau_larmor <= sequence_length:
-        tau_larmor *= np.ceil(sequence_length/(2*tau_larmor))
+    if decoupling:
+            
+        #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
+        tau_larmor = np.round(1/m.params['C1_freq_0'],9)
 
-    tau_larmor *= 4
+        #The spacing in between germ pulses
+        t_bw_germs = 50e-9
+        m.params['wait_time'] = t_bw_germs
+        
+        #We need to check that our germ / fiducial pulses fit between two larmor times, and otherwise make it an
+        #integer multiple of the initial value. Strictly the fiducial does not go in here. In the end this is probably not necessary since
+        #our sequences are very short.
+        sequence_length = max(len(max(fid_1, key=len)), len(max(fid_2, key=len)), len(max(germ, key=len)))*(m.params['Hermite_pi2_length']+t_bw_germs)+t_bw_germs
 
-    m.params['tau_larmor'] = tau_larmor
+        if 2*tau_larmor <= sequence_length:
+            tau_larmor *= np.ceil(sequence_length/(2*tau_larmor))
 
-    m.params['sweep_name'] = 'Total evolution time [ms]'
-    m.params['sweep_pts'] = run_numbers*np.ones(len(run_numbers))*tau_larmor*1.e3
+        tau_larmor *= 4
+
+        m.params['tau_larmor'] = tau_larmor
+
+        m.params['sweep_name'] = 'Total evolution time [ms]'
+        m.params['sweep_pts'] = run_numbers*np.ones(len(run_numbers))*tau_larmor*1.e3
+
+    else:
+        m.params['sweep_name'] = 'Germ repetitions'
+        m.params['sweep_pts'] = run_numbers
 
     #Set up the pulses we want to use in the experiment
     X_pi2   = ps.Xpi2_pulse(m)
@@ -318,18 +329,24 @@ def gateset_NoTriggers(m, debug = False, fid_1 = ['e'], fid_2 = ['e'], sequence_
 
     # Start measurement
     m.autoconfig()
-    m.generate_sequence(upload=True, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2, x_pulse_pi = X_pi, y_pulse_pi = Y_pi, x_pulse_mpi = mX_pi, y_pulse_mpi = mY_pi)
+    m.generate_sequence(pi = pi, decoupling = decoupling, upload=True, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2, x_pulse_pi = X_pi, y_pulse_pi = Y_pi, x_pulse_mpi = mX_pi, y_pulse_mpi = mY_pi)
+
 
     if not debug:
         m.run(autoconfig=False)
-        m.save()
 
-    m.finish()
+        if multiple:
+            m.save(name='Start_run%d' %run_numbers[0])
+
+        else:
+            m.save()
+
+        m.finish()
         # if sequence_type == 'specific_germ_position':
         #     m.finish()
 
 
-def individual_awg_write_ro(filename, debug = True, awg_size = 50):
+def individual_awg_write_ro(filename, debug = True, decoupling = True, pi=True, awg_size = 50):
     
     #Create a list of all experiments that we want to do. Assumes that we created a filename before
     experimentalist = create_experiment_list_pyGSTi(filename)
@@ -337,10 +354,21 @@ def individual_awg_write_ro(filename, debug = True, awg_size = 50):
     #Determine the number of awg runs we want to run, making sure we always round up so we take all the data we want
     awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
 
-    m = pulsar_delay.GateSetNoTriggers(name)
+    #To keep track what we need to do for the save name
+    if awg_runs >1:
+        multiple = True
+
+    else: multiple = False
+
+
+    if decoupling:
+        m = pulsar_delay.GateSetWithDecoupling(name)
+
+    else:
+        m = pulsar_delay.GateSetNoDecoupling(name)
 
     # for i in range(awg_runs):
-    for i in range(3):
+    for i in range(2):
         
         ## Option to stop the measurement in a clean fashin
         breakst = show_stopper()
@@ -355,7 +383,7 @@ def individual_awg_write_ro(filename, debug = True, awg_size = 50):
         N_dec   = [pos[3]+1 for pos in single_awg_list]
         run     = [pos[4] for pos in single_awg_list]
 
-        gateset_NoTriggers(m, debug, fid_1 = fid_1, fid_2 = fid_2, sequence_type = 'all', germ = germ, N_decoupling = N_dec, run_numbers=run)
+        gateset(m, debug, decoupling, multiple, pi, fid_1 = fid_1, fid_2 = fid_2, sequence_type = 'all', germ = germ, N_decoupling = N_dec, run_numbers=run)
    
     if not debug:
         m.finish()
@@ -387,6 +415,11 @@ def electronRefocussingTriggered(name, debug = False, range_start = -2e-6, range
     pts = 51
     m.params['pts'] = pts
     m.params['repetitions'] = 1000
+
+
+
+
+
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
     # range from 0 to 1000 us
@@ -460,15 +493,14 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
+    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = True, decoupling = True, pi=True, awg_size = 3)
 
-    # gateset_NoTriggers(name, debug = True, fid_1 =['e', 'e'], fid_2 = ['e', 'e'], sequence_type = 'all', germ = ['e', 'e'], germ_position = [1, 2, 3], N_decoupling = [4, 5], run_numbers=[5, 10])
+    gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, pi=False, fid_1 = ['x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm'], sequence_type = 'all', germ = ['xyx', 'e', 'e'], N_decoupling = [2, 3, 4] ,run_numbers=[2, 3, 4])
+# 
+    # gateset(pulsar_delay.GateSetNoDecoupling(name), debug = True, fid_1 = ['xx'], fid_2 = [ 'm'], sequence_type = 'all', germ = ['xx'], N_decoupling = [2] ,run_numbers=[2])
 
 
-    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", awg_size = 50)
-
-    gateset_NoTriggers(pulsar_delay.GateSetNoTriggers(name), debug = False, fid_1 = ['x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e'], N_decoupling = [16, 32, 64, 128], run_numbers=[16, 32, 64, 128])
-
-    # gateset_NoTriggers(pulsar_delay.GateSetNoTriggers(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
+    # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
 
 
     # reoptimize()
