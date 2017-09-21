@@ -158,14 +158,26 @@ params_lt4['do_PQ_msmt'] = do_PQ_msmt
 params_lt4['do_delay_HH_trigger'] = do_PQ_msmt
 params_lt4['delay_feedback_HHsync_include'] = do_PQ_msmt
 
-TH_HH_selector = 1 #set to 1 for HH
-params_lt4['MAX_DATA_LEN']        =   int(100e6)/TH_HH_selector
-params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
-params_lt4['MIN_SYNC_BIN']        =   int(4e6)/TH_HH_selector #5 us 
-params_lt4['MAX_SYNC_BIN']        =   int(8.0e6)/TH_HH_selector#15 us # XXX was 15us
-params_lt4['MIN_HIST_SYNC_BIN']   =   int(4e6)/TH_HH_selector #XXXX was 5438*1e3
-params_lt4['MAX_HIST_SYNC_BIN']   =   int(8e6)/TH_HH_selector
-params_lt4['count_marker_channel'] = 1
+TH_HH_selector = 0 #set to 1 for HH, 10 for TH
+
+if TH_HH_selector:
+	params_lt4['MAX_DATA_LEN']        =   int(100e6)
+	params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+	params_lt4['MIN_SYNC_BIN']        =   int(4e6) #5 us 
+	params_lt4['MAX_SYNC_BIN']        =   int(8.0e6)#15 us # XXX was 15us
+	params_lt4['MIN_HIST_SYNC_BIN']   =   int(4e6) #XXXX was 5438*1e3
+	params_lt4['MAX_HIST_SYNC_BIN']   =   int(8e6)
+	params_lt4['count_marker_channel'] = 1
+
+else:
+    params_lt4['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+    params_lt4['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+    params_lt4['MIN_SYNC_BIN'] =       0
+    params_lt4['MAX_SYNC_BIN'] =       8e3
+    params_lt4['MIN_HIST_SYNC_BIN'] =  1
+    params_lt4['MAX_HIST_SYNC_BIN'] =  8000
+    params_lt4['count_marker_channel'] = 1
+    
 
 params_lt4['PQ_ch1_delay'] = 0
 

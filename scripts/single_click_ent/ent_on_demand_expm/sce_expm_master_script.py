@@ -1,3 +1,8 @@
+"""
+This script allows for automated running of experiments with calibrations in between. For the sce expms we didnt use this much
+PH NK 2017 / NK 2016
+"""
+
 import msvcrt
 import qt
 import numpy as np

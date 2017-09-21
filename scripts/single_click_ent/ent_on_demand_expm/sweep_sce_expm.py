@@ -1,7 +1,7 @@
 '''
-Allows for sweeps of general parameters within the purification sequence.
+Allows for sweeps of general parameters within the single click entanglement sequence.
 Only supports single setup experiments with one specific adwin script
-NK 2016
+PH/NK 2017
 '''
 
 import numpy as np

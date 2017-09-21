@@ -1,3 +1,9 @@
+"""
+PH 2017
+Script that attempts to calibrate the phase stabilisation msmt parameters
+In practice we didnt use this since they didnt change significantly, and changes implied that we needed to reoptimise our position on the NVs
+"""
+
 import qt
 import data
 from analysis.lib.fitting import fit, common

@@ -45,7 +45,6 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     else: 
         m.params['MW_pulse_amplitudes'] = m.params['fast_pi_amp'] + np.linspace(-rng, rng, pts)
 
-    print m.params['MW_pulse_amplitudes']
     # m.params['MW_pulse_amplitudes'] = np.linspace(0,0.9,pts)
             
     m.params['interpulse_delay'] = [7.5e-6]*pts

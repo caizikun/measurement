@@ -1,3 +1,8 @@
+"""
+PH 2017
+Helper script for the adwin to act as a 'scope' for the apd counts (takes data faster than could be directly streamed to the computer)
+"""
+
 import qt
 import numpy as np
 import scipy.fftpack

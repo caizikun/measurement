@@ -1,8 +1,7 @@
 """
-Contains the single-setup experiments of the purification project.
-This class provides the sequence generation for the purification experiment.
+This class provides the sequence generation for the single click entanglement experiment.
 
-NK 2016
+PH NK 2017 / NK 2016
 """
 import numpy as np
 import qt
