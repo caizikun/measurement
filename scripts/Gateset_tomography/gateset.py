@@ -219,7 +219,10 @@ def create_experiment_list_pyGSTi(filename):
 
 
 
-def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
+def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single_decoupling = False, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
+    """
+    Gateset tomography code. Please enter a nice code description here once it is in the format I want it.
+    """
 
     if sequence_type == 'specific_germ_position':
         m = pulsar_delay.GateSetWithDecoupling(name)
@@ -329,7 +332,7 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, fid_1 
 
     # Start measurement
     m.autoconfig()
-    m.generate_sequence(pi = pi, decoupling = decoupling, upload=True, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2, x_pulse_pi = X_pi, y_pulse_pi = Y_pi, x_pulse_mpi = mX_pi, y_pulse_mpi = mY_pi)
+    m.generate_sequence(pi = pi, decoupling = decoupling, upload=True, single_decoupling = single_decoupling, x_pulse_pi2 = X_pi2, y_pulse_pi2 = Y_pi2, x_pulse_mpi2 = mX_pi2, y_pulse_mpi2 = mY_pi2, x_pulse_pi = X_pi, y_pulse_pi = Y_pi, x_pulse_mpi = mX_pi, y_pulse_mpi = mY_pi)
 
 
     if not debug:
@@ -495,7 +498,7 @@ if __name__ == '__main__':
 
     # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = True, decoupling = True, pi=True, awg_size = 3)
 
-    gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, pi=False, fid_1 = ['x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm'], sequence_type = 'all', germ = ['xyx', 'e', 'e'], N_decoupling = [2, 3, 4] ,run_numbers=[2, 3, 4])
+    gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8] ,run_numbers=[1, 2, 4, 8])
 # 
     # gateset(pulsar_delay.GateSetNoDecoupling(name), debug = True, fid_1 = ['xx'], fid_2 = [ 'm'], sequence_type = 'all', germ = ['xx'], N_decoupling = [2] ,run_numbers=[2])
 
