@@ -241,7 +241,15 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
 
         else:
             sys.exit("Problem in the decoupling pulse builidng.")
-       
+    
+    def generate_xy8(self):
+
+        decoupling_list = ['x', 'y', 'x', 'y', 'y', 'x', 'y', 'x']
+        for i in range(len(decoupling_list)):
+            self.generate_pi(decoupling_list[i])
+            self.start_time = 2*self.params['tau_larmor']-self.params[self.pi_name]
+            if self.pi_name == 'Hermite_pi2_length':
+                self.start_time -=self.params[self.pi_name]    
 
     def generate_subsequence(self, first_fiducial = False, seq='x'):
         """
@@ -272,7 +280,6 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
             self.start_time = t_around_subseq
             
             if first_fiducial:
-                # self.start_time = self.params[self.pi_name]/2
                 self.start_time = 0
 
             for i in range(len(seq)):
@@ -303,7 +310,7 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
             self.start_time = t_around_subseq 
 
 
-    def generate_sequence(self, pi = True, upload=True, **kw):
+    def generate_sequence(self, pi = True, single_decoupling = False, upload=True, **kw):
 
         #Variable to count pulse names up
         self.n = 1
@@ -349,39 +356,38 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
             self.e1 = element.Element('Germ_sequence_%d' % self.params['run_numbers'][k], pulsar=qt.pulsar,
                     global_time = True)
 
-            #Make the decoupling list. Idea is to put a full xy8 sequence between subsequent germs.
-            decoupling_seq = self.generate_decoupling_list(k)
+            if single_decoupling:
+                #Make a decoupling list, using always xy8, or individual germs
+                decoupling_seq = self.generate_decoupling_list(k)
+
 
             #Initialize the C13 spin
             elements.append(pulsar_msmt.MBI._MBI_element(self, name='CNOT%d' % k))
 
-            for i in range(self.params['N_decoupling'][k]+1):
-                if i == 0:
-                    self.e1.add(pulse.cp(self.T, 
+            self.e1.add(pulse.cp(self.T, 
                                         length = self.params['initial_msmt_delay']), 
                                         name='pulse%d' % self.n, 
                                         refpoint_new = 'start')
-                    self.n +=1
+            self.n +=1
                 
-                    #Generate the first fiducial and decoupling pulse
-                    self.generate_subsequence(first_fiducial = True, seq=self.params['fid_1'][k])
-                    self.generate_pi(decoupling_seq[i])
+            #Generate the first fiducial 
+            self.generate_subsequence(first_fiducial = True, seq=self.params['fid_1'][k])
+            
+            #Generate the first decoupling pulse if we have a sequence with decoupling pulses everywhere, or otherwise full xy8
+            if single_decoupling:
+                self.generate_pi(decoupling_seq[0])
 
-                #If we are at the last position then build the second fiducial
-                elif i == self.params['N_decoupling'][k]:
-
-                    self.generate_subsequence(seq=self.params['fid_2'][k])
-
-                #If it is a germ sequence with germs everywhere then go here
-                elif self.params['sequence_type']== 'all':
+            else:
+                self.generate_xy8()
+            
+            for i in range(0, self.params['N_decoupling'][k]):
                     self.generate_subsequence(seq=self.params['germ'][k])
-                    self.generate_pi(decoupling_seq[i])
+                    if single_decoupling:
+                        self.generate_pi(decoupling_seq[i])
+                    else:
+                        self.generate_xy8()
 
-                else:
-                    self.start_time = 2*self.params['tau_larmor']-self.params[self.pi_name]
-                    self.generate_pi(decoupling_seq[i])
-
-
+            self.generate_subsequence(seq=self.params['fid_2'][k])
             self.pulse_caller(pulsetype = self.adwin_sync, start=0)
 
             elements.append(self.e1)
