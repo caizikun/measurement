@@ -3299,6 +3299,96 @@ config['adwin_pro_processes'] = {
                     },
                 },
 
+        'telcrification' : {
+                'index' : 9,
+                'file' : 'telcrification.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       , 100],
+                    ['MBI_attempts_before_CR'          ,   1], 
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,  20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['do_carbon_init'                  ,   1], # goes to mbi sequence, ends with tomography
+                    ['do_C_init_SWAP_wo_SSRO'          ,   1],
+                    ['do_swap_onto_carbon'             ,   1],
+                    ['do_SSRO_after_electron_carbon_SWAP', 0],
+                    ['do_LDE_2'                        ,   1],
+                    ['do_phase_correction'             ,   1],
+                    ['do_purifying_gate'               ,   1],
+                    ['do_carbon_readout'               ,   1],
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['phase_correct_max_reps'          ,   5],   
+                    ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
+                    ['Phase_stab_duration'             ,   1],
+                    ['Phase_stab_interval'             ,   1],
+                    ['phase_stab_signal_channel'       ,   1],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['E_C13_MBI_RO_voltage' , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['phase_per_sequence_repetition'    , 0.],
+                    ['phase_per_compensation_repetition', 0.],
+                    ['phase_feedback_resolution', 4.5],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
+                    'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    },
+                'data_float' : {
+                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
+                    'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
+                    },
+                },
+
         'purification_delayfb' : {
                 'index' : 9,
                 'file' : 'purification_delayfb.TB9',
@@ -3652,54 +3742,6 @@ config['adwin_pro_processes'] = {
                 'fpar' : {
                     'amp'           : 12, # Amplification of sin
                     'setpoint'      : 13, # setpoint of the PID
-                    },
-                },
-                'fibre_stretcher_PID' : {
-                'index' : 8,
-                'file' : 'fibre_stretcher_PID.TB8',
-                'par' :{
-                    'delay'         : 10, # processdelay
-                },
-                'fpar' : {
-                    'setpoint'      : 14, # setpoint (output)
-                    },
-                },
-                'fibre_stretcher_setpoint' : {
-                'index' : 8,
-                'file' : 'fibre_stretcher_setpoint.TB8',
-                'par' :{
-                    'delay'         : 10, # processdelay
-                },
-                'fpar' : {
-                    'g_0'      : 13, # scalefactor ZPL APD 0
-                    'g_1'      : 14, # scalefactor ZPL APD 1
-                    },
-                },
-                'Phase_stable_pid' : {
-                'index' : 8,
-                'file' : 'Phase_stable_pid.TB8',
-                'par' :{
-                    'delay'         : 10, # processdelay
-                    'completed_reps' : 73,
-                },
-                'fpar' : {
-                    'g_0'      : 13, # scalefactor ZPL APD 0
-                    'g_1'      : 14, # scalefactor ZPL APD 1
-                    'setpoint' : 15, # setpoint PID in degrees (Input when running process)
-                    },
-                'params_long' : [
-                    ['PID_cycles'                   ,  50],
-                    ['sample_cycles'                ,   50],
-                    ['max_repetitions'              ,   10],
-                    ],
-                'params_float' :[],
-                'params_long_index'  : 20,
-                'params_float_index' : 21,
-                'data_long' : {
-                    'PID_counts_1' : 26,
-                    'PID_counts_2' : 27,
-                    'sample_counts_1' : 24,
-                    'sample_counts_2' : 25,
                     },
                 },
                 'oscilloscope' : {

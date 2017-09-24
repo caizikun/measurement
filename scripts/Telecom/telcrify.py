@@ -15,7 +15,7 @@ name = qt.exp_params['protocols']['current']
 
 class telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_Threaded_Measurement ): #
     mprefix = 'Telcrification'
-    adwin_process = 'purification'
+    adwin_process = 'telcrification'
     
     def __init__(self, name,hist_only = False):
         telcrify_slave.purify_single_setup.__init__(self, name)
@@ -117,13 +117,18 @@ class telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_
 
 
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = True):
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = True, TH = True):
     """
     Performs a tail_sweep in the LDE_1 element
     """
     m = telcrify(name)
     sweep_telcrification.prepare(m)
 
+    if TH:
+        old_pq_ins = pq_measurement.PQMeasurement.PQ_ins
+        pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N']
+        load_TH_params(m)
+        
     ### general params
     pts = 8
     m.params['pts'] = pts
@@ -173,6 +178,9 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
 
+    if TH:
+        pq_measurement.PQMeasurement.PQ_ins= old_pq_ins
+
 
 
 def load_BK_params(m):
@@ -185,40 +193,17 @@ def load_BK_params(m):
     m.params['LDE_SP_duration'] = 1.5e-6
 
 
+def load_TH_params(m):
 
-def BarretKok_SPCorrs(name, debug = False, upload_only = False):
-    """
-    Performs a regular Spin-photon correlation measurement with the Barret & Kok timing parameters.
-
-    """
-    m = telcrify(name)
-    sweep_telcrification.prepare(m)
-
-    load_BK_params(m)
-
-
-    m.params['do_final_mw_LDE'] = 1
-    #m.params['LDE_final_mw_amplitude'] = 0
-
-    ### general params
-    m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 5000
-
-    sweep_telcrification.turn_all_sequence_elements_off(m)
-    ### which parts of the sequence do you want to incorporate.
-    m.params['do_general_sweep']    = False
-    m.params['PLU_during_LDE'] = 1
-    m.params['opt_pi_pulses'] = 2
-
-    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
-    m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
-
-    m.params['is_two_setup_experiment'] = 0 
-
-    ### upload
-
-    sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
-
+    m.params['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
+    m.params['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
+    m.params['MIN_SYNC_BIN'] =       0#2500
+    m.params['MAX_SYNC_BIN'] =       8500
+    m.params['MIN_HIST_SYNC_BIN'] =  0#2500
+    m.params['MAX_HIST_SYNC_BIN'] =  8500
+    m.params['TTTR_RepetitiveReadouts'] =  10 #
+    m.params['TTTR_read_count'] =     1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
+    m.params['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
 
 
 
@@ -230,6 +215,9 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
     m = telcrify(name)
     sweep_telcrification.prepare(m)
 
+    old_pq_ins = pq_measurement.PQMeasurement.PQ_ins
+    pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N']
+    load_TH_params(m)
 
     ### general params
     m.params['pts'] = 1
@@ -255,6 +243,43 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
 
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
 
+    pq_measurement.PQMeasurement.PQ_ins= old_pq_ins
+
+def SPCorrsPuri_ZPL_singleSetup(name, debug = False, upload_only = False):
+    """
+    Performs a regular Spin-photon correlation measurement.
+    """
+
+    m = telcrify(name)
+    sweep_telcrification.prepare(m)
+
+
+    ### general params
+    m.params['pts'] = 1
+    m.params['reps_per_ROsequence'] = 1000
+
+    sweep_telcrification.turn_all_sequence_elements_off(m)
+    ### which parts of the sequence do you want to incorporate.
+    m.params['do_general_sweep']    = False
+    m.params['PLU_during_LDE'] = 1
+
+    m.params['opt_pi_pulses'] = 2
+
+    m.params['LDE1_attempts'] = 350
+
+    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+    m.params['mw_first_pulse_length'] = m.params['Hermite_pi2_length']
+
+    m.params['is_two_setup_experiment'] = 0 
+
+    m.params['do_final_mw_LDE'] = 1
+    m.params['LDE_final_mw_amplitude'] = 0
+    ### upload
+
+    sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
+
+
+# pq_measurement.PQMeasurement.PQ_ins=qt.instruments['HH_400']
 
 def MW_Position(name,debug = False,upload_only=False):
     """
@@ -454,22 +479,14 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True)
+    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True, TH = False)
     # TPQI(name+'_HOM_test_red',debug = True,upload_only=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
-    SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
+    
+    SPCorrsPuri_ZPL_singleSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
     # measureInterferometerDelay(name,debug = False,upload_only=False)
     
-
-
-
-    ###### non-local measurements // Barrett Kok parameters
-    # BarretKok_SPCorrs(name+'_SPCorrs_ZPL_BK',debug = False, upload_only=  True)
-    #TPQI(name+'_HBT_red',debug = False,upload_only=False)
-    # TPQI(name+'_ionisation',debug = False,upload_only=False)
-    #EntangleZZ(name+'_Entangle_ZZ',debug = False,upload_only=False)
-    # EntangleXX(name+'_Entangle_XX',debug = False,upload_only=False)
-
     # qt.mstart()
     if hasattr(qt,'master_script_is_running'):
         print 'STATUS :',  qt.master_script_is_running

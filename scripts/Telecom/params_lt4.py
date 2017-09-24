@@ -37,6 +37,10 @@ params_lt4['MBI_attempts_before_CR'] = 1
 params_lt4['phase_correct_max_reps'] = 72
 params_lt4['phase_feedback_resolution'] = 4.5
 
+params_lt4['Phase_stab_duration'] = 100000 # How many microseconds to phase stabilise for
+params_lt4['Phase_stab_interval'] = 1000000 # Time between phase stabilisations in microseconds
+params_lt4['phase_stab_signal_channel'] = 7 # Channel to signal on
+
 # channels
 #params_lt4['wait_for_AWG_done'] = 1 # not used in adwin script
 params_lt4['PLU_event_di_channel'] = 21 
@@ -55,15 +59,13 @@ params_lt4['adwin_comm_timeout_cycles'] = 200000 # 1ms
 params_lt4['remote_awg_trigger_channel'] = 13 # not used on slave
 params_lt4['invalid_data_marker_do_channel'] = 5 # currently not used
 params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns
-
-
 params_lt4['sync_during_LDE']           = 1
 
 params_lt4['PLU_during_LDE']          = 1
-params_lt4['PLU_gate_duration']       = 100e-9#70e-9
+params_lt4['PLU_gate_duration']       = 50e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9
-params_lt4['PLU_1_delay']             = 18e-9+18e-9
-params_lt4['PLU_2_delay']             = 18e-9+18e-9
+params_lt4['PLU_1_delay']             = 88e-9 - 200e-9
+params_lt4['PLU_2_delay']             = 88e-9 - 200e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 2500e-9 # don't change this
 
@@ -76,35 +78,32 @@ params_lt4['LDE_final_mw_phase']      = qt.exp_params['protocols'][name]['pulses
 params_lt4['mw_second_pulse_amp']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_amp']
 params_lt4['mw_second_pulse_length']     = qt.exp_params['protocols'][name]['pulses']['Hermite_pi_length']
 
-### Everything TimeHarp / this is copied from Bell.joint_params
+params_lt4['MAX_DATA_LEN']        =   int(100e6)
+params_lt4['BINSIZE']             =   8  #2**BINSIZE*BASERESOLUTION = 1 ps for HH
+params_lt4['MIN_SYNC_BIN']        =   int(3e6)
+params_lt4['MAX_SYNC_BIN']        =   int(6e6)#15 us # XXX was 15us 
+params_lt4['MIN_HIST_SYNC_BIN']   =   int(3e6) #XXXX was 5438*1e3
+params_lt4['MAX_HIST_SYNC_BIN']   =   int(6e6)
+params_lt4['count_marker_channel'] = 1
 
-params_lt4['MAX_DATA_LEN'] =       int(10e6) ## used to be 100e6
-params_lt4['BINSIZE'] =            1 #2**BINSIZE*BASERESOLUTION 
-params_lt4['MIN_SYNC_BIN'] =       0#2500
-params_lt4['MAX_SYNC_BIN'] =       8500
-params_lt4['MIN_HIST_SYNC_BIN'] =  0#2500
-params_lt4['MAX_HIST_SYNC_BIN'] =  8500
-params_lt4['TTTR_RepetitiveReadouts'] =  10 #
-params_lt4['TTTR_read_count'] =     1000 #  samples #qt.instruments['TH_260N'].get_T2_READMAX() #(=131072)
-params_lt4['count_marker_channel'] = 4 ##### put plu marker on HH here! needs to be kept!
+params_lt4['pulse_start_bin'] = 2810e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 2856e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['PQ_ch1_delay'] = 18e3
 
-params_lt4['measurement_abort_check_interval']    = 2. #sec
+params_lt4['measurement_time']    =   24.*60*60 #sec = 24H
+params_lt4['measurement_abort_check_interval']    = 1 #sec
 params_lt4['wait_for_late_data'] = 1 #in units of measurement_abort_check_interval
+params_lt4['TTTR_read_count'] = 131072#qt.instruments['HH_400'].get_T2_READMAX()
+params_lt4['TTTR_RepetitiveReadouts'] =  1
+
+
 params_lt4['use_live_marker_filter']=True
 params_lt4['maximum_meas_time_in_min'] = 60
 params_lt4['do_green_reset'] = False
 
-params_lt4['pulse_start_bin'] = 2050-params_lt4['MIN_SYNC_BIN']       #### Puri: 2550 BK: 2950
-params_lt4['pulse_stop_bin'] = 2050+2000-params_lt4['MIN_SYNC_BIN']    #### BK: 2950
-params_lt4['tail_start_bin'] = 2050 -params_lt4['MIN_SYNC_BIN']       #### BK: 2950
-params_lt4['tail_stop_bin'] = 2050+2000 -params_lt4['MIN_SYNC_BIN']    #### BK: 2950
-params_lt4['PQ_ch1_delay'] = 55
-
 params_lt4['live_filter_queue_length'] = 10
-
-params_lt4['measurement_time'] = 24.*60.*60. 
-
-print params_lt4['LDE_final_mw_phase']
 
 ### parameters for LDE timing:
 params_lt4['TPQI_normalisation_measurement'] = False
