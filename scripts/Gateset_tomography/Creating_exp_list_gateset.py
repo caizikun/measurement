@@ -124,33 +124,6 @@ class gateset_helpers():
         
         return experimentlist
 
-    def individual_awg_write_ro(self, filename, awg_size = 50):
-        
-        #Create a list of all experiments that we want to do. Assumes that we created a filename before
-        experimentalist = self.create_experiment_list_pyGSTi(filename)
-        
-        #Determine the number of awg runs we want to run, making sure we always round up so we take all the data we want
-        awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
-        
-        for i in range(awg_runs):
-
-            #Create a sublist of our experimental list in which we have all the current experiments we want to run in the awg
-            single_awg_list = experimentalist[i*awg_size:(i+1)*awg_size]
-
-            fid_1   = [pos[0] for pos in single_awg_list]
-            germ    = [pos[1] for pos in single_awg_list]
-            fid_2   = [pos[2] for pos in single_awg_list]
-            N_dec   = [pos[3] for pos in single_awg_list]
-            run     = [pos[4] for pos in single_awg_list]
-        
-        # print len(experimentalist), len(single_awg_list), awg_runs, single_awg_list, '\n'
-        # print fid_1, run
-
-
-        
-        return experimentalist
-
-
 
 a = gateset_helpers()
 

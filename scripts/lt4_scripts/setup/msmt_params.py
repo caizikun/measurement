@@ -50,13 +50,13 @@ elif electron_transition == '-1':
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.863
+	hermite_pi_amp = 0.855 #0.863
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.632
+	hermite_pi2_amp = 0.625 # 0.632
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow

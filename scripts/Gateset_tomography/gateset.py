@@ -5,7 +5,7 @@ import time
 import qt
 import numpy as np
 import msvcrt
-from Creating_exp_list_gateset import gateset_helpers
+# from Creating_exp_list_gateset import gateset_helpers
 import measurement.scripts.mbi.mbi_funcs as funcs
 # import Creating_exp_list_gateset
 
@@ -219,7 +219,7 @@ def create_experiment_list_pyGSTi(filename):
 
 
 
-def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single_decoupling = False, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
+def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single_decoupling = False, last_seq = False, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
     """
     Gateset tomography code. Please enter a nice code description here once it is in the format I want it.
     """
@@ -250,19 +250,14 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
 
     m.params['Shutter_rise_time']   = 2500
     m.params['Shutter_fall_time']   = 2500
-
-
     m.params['pulse_type'] = 'Hermite'
-
     m.params['Ex_SP_amplitude']=0
-    m.params['AWG_to_adwin_ttl_trigger_duration']=3e-6  # commenting this out gives an erro
+    m.params['AWG_to_adwin_ttl_trigger_duration']=3e-6  # commenting this out gives an error
     m.params['wait_for_AWG_done']=1
-    m.params['initial_msmt_delay'] = 000.0e-9
+    m.params['initial_msmt_delay'] = 10000.0e-9
 
     #The total number of sequence repetitions
     m.params['reps_per_ROsequence'] = 5000
-
-
 
     m.params['fid_1']               = fid_1
     m.params['fid_2']               = fid_2
@@ -278,6 +273,7 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
         #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
         tau_larmor = np.round(1/m.params['C1_freq_0'],9)
 
+
         #The spacing in between germ pulses
         t_bw_germs = 50e-9
         m.params['wait_time'] = t_bw_germs
@@ -289,8 +285,9 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
 
         if 2*tau_larmor <= sequence_length:
             tau_larmor *= np.ceil(sequence_length/(2*tau_larmor))
-
-        tau_larmor *= 4
+            print "Adjusted larmor frequency to multiple", tau_larmor
+        # tau_larmor *= 4
+        # print tau_larmor
 
         m.params['tau_larmor'] = tau_larmor
 
@@ -339,24 +336,35 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
         m.run(autoconfig=False)
 
         if multiple:
+            print run_numbers[0]
             m.save(name='Start_run%d' %run_numbers[0])
 
         else:
             m.save()
 
-        m.finish()
+        if not multiple:
+            m.finish()
+
+        else:
+            if last_seq == True:
+                m.finish()
         # if sequence_type == 'specific_germ_position':
         #     m.finish()
+def reoptimize():
+    GreenAOM.set_power(10e-6)
+    optimiz0r.optimize(dims=['x','y','z'], cycles=2)
+    GreenAOM.turn_off()
 
-
-def individual_awg_write_ro(filename, debug = True, decoupling = True, pi=True, awg_size = 50):
+def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, awg_size = 50):
     
+    last_seq = False
+
     #Create a list of all experiments that we want to do. Assumes that we created a filename before
     experimentalist = create_experiment_list_pyGSTi(filename)
     
     #Determine the number of awg runs we want to run, making sure we always round up so we take all the data we want
     awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
-
+    print "This experiment will have", awg_runs, "runs"
     #To keep track what we need to do for the save name
     if awg_runs >1:
         multiple = True
@@ -368,12 +376,22 @@ def individual_awg_write_ro(filename, debug = True, decoupling = True, pi=True, 
         m = pulsar_delay.GateSetWithDecoupling(name)
 
     else:
+        print "No decoupling"
         m = pulsar_delay.GateSetNoDecoupling(name)
 
-    # for i in range(awg_runs):
-    for i in range(2):
-        
-        ## Option to stop the measurement in a clean fashin
+    run_names = []
+
+    # awg_runs = 1
+
+    for i in range(awg_runs):
+
+        if i %20 == 0:
+            reoptimize()
+
+        if i == awg_runs:
+            last_seq = True
+
+        ## Option to stop the measurement in a clean fashion
         breakst = show_stopper()
         if breakst: break
 
@@ -383,10 +401,19 @@ def individual_awg_write_ro(filename, debug = True, decoupling = True, pi=True, 
         fid_1   = [pos[0]   for pos in single_awg_list]
         germ    = [pos[1]   for pos in single_awg_list]
         fid_2   = [pos[2]   for pos in single_awg_list]
-        N_dec   = [pos[3]+1 for pos in single_awg_list]
+        if decoupling:
+            N_dec   = [pos[3]+1 for pos in single_awg_list]
+        else:
+            N_dec   = [pos[3] for pos in single_awg_list]
         run     = [pos[4] for pos in single_awg_list]
 
-        gateset(m, debug, decoupling, multiple, pi, fid_1 = fid_1, fid_2 = fid_2, sequence_type = 'all', germ = germ, N_decoupling = N_dec, run_numbers=run)
+        print "Currently working on run numbers", run
+        print float(100*i/awg_runs), "% of measurements are finished"
+        run_names.extend(['Start_run%d' %run[0]])
+
+        m.params['all_run_names'] = run_names
+
+        gateset(m, debug = debug, decoupling = decoupling, multiple = multiple, pi = pi, last_seq = last_seq, fid_1 = fid_1, fid_2 = fid_2, sequence_type = 'all', germ = germ, N_decoupling = N_dec, run_numbers=run)
    
     if not debug:
         m.finish()
@@ -462,10 +489,7 @@ def electronRefocussingTriggered(name, debug = False, range_start = -2e-6, range
         m.save()
         m.finish()
 
-def reoptimize():
-    GreenAOM.set_power(5e-6)
-    optimiz0r.optimize(dims=['x','y','z'], cycles=2)
-    GreenAOM.turn_off()
+
 
 if __name__ == '__main__':
 
@@ -496,13 +520,16 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = True, decoupling = True, pi=True, awg_size = 3)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = False, pi=True, awg_size = 10)
 
-    gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8] ,run_numbers=[1, 2, 4, 8])
-# 
+    # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
+#
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=True, awg_size = 10)
+
     # gateset(pulsar_delay.GateSetNoDecoupling(name), debug = True, fid_1 = ['xx'], fid_2 = [ 'm'], sequence_type = 'all', germ = ['xx'], N_decoupling = [2] ,run_numbers=[2])
 
-
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=False, awg_size = 10)
+# 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
 
 

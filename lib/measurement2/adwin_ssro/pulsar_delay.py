@@ -496,9 +496,6 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
             self.e1 = element.Element('Single_germ_sequence_%d' % self.params['run_numbers'][k], pulsar=qt.pulsar,
                     global_time = True)
 
-            #Some varibales I need to keep track of what we are doing
-            last_germ = len(self.params['germ_position'])
-
             elements.append(pulsar_msmt.MBI._MBI_element(self, name='CNOT%d' % k))
 
             self.e1.add(pulse.cp(self.T, 
