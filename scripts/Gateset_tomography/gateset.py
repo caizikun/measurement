@@ -126,6 +126,10 @@ def seq_append(split):
             string +='x'
         elif split[i] == "Gy":
             string +='y'   
+        elif split[i] == "Gu":
+            string +='u' 
+        elif split[i] == "Gv":
+            string +='v' 
             
     if string=='':
         string +='e'
@@ -185,16 +189,16 @@ def create_experiment_list_pyGSTi(filename):
                 power = 1
                 result = re.split("[()]", clean_seq)
                 
-            fiducial.extend(seq_append(re.findall("G[xyi]", result[0])))
-            germs.extend(seq_append(re.findall("G[xyi]", result[1])))
-            measfiducial.extend(seq_append(re.findall("G[xyi]", result[2])))
+            fiducial.extend(seq_append(re.findall("G[xyuvi]", result[0])))
+            germs.extend(seq_append(re.findall("G[xyuvi]", result[1])))
+            measfiducial.extend(seq_append(re.findall("G[xyuvi]", result[2])))
 
         #Otherwise it is a single germ sequence without fiducials
-        elif ("Gi" in clean_seq) or ("Gx" in clean_seq) or ("Gy" in clean_seq) and ("(" not in clean_seq) :
+        elif ("Gi" in clean_seq) or ("Gx" in clean_seq) or ("Gy" in clean_seq) or ("Gu" in clean_seq) or ("Gv" in clean_seq) and ("(" not in clean_seq) :
             power = 1
             
             fiducial.extend('e')
-            germs.extend(seq_append(re.findall("G[xyi]", clean_seq)))
+            germs.extend(seq_append(re.findall("G[xyuvi]", clean_seq)))
             measfiducial.extend('e')
 
         #Make sure we only extend the experimentlist in case we did not look at a comment line or empty line
@@ -267,12 +271,11 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
     m.params['N_decoupling']        = N_decoupling
     m.params['run_numbers']         = run_numbers
     
+    #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
+    tau_larmor = np.round(1/m.params['C1_freq_0'],9)
+    m.params['tau_larmor'] = tau_larmor
 
     if decoupling:
-            
-        #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
-        tau_larmor = np.round(1/m.params['C1_freq_0'],9)
-
 
         #The spacing in between germ pulses
         t_bw_germs = 50e-9
@@ -298,14 +301,13 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
         m.params['sweep_name'] = 'Germ repetitions'
         m.params['sweep_pts'] = run_numbers
 
-    #Set up the pulses we want to use in the experiment
+    #Set up the pulses we want to use in the experiment. First all the pi2 pulses.
     X_pi2   = ps.Xpi2_pulse(m)
     Y_pi2   = ps.Ypi2_pulse(m)
     mX_pi2  = ps.mXpi2_pulse(m)
     mY_pi2  = ps.mYpi2_pulse(m)
 
-    #Only for now
-
+    #Set up all the pi pulses.
     X_pi    = ps.X_pulse(m)
     Y_pi    = ps.Y_pulse(m)
     mX_pi   = ps.mX_pulse(m)
@@ -377,15 +379,14 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
 
     else:
         print "No decoupling"
-        m = pulsar_delay.GateSetNoDecoupling(name)
+        # m = pulsar_delay.GateSetNoDecoupling(name)
+        m = pulsar_delay.GateSetNoDecouplingTiming(name)
 
     run_names = []
 
-    # awg_runs = 1
-
     for i in range(awg_runs):
 
-        if i %20 == 0:
+        if i %20 == 0 and debug == False:
             reoptimize()
 
         if i == awg_runs:
@@ -520,15 +521,15 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = False, pi=True, awg_size = 10)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = True, decoupling = False, pi=True, awg_size = 200)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=True, awg_size = 10)
+    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=True, awg_size = 10)
 
     # gateset(pulsar_delay.GateSetNoDecoupling(name), debug = True, fid_1 = ['xx'], fid_2 = [ 'm'], sequence_type = 'all', germ = ['xx'], N_decoupling = [2] ,run_numbers=[2])
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=False, awg_size = 10)
+    # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=False, awg_size = 10)
 # 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
 

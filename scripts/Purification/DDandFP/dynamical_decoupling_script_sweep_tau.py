@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     center_tau = 4.36e-6
     tau_step = 2e-9
-    steps = 50 #has to be divisble by two.
+    steps = 10 #has to be divisble by two.
 
     SimpleDecoupling_swp_tau(SAMPLE, 
         tau_min=center_tau - (steps/2)*tau_step,
