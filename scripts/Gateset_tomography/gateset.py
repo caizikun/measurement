@@ -386,7 +386,7 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
 
     for i in range(awg_runs):
 
-        if i %20 == 0 and debug == False:
+        if i % 20 == 0 and debug == False:
             reoptimize()
 
         if i == awg_runs:
@@ -521,7 +521,7 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = True, decoupling = False, pi=True, awg_size = 200)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = False, decoupling = False, pi=True, awg_size = 10)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #

@@ -20,7 +20,7 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717521e9 #by JS #Electron spin ms=-1 frquency   ##Calib 2017-XX-XX
+f_msm1_cntr = 1.717509e9 #by JS #Electron spin ms=-1 frquency   ##Calib 2017-XX-XX
 f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -36,7 +36,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 220e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.872
+	hermite_pi_amp = 0.862
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -50,13 +50,13 @@ elif electron_transition == '-1':
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.855 #0.863
+	hermite_pi_amp = 0.874 #0.863
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.625 # 0.632
+	hermite_pi2_amp = 0.6293 # 0.632
 
 
 ### General settings for AdwinSSRO
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = False
+yellow = True
 
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
