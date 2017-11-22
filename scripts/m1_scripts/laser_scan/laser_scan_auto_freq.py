@@ -19,6 +19,7 @@ class LaserFrequencyScan:
 
         self.set_laser_power = None
         self.set_repump_power = None
+        self.set_repump_voltage = None
         self.set_laser_voltage = None   # callable with voltage as argument
         self.get_frequency = None       # callable with WM channel as argument
         self.get_counts = None          # callable with integration time as argument,
@@ -30,10 +31,17 @@ class LaserFrequencyScan:
 
     def repump_pulse(self):
         qt.msleep(1)
-        self.set_repump_power(self.repump_power)
-        qt.msleep(self.repump_duration)
-        self.set_repump_power(0)
-        qt.msleep(1)
+        if use_voltage == False:
+            self.set_repump_power(self.repump_power)
+            qt.msleep(self.repump_duration)
+            self.set_repump_power(0)
+            qt.msleep(1)
+        else:
+            self.set_repump_voltage(self.repump_voltage)
+            qt.msleep(self.repump_duration)
+            self.set_repump_voltage(0)
+            qt.msleep(1)        
+
 
     def scan_to_voltage(self, voltage, pts=51, dwell_time=0.05):
         #print 'scan to voltage ...',
@@ -205,7 +213,10 @@ class LabjackAdwinLaserScan(LaserFrequencyScan):
     def prepare_scan(self):
 
         if self.use_repump_during:
-            self.set_repump_power(self.repump_power_during)
+            if self.use_voltage:
+                self.set_repump_voltage(self.repump_voltage_during)
+            else:
+                self.set_repump_power(self.repump_power_during)
 
         if self.use_mw:
             self.mw.set_frequency(self.mw_frq)
@@ -231,7 +242,11 @@ class LabjackAdwinLaserScan(LaserFrequencyScan):
             self.mw_2.set_status('off')
 
         if self.use_repump_during:
-            self.set_repump_power(0)
+            
+            if self.use_voltage:
+                self.set_repump_voltage(0)
+            else:
+                self.set_repump_power(0)          
 
 
 class YellowLaserScan(LabjackAdwinLaserScan):
@@ -260,6 +275,7 @@ class RedLaserScan(LabjackAdwinLaserScan):
         self.set_laser_power = qt.instruments['NewfocusAOM'].set_power
         self.set_red_repump_power = qt.instruments['NewfocusAOM'].set_power
         self.set_repump_power = qt.instruments['GreenAOM'].set_power
+        self.set_repump_voltage = qt.instruments['GreenAOM'].apply_voltage
 
     def repump_pulse(self):
         if self.yellow_repump:
@@ -362,18 +378,21 @@ def red_laser_scan(name):
 
     m.use_repump_during = False
     m.repump_power_during = 0.005e-6 #0.05e-6
+    m.use_voltage = True
+    m.repump_voltage_during = 5.6
 
     m.repump_power = 30e-6
+    m.repump_voltage = 7.
     m.repump_duration = 1. # seconds
 
     #Scan setup
-    m.laser_power = 1e-9    # 30e-9 SIL4 Hans
+    m.laser_power = 0.5e-9    # 30e-9 SIL4 Hans
     m.integration_time = 200 # ms
     m.min_v = -9
     m.max_v = 9
-    m.v_step=0.001 # 0.01
-    m.start_frequency = 87  #GHz wrt 470.4 THz
-    m.stop_frequency  = 95  #GHz
+    m.v_step=0.005 # 0.01
+    m.start_frequency = 145  #GHz wrt 470.4 THz
+    m.stop_frequency  = 160  #GHz
 
     #Gate scan setup
     m.set_gate_to_zero_before_repump=False
@@ -396,7 +415,7 @@ if __name__=='__main__':
 
     #for ii in range(10):
     stools.turn_off_all_lasers()
-    red_laser_scan('111_No1_SIL18_line_scan_green')
+    red_laser_scan('111_No1_SIL12_line_scan_green')
         #yellow_laser_scan('yellow_1nW')
 
 

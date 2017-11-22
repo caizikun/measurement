@@ -1404,7 +1404,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     initial_pulse = self._mpi2_elt()
                 else:
                     initial_phase = self.params['X_phase']
-                    initial_pulse = self.pi2_elt()
+                    initial_pulse = self._pi2_elt()
                     
 
                 decoupling_elt.append(T_out)
@@ -1561,9 +1561,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 tau_shortened            = tau_remaind/2.0 + 1e-6
                 t_around_pulse           = 2e-6 + tau_remaind/2.0
             else:
-                n_wait_reps              = n_wait_reps -2
-                tau_shortened            = tau_remaind/2.0
-                t_around_pulse           = 1e-6 + tau_remaind/2.0
+                n_wait_reps              = n_wait_reps -4  # changed to avoid problems with long delay in our MW Switch, by MA
+                tau_shortened            = tau_remaind/2.0+1e-6
+                t_around_pulse           = 2e-6 + tau_remaind/2.0
 
 
             Tus =pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -6571,7 +6571,8 @@ class NuclearT1(MBI_C13):
 
 class NuclearRamseyWithInitialization_v2(MBI_C13):
     '''
-    Very flexible C13 Ramsey script, usefull to calibrate ms = +1,0,-1 frequencies. The el_state that will be calibrated is independent of the gates used
+    Very flexible C13 Ramsey script, usefull to calibrate ms = +1,0,-1 frequencies. The el_state 
+    that will be calibrated is independent of the gates used
     to initialize the carbon atom. The free induction decay transition is denoted by fid_transition
     '''
     mprefix = 'CarbonRamseyInitialised'
@@ -7104,10 +7105,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
-
-
-
-
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
@@ -7140,7 +7137,8 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = [self.params['carbon_nr']],
                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
-                    readout_orientation = self.params['electron_readout_orientation'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in = int(self.params['el_after_init']))
             gate_seq.extend(carbon_tomo_seq)
 
             # #Add wait gate to test RF influence
@@ -7153,9 +7151,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
             #              wait_time = self.params['free_evolution_time'][pt])
             #     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
 
-
-
-
             gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
 
             ### Convert elements to AWG sequence and add to combined list
@@ -7164,24 +7159,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
 
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
-
-            if not debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
-
-            if debug:
-                for g in gate_seq:
-                    print g.name
-                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
-
-                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
 
         if upload:
             print ' uploading sequence'

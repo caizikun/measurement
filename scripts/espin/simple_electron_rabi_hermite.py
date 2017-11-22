@@ -43,7 +43,7 @@ class ElectronRabiHermite(pulsar_msmt.PulsarMeasurement):
                          'MW_Imod',
                          'MW_Qmod',
                          'MW_pulsemod',
-                         Sw_channel = 'None', #'MW_switch',
+                         Sw_channel = self.params['MW_switch_channel'],#'MW_switch', #'None', #
                          frequency = self.params['Hermite_fast_pi_mod_frq'],
                          PM_risetime = self.params['MW_pulse_mod_risetime'],
                          Sw_risetime = self.params['MW_switch_risetime'],
@@ -95,7 +95,7 @@ def erabi_hermite(name):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
     #m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
     
-    m.params['pts'] = 21
+    m.params['pts'] = 41
     pts = m.params['pts']
     m.params['repetitions'] = 1000
     m.params['reps_per_ROsequence'] = m.params['repetitions']
@@ -106,13 +106,13 @@ def erabi_hermite(name):
     # m.params['mw_power']=20 
     #m.params['mw_frq'] = m.params['ms-1_cntr_frq']-m.params['MW_modulation_frequency']  
     #print m.params['ms+1_cntr_frq']    #for ms=-1   'ms-1_cntr_frq'
-    #m.params['mw_frq'] = 3.45e9      #for ms=+1
+    #m.params['mw_frq'] = 4.008100e9     #for ms=+1
 
     if sweep_param == 'length':
-        m.params['MW_pulse_durations'] =  np.linspace(0, 4*m.params['Hermite_pi_length'], pts) #* 1e-9
+        # m.params['MW_pulse_durations'] =  np.linspace(0, 4*m.params['Hermite_pi_length'], pts) #* 1e-9
         m.params['MW_pulse_durations'] =  np.linspace(0, 400, pts)* 1e-9
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) *m.params['Hermite_pi_amp'] # * 0.05 #*0.49
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) *0.9 # * 0.05 #*0.49
+        # m.params['MW_pulse_amplitudes'] = np.ones(pts) *m.params['Hermite_pi_amp'] # * 0.05 #*0.49
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) *0.9  # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
         m.params['sweep_pts'] = m.params['MW_pulse_durations']*1e9
         

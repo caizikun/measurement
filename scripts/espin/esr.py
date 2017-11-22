@@ -36,6 +36,7 @@ IQ_modulation = True #Does this source have IQ modulation?
 ins_adwin = qt.instruments['adwin']
 ins_counters = qt.instruments['counters']
 ins_aom = qt.instruments['GreenAOM']
+ins_awg = qt.instruments['AWG']
 
 ###############
 ### Run ESR ###
@@ -44,6 +45,8 @@ ins_aom = qt.instruments['GreenAOM']
 counter = 1
 MW_power = mw_power
 ins_counters.set_is_running(0)
+ins_awg.set_ch4_marker2_low(2)
+ins_awg.set_ch4_status('On')
 
 # create data object
 qt.mstart()

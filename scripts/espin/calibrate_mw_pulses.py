@@ -8,7 +8,7 @@ reload(ps)
 from measurement.lib.pulsar import pulselib
 reload(pulselib)
 execfile(qt.reload_current_setup)
-
+import msvcrt
 execfile(qt.reload_current_setup)
 SAMPLE= qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -18,6 +18,14 @@ This script calibrates pi and pi/2 pulses.
 Pulse shape can be Square or Hermite --> the appropriate pulse will be chosen from pulse_select.py.
 NOTE: do adjust the MW duration & amplitudes to refer to the proper type of pulse!
 """
+def show_stopper():
+    print '-----------------------------------'            
+    print 'press q to stop measurement cleanly'
+    print '-----------------------------------'
+    qt.msleep(1)
+    if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+        return True
+    else: return False
 
 
 def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
@@ -34,14 +42,14 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
 
     pulse_shape = m.params['pulse_shape']
-    pts = 12
+    pts = 20
 
     m.params['pts'] = pts
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
     m.params['repetitions'] = 1600 if multiplicity == 1 else 2000
-    rng = 0.2 if multiplicity == 1 else 0.04
+    rng = 0.15 if multiplicity == 1 else 0.04
 
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
@@ -290,7 +298,7 @@ def calibrate_pi2_pulse(name, debug=False,mw2=False):
     pts = 11
     m.params['pulse_type'] = 'Hermite'    
     m.params['pts_awg'] = pts
-    m.params['repetitions'] = 1000
+    m.params['repetitions'] = 2000
 
     if mw2:
         print m.params['mw2_pulse_shape']
@@ -339,12 +347,12 @@ def calibrate_comp_pi2_pi_pi2_pulse(name, multiplicity=1, debug=False):
 
     m.params['pulse_type'] = 'Hermite composite'
     # m.params['pulse_type'] = 'Square quantum memory'
-    pts = 16
+    pts = 3
 
     m.params['pts'] = pts
     # m.params['repetitions'] = 3000 if multiplicity == 1 else 5000
     m.params['repetitions'] = 600
-    rng = 0.1 if multiplicity == 1 else 0.08
+    rng = 0.3 if multiplicity == 1 else 0.03
 
     ### Pulse settings
     m.params['multiplicity'] = np.ones(pts)*multiplicity
@@ -413,4 +421,4 @@ if __name__ == '__main__':
     #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     #sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=10)
     calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
-    #calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)
+    # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity=1, debug=False)

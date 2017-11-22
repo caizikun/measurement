@@ -328,7 +328,7 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
 
-'C1_Ren_tau_m1'    :  [4.996e-6],
+'C1_Ren_tau_m1'    :  [4.998e-6],
 'C1_Ren_N_m1'      :  [36],
 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-27.22] + [235.06] + [-24.91] + [139.04] + [13.9] + [-4.49] + [0.0] + [0.0] + [0.0]),
 

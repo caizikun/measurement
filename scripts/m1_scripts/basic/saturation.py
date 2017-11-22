@@ -5,13 +5,13 @@ from numpy import *
 import msvcrt
 
 #measurement parameters
-name = 'Sil18'
+name = 'Sil12'
 steps=21
-max_power=700e-6       #[w]
+max_power=200e-6       #[w]
 counter=1 #number of counter
 PQ_count= False    # counting with the HH, assumes apd on channel 0
-bg_x=0.25         #delta x position of background [um]
-bg_y=-0.75          #delta y position of background [um]
+bg_x=-0.25         #delta x position of background [um]
+bg_y=-0.25          #delta y position of background [um]
 
 #instruments
 if PQ_count:
@@ -36,7 +36,7 @@ for i,pwr in enumerate(x):
         br = True
         break
     current_aom.set_power(pwr)
-    qt.msleep(1)
+    qt.msleep(5)
     if not PQ_count:
         y_NV[i] = current_adwin.get_countrates()[counter-1]
     else:

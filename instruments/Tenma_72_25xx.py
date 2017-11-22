@@ -1,32 +1,15 @@
-# Keithley_2100.py driver for Keithley 2100 DMM
-# Pieter de Groot <pieterdegroot@gmail.com>, 2008
-# Martijn Schaafsma <qtlab@mcschaafsma.nl>, 2008
-# Reinier Heeres <reinier@heeres.eu>, 2008 - 2010
+
+# Tenma_72_25xx.py driver for controlling a Tenma 72-2535 
+# This code interfaces with a hardware driver taken from
+# https://github.com/starforgelabs/py-korad-serial
 #
-# Update december 2009:
-# Michiel Jol <jelle@michieljol.nl>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+# Hardware supported is the Tenma 72-25XX series power supplies but also the 
+# Korad KA3xxxP series, Velleman PS3xx5D series. All of these are Built by korad
+# but rebadged by Velleman, Tenma (Farnell)
+# 
 
 from instrument import Instrument
-import visa
-import types
-import logging
-import numpy
-
-import qt
+from measurement.hardware.Korad import koradserial as korad
 
 def bool_to_str(val):
     '''
@@ -37,52 +20,38 @@ def bool_to_str(val):
     else:
         return "OFF"
 
-class Keithley_2000(Instrument):
+class Tenma_72_25xx(Instrument):
     '''
-    This is the driver for the Keithley 2100 Multimeter
+    This is the driver for the Tenma 72-25xx power supply
 
     Usage:
     Initialize with
-    <name> = instruments.create('<name>', 'Keithley_2100',
-        address='<GBIP address>',
-        reset=<bool>,
-        change_display=<bool>,
-        change_autozero=<bool>)
+    <name> = instruments.create('<name>', 'Tenma_72_25xx',
+        address='COM#', output='OFF', voltage=0.0, current=0.0)
     '''
 
-    def __init__(self, name, address, reset=False,
-            change_display=True, change_autozero=True):
+    def __init__(self, name, address):
         '''
-        Initializes the Keithley_2100, and communicates with the wrapper.
+        Initializes the power supply, and communicates with the wrapper.
 
         Input:
             name (string)           : name of the instrument
-            address (string)        : GPIB address
-            reset (bool)            : resets to default values
-            change_display (bool)   : If True (default), automatically turn off
-                                        display during measurements.
-            change_autozero (bool)  : If True (default), automatically turn off
-                                        autozero during measurements.
+            address (string)        : 'COM#' where # is the comport nr. 
         Output:
             None
         '''
         # Initialize wrapper functions
-        logging.info('Initializing instrument Keithley_2100')
+        logging.info('Initializing instrument Tenma_72_25xx')
         Instrument.__init__(self, name, tags=['physical'])
         # Add some global constants
         self._address = address
-        self._rm = visa.ResourceManager()
-        self._visainstrument = self._rm.open_resource(self._address, write_termination ='\n', read_termination='\n')
-        self._modes = ['VOLT:AC', 'VOLT:DC', 'CURR:AC', 'CURR:DC', 'RES',
-            'FRES', 'TEMP', 'FREQ']
-        self._change_display = change_display
-        self._change_autozero = change_autozero
-        self._averaging_types = ['MOV','REP']
-        self._trigger_sent = False
-        self._channels = range(1,11)
+        
+
+        # connect and request typenr
+        # disable beep
 
         # Add parameters to wrapper
-        self.add_parameter('range',
+        self.add_parameter('setVoltage',
             flags=Instrument.FLAG_GETSET,
             units='', minval=0.1, maxval=1000, type=types.FloatType)
         self.add_parameter('trigger_continuous',

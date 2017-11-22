@@ -4,16 +4,17 @@ import msvcrt
 
 # Input parameters
 name='ESR_SIL18_M1_LT'
+print 'Please click `sequence` in run mode AWG!'
 
-#start_f 		= 1.7452 - 50e-3  #in GHz
-#stop_f  		= 1.7452 + 50e-3  #in GHz
+start_f 		= 1.746666 - 50e-3  #in GHz
+stop_f  		= 1.746666 + 50e-3  #in GHz
 
-start_f 		= 4.009 - 50e-3  #in GHz
-stop_f  		= 4.009 + 50e-3  #in GHz
+# start_f 		= 4.009 - 50e-3  #in GHz
+# stop_f  		= 4.009 + 50e-3  #in GHz
 
 steps   		= 81
 mw_power 		= -14. 			#in dBm (has been -3 for hans as well) 
-green_power 	= 30e-6
+green_power 	= 5e-6
 int_time 		= 50       		#in ms
 reps 			= 10			
 
@@ -23,14 +24,21 @@ f_list = linspace(start_f*1e9, stop_f*1e9, steps)
 ins_smb 	= qt.instruments['SGS100A_2']
 ins_adwin 	= qt.instruments['adwin']
 ins_counters= qt.instruments['counters']
+ins_awg     = qt.instruments['AWG']
+
 counter 	= 1
 MW_power 	= mw_power
+
+qt.instruments['GreenAOM'].set_power(green_power)
+qt.msleep(20)
 
 ins_counters.set_is_running(0)
 
 # create data object
 qt.mstart()
 
+ins_awg.set_ch4_marker2_low(2)
+ins_awg.set_ch4_status('On')
 ins_smb.set_power(MW_power)
 ins_smb.set_iq('off')
 ins_smb.set_pulm('off')
@@ -40,8 +48,6 @@ qt.msleep(0.2)
 
 #ins_counters.set_is_running(0)
 total_cnts = zeros(steps)
-qt.instruments['GreenAOM'].set_power(green_power)
-qt.msleep(5)
 stop_scan=False
 for cur_rep in range(reps):
 

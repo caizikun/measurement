@@ -507,6 +507,119 @@ class ElectronRabi(PulsarMeasurement):
                 qt.pulsar.program_awg(seq,*elements)
         
 
+class ElectronRabi_switch(PulsarMeasurement):
+    mprefix = 'ElectronRabi'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['MW_pulse_durations'])*1e6)+10)
+
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True):
+        #print 'test'
+        # define the necessary pulses
+
+        X = pulselib.MW_IQmod_pulse('Weak pi-pulse',
+            I_channel='MW_Imod',
+            Q_channel='MW_Qmod',
+            PM_channel='MW_pulsemod',
+            Sw_channel = self.params['MW_switch_channel'],
+            Sw_risetime = self.params['MW_switch_risetime'],
+            frequency = self.params['MW_pulse_frequency'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+
+
+        T = pulse.SquarePulse(channel='MW_Imod', name='delay',
+            length = 200e-9, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['MW_pulse_durations'][i],
+                amplitude = self.params['MW_pulse_amplitudes'][i]))
+
+            elements.append(e)
+
+
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+            if upload=='old_method':
+                print 'using old method of uploading'
+                qt.pulsar.upload(*elements)
+                qt.pulsar.program_sequence(seq)
+            else:
+                qt.pulsar.program_awg(seq,*elements)
+
+# class rfTest (copied for testing - Joe)
+
+class rfTest(PulsarMeasurement):
+    mprefix = 'RFTest'
+
+    def autoconfig(self):
+        self.params['sequence_wait_time'] = \
+            int(np.ceil(np.max(self.params['RF_pulse_durations'])*1e6)+10)
+
+        PulsarMeasurement.autoconfig(self)
+
+    def generate_sequence(self, upload=True):
+        #print 'test'
+        # define the necessary pulses
+
+        # X = pulselib.RF_pulse('Test',
+        #   RF_channel='RF',
+        #   frequency= self.params['RF_pulse_frequency'])
+
+
+        X = pulselib.RF_pulse('Weak pi-pulse',
+            RF_channel='RF',
+            PM_channel='MW_pulsemod',
+            frequency = self.params['RF_pulse_frequency'],
+            length = self.params['RF_pulse_durations']
+            )
+
+        T = pulse.SquarePulse(channel='RF', name='delay',
+            length = 1e-6, amplitude = 0.)
+
+        # make the elements - one for each ssb frequency
+        elements = []
+        for i in range(self.params['pts']):
+
+            e = element.Element('ElectronRabi_pt-%d' % i, pulsar=qt.pulsar)
+
+            e.append(T)
+            e.append(pulse.cp(X,
+                length = self.params['RF_pulse_durations'][i],
+                amplitude = self.params['RF_pulse_amplitudes'][i],
+                phase = self.params['RF_pulse_phases'][i]))
+            e.append(T)
+
+            elements.append(e)
+            print 'print output: %s' % X
+
+        print 'elements'+str(elements)
+        # create a sequence from the pulses
+        seq = pulsar.Sequence('ElectronRabi sequence')
+        for e in elements:
+            seq.append(name=e.name, wfname=e.name, trigger_wait=True)
+
+        # upload the waveforms to the AWG
+        if upload:
+                qt.pulsar.program_awg(seq,*elements, debug=True)
+
+
 class ElectronRabi_Square(PulsarMeasurement):
     mprefix = 'ElectronRabi_square'
 

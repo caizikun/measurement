@@ -2,6 +2,7 @@ from measurement.lib.config import adwins as adwinscfg
 
 ### Keithley 2000 DMM for monitoring temperatures
 kei2000 = qt.instruments.create('kei2000', 'Keithley_2000', address = 'GPIB::16::INSTR')
+kei2000.set_channel(5)
 kei2000.set_mode_fres()
 kei2000.set_range(100)
 kei2000.set_nplc(10)

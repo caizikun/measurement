@@ -31,8 +31,8 @@ class MaestroServoController(Instrument):
         self.add_function('Set_Acceleration')
         self.add_function('Close')
 
-        comPort = 'COM' + str(address)
-        self.usb = serial.Serial(comPort)
+        #comPort = 'COM' + str(address)
+        self.usb = serial.Serial(address)
         # Command lead-in and device 12 are sent for each Pololu serial commands.
         self.PololuCmd = chr(0xaa) + chr(0xc)
         # Servo minimum and maximum targets can be restricted to protect components.

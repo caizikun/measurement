@@ -60,10 +60,10 @@ setup_controller = qt.instruments.create('setup_controller',
 
 # Magnet
 if 1:
-    conex_scanner_Z = qt.instruments.create('conex_scanner_Z', 'NewportConexCC', address = 'COM16')
-    conex_scanner_X = qt.instruments.create('conex_scanner_X', 'NewportConexCC', address = 'COM17')
-    conex_scanner_X.SetPositiveLimit(2.)
-    conex_scanner_Y = qt.instruments.create('conex_scanner_Y', 'NewportConexCC', address = 'COM18')
+    conex_scanner_Z = qt.instruments.create('conex_scanner_Z', 'NewportConexCC', address = 'COM7') #Previously Com17
+    conex_scanner_X = qt.instruments.create('conex_scanner_X', 'NewportConexCC', address = 'COM5') #Previously Com16
+    conex_scanner_X.SetPositiveLimit(5.)
+    conex_scanner_Y = qt.instruments.create('conex_scanner_Y', 'NewportConexCC', address = 'COM6') #Previously Com18
     conex_scanner_Y.SetPositiveLimit(2.)
 
 ### master_of_magnet
@@ -71,21 +71,21 @@ if 1:
 
 # servo controller and power meter
 if 1:
-    servo_ctrl=qt.instruments.create('ServoController', 'MaestroServoController', address='11')
+    servo_ctrl=qt.instruments.create('ServoController', 'MaestroServoController', address='COM15') #previously COM20
     servo_ctrl.Set_Acceleration(0, 0)
     servo_ctrl.Set_Speed(0, 0)
-    PMServo = qt.instruments.create('PMServo','ServoMotor',servo_controller='ServoController', min_pos=3900, max_pos=4800)
+    PMServo = qt.instruments.create('PMServo','ServoMotor',servo_controller='ServoController', min_pos=3900, max_pos=4800, in_pos=3968, out_pos=4600)
     PMServo.move_out()
 
-#execfile('D:\measuring\measurement\scripts\lt3_scripts\setup_m1.py')
+# execfile('D:\measuring\measurement\scripts\lt3_scripts\setup_m1.py')
 
 ### Keithley 2000 DMM for monitoring temperatures
 kei2000 = qt.instruments.create('kei2000', 'Keithley_2000', address = 'GPIB::16::INSTR')
 kei2000.set_mode_fres()
-kei2000.set_range(100)
-kei2000.set_nplc(10)
-kei2000.set_trigger_continuous(True)
-kei2000.set_averaging(True)
-kei2000.set_averaging_type('moving')
-kei2000.set_averaging_count(50)
+#kei2000.set_range(100)
+#kei2000.set_nplc(10)
+#kei2000.set_trigger_continuous(True)
+#kei2000.set_averaging(True)
+#kei2000.set_averaging_type('moving')
+#kei2000.set_averaging_count(50)
 

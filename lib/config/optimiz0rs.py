@@ -115,12 +115,12 @@ dimension_sets = {
 
             'm1' : {
                 'x' : {
-                    'scan_length' : 0.5,
+                    'scan_length' : 0.3,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 0.5,
+                    'scan_length' : 0.3,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },

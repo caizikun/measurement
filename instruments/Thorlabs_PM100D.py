@@ -29,7 +29,7 @@ class Thorlabs_PM100D(Instrument):
 
         self._address = address
         rm = visa.ResourceManager()
-        self._visa = rm.open_resource(self._address)
+        self._visa =rm.open_resource(self._address,write_termination ='\r\n', read_termination='\n')
 
         self.add_parameter('identification',
             flags=Instrument.FLAG_GET,
