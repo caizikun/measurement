@@ -8,6 +8,7 @@
 import time
 import numpy as np
 import logging
+import qt
 
 # some pulses use rounding when determining the correct sample at which to insert a particular
 # value. this might require correct rounding -- the pulses are typically specified on short time
@@ -29,9 +30,12 @@ class Pulsar:
         'ch3', 'ch3_marker1', 'ch3_marker2',
         'ch3', 'ch3_marker1', 'ch3_marker2' ]
     AWG_sequence_cfg={}
+    override_simplify_wfnames = False
 
     def __init__(self):
         self.channels = {}
+        self.last_programmed_sequence = None
+        self.last_programmed_elements = None
 
     ### channel handling
     def define_channel(self, id, name, type, delay, offset,
@@ -58,6 +62,11 @@ class Pulsar:
             }
 
     def set_channel_opt(self, name, option, value):
+
+        ### check for NaN
+        if value != value:
+            raise ValueError('Trying to set NaN in %s for the option %s' %(name,option))
+
         self.channels[name][option] = value
 
     def get_subchannels(self, id):
@@ -154,6 +163,26 @@ class Pulsar:
 
             if output:
                 getattr(self.AWG, 'set_%s_status' % id)('on')
+
+    def deactivate_channels(self, channels='all'):
+        ids = self.get_used_channel_ids()
+        #print ids
+        for id in ids:
+            output = False
+            names = self.get_channel_names_by_id(id)
+            for sid in names:
+                #print sid
+                if names[sid] == None:
+                    continue
+
+                if channels != 'all' and names[sid] not in channels:
+                    continue
+
+                if self.channels[names[sid]]['active']:
+                    output = True
+
+            if output:
+                getattr(self.AWG, 'set_%s_status' % id)('off')
 
     def get_awg_channel_cfg(self):
         channel_cfg={}
@@ -365,22 +394,44 @@ class Pulsar:
         since sequence information is sent to the AWG in a single file.
 
         """
-        
+
         verbose=kw.pop('verbose',False)
 
         debug=kw.pop('debug', False)
         channels=kw.pop('channels','all')
         loop=kw.pop('loop',True)
         allow_non_zero_first_point_on_trigger_wait=kw.pop('allow_first_zero',False)
+
         elt_cnt = len(elements)
         chan_ids = self.get_used_channel_ids()
         packed_waveforms={}
 
         elements_with_non_zero_first_points=[]
 
+        self.last_programmed_sequence = sequence
+        self.last_programmed_elements = elements
+
+        # JS: AWG5014 type non-C takes offence to elements with names longer than 32 characters
+        # we optionally circumvent that by relabeling all elements just by their index
+        # the mapping from index-name to original name will be saved in
+        # qt.pulsar.simplified_wfnames_mapping and may be shown sortedly by invoking
+        # qt.pulsar.show_simplified_wfnames_mapping()
+        # if qt.current_setup == 'lt2':
+        #     print("WARNING: simplifying waveform names for the LT2 AWG.")
+        #     print("If you don't want this, modify pulsar.py function program_awg.")
+        #     simplify_wfnames = True
+        # else:
+        if 'simplify_wfnames' in qt.exp_params and qt.exp_params['simplify_wfnames']:
+            simplify_wfnames = True
+        else:
+            simplify_wfnames = kw.pop('simplify_wfnames', False)
+
+        simplified_wfnames = {}
+
         # order the waveforms according to physical AWG channels and
         # make empty sequences where necessary
         for i,element in enumerate(elements):
+
             if verbose==True:
                 print "%d / %d: %s (%d samples)... " % \
                     (i+1,elt_cnt, element.name, element.samples())
@@ -400,6 +451,10 @@ class Pulsar:
             for id in chan_ids:
                 wfname = element.name + '_%s' % id
 
+                if simplify_wfnames:
+                    simplified_wfnames[wfname] = "el_%05d_%s" % (i, id)
+                    wfname = simplified_wfnames[wfname]
+                    
                 # determine if we actually want to upload this channel
                 upload = False
                 if channels == 'all':
@@ -444,6 +499,7 @@ class Pulsar:
             % (sequence.name, sequence.element_count()),
 
         # determine which channels are involved in the sequence
+
         if channels  == 'all':
             chan_ids = self.get_used_channel_ids()
         else:
@@ -469,7 +525,11 @@ class Pulsar:
             el_wfnames=[]
             #add all wf names of channel
             for elt in sequence.elements:
-                el_wfnames.append(elt['wfname'] + '_%s' % id) #  should the name include id nr?
+                el_wfname = elt['wfname'] + '_%s' % id #  should the name include id nr?
+                if simplify_wfnames:
+                    el_wfname = simplified_wfnames[el_wfname]
+
+                el_wfnames.append(el_wfname)
 
             wfname_l.append(el_wfnames)
 
@@ -497,7 +557,6 @@ class Pulsar:
 
         if loop:
             goto_l[-1]=1
-
          # setting jump modes and loading the djump table
         if sequence.djump_table != None and self.AWG_type not in ['opt09']:
             raise Exception('pulsar: The AWG configured does not support dynamic jumping')
@@ -528,11 +587,26 @@ class Pulsar:
                                             nrep_l, wait_l, goto_l, logic_jump_l,
                                             self.get_awg_channel_cfg(),
                                             self.AWG_sequence_cfg)
+
+        self.deactivate_channels('all')
+
         self.AWG.send_awg_file(filename,awg_file)
 
         self.AWG.load_awg_file(filename)
 
+        # setting jump modes directly
+        if self.AWG_type in ['opt09'] and sequence.djump_table != None:
+            for i in range(16):
+                self.AWG.set_djump_def(i, 0)
+
+            for i in sequence.djump_table.keys():
+                el_idx = sequence.element_index(sequence.djump_table[i])
+                self.AWG.set_djump_def(i, el_idx)
+
         self.activate_channels(channels)
+
+        if simplified_wfnames:
+            self.simplified_wfnames_mapping = {v: k for k, v in simplified_wfnames.iteritems()}
 
 
 
@@ -554,6 +628,11 @@ class Pulsar:
                 el+=1
                 if wfname not in packed_waveforms.keys():
                     raise Exception('pulsar: waveform name '+ wfname + ' , in position ' + str(el) + ' , channel ' + str(ch) + ' does not exist in waveform dictionary')
+
+    def show_simplified_wfnames_mapping(self):
+        elnames_mapping = {v[:-4]: k[:-4] for v, k in self.simplified_wfnames_mapping.iteritems()}
+        for k in sorted(elnames_mapping):
+            print("%s --> %s" % (k, elnames_mapping[k]))
 
 class Sequence:
     """

@@ -54,10 +54,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('optimize_nf')     
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow') 
-        # self.add_function('rejecter_half_plus')
-        # self.add_function('rejecter_half_min')
-        # self.add_function('rejecter_quarter_plus')
-        # self.add_function('rejecter_quarter_min')
+
         self.add_function('toggle_pid_gate')
         self.add_function('toggle_pid_nf')
         self.add_function('toggle_pid_yellowfrq')
@@ -65,7 +62,12 @@ class purification_optimizer(mo.multiple_optimizer):
         self.add_function('start_babysit')
         self.add_function('stop_babysit')  
         self.add_function('stop_optimize_now')         
+        self.add_function('rejecter_half_plus')
+        self.add_function('rejecter_half_min')
+        self.add_function('rejecter_quarter_plus')
+        self.add_function('rejecter_quarter_min')
 
+        
         self.setup_name = setup_name
 
         self._busy = False;
@@ -73,7 +75,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self._taper_index = 4 if 'lt3' in setup_name else 3
 
         self.max_cryo_half_rot_degrees  = 3
-        self.nb_min_between_nf_optim = 7
+        self.nb_min_between_nf_optim = 4
         
         self.history_length = 10
         self.avg_length = 9
@@ -114,14 +116,11 @@ class purification_optimizer(mo.multiple_optimizer):
 
     #--------------get_set   
 
-    #### no fiddling around wit adwin values yet. would not be a good idea!
     def _do_set_invalid_data_marker(self, value):
-        pass
-        # qt.instruments['physical_adwin'].Set_Par(55,value)
+        qt.instruments['physical_adwin'].Set_Par(55,value)
 
     def _do_get_invalid_data_marker(self):
-        pass
-        # return qt.instruments['physical_adwin'].Get_Par(55)
+        return qt.instruments['physical_adwin'].Get_Par(55)
 
 
     def publish_values(self):
@@ -426,7 +425,7 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pid_e_primer_running(False)
         # qt.instruments['nf_optimizer'].optimize()
         qt.instruments['auto_optimizer'].optimize_newfocus()
-        qt.msleep(0.5)
+        qt.msleep(2.5)
         self.set_pid_e_primer_running(e_primer_was_running)
 
     def optimize_yellow(self):
@@ -462,10 +461,10 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pid_e_primer_running(False)
         self.set_pidyellowfrq_running(False)
         self.set_pidgate_running(False)           
-        # if qt.instruments['auto_optimizer'].flow():
-        #     print 'Success!'
-        # else:
-        #     print 'Finished before end'
+        if qt.instruments['auto_optimizer'].flow():
+            print 'Success!'
+        else:
+            print 'Finished before end'
         qt.msleep(3.0)
         self.set_pidyellowfrq_running(True)
         self.set_pidgate_running(True)        
@@ -503,7 +502,8 @@ class purification_optimizer(mo.multiple_optimizer):
         self.set_pidgate_running(not self._do_get_pidgate_running())
 
     def toggle_pid_nf(self):
-        self.set_pid_e_primer_running(not self._do_get_pid_e_primer_running())
+       self.set_pid_e_primer_running(not self._do_get_pid_e_primer_running())
+
 
     def toggle_pid_yellowfrq(self):
         self.set_pidyellowfrq_running(not self._do_get_pidyellowfrq_running())
@@ -522,6 +522,7 @@ class purification_optimizer(mo.multiple_optimizer):
 
     def start_babysit(self):
         print 'Start'
+        self.set_invalid_data_marker(0)
         if self._babysitting:
             print 'Already running'
             return
@@ -532,7 +533,8 @@ class purification_optimizer(mo.multiple_optimizer):
         self._timer=gobject.timeout_add(int(self.get_read_interval()*1e3),self._babysit)
 
     def stop_babysit(self):
-        # print 'Stop'
+        print 'Stop'
+        self.set_invalid_data_marker(0)
         # if not self._babysitting:
         #     print 'Not running'
         self._babysitting = False
@@ -562,7 +564,7 @@ class purification_optimizer(mo.multiple_optimizer):
             
         # If one of the lasers is off and the optimizer is not already running: run optimizer
         if self._busy:
-            # print 'Optimizer is running, so do not do anything'
+            print 'Optimizer is running, so do not do anything'
         else:
             if (self.cr_counts < self.get_min_cr_counts() or self.repump_counts < self.get_min_repump_counts()):
                 if (self.cr_counts == 0):
@@ -570,14 +572,15 @@ class purification_optimizer(mo.multiple_optimizer):
                 else:
                     print self.cr_counts, '<', self.get_min_cr_counts(), 'or', self.repump_counts, '<', self.get_min_repump_counts(), 'so start optimizer'
                     self.busy = True
-                    e_primer_was_running = self.get_pid_e_primer_running()        
+                    e_primer_was_running = self.get_pid_e_primer_running()
                     self.set_pid_e_primer_running(False)
                     self.set_pidyellowfrq_running(False)
-                    self.set_pidgate_running(False)   
-                    # if qt.instruments['auto_optimizer'].flow():
-                    #     print 'Success!'
-                    # else:
-                    #     print 'Exited before end'
+                    self.set_pidgate_running(False) 
+                    self.set_invalid_data_marker(1)  
+                    if qt.instruments['auto_optimizer'].flow():
+                        print 'Success!'
+                    else:
+                        print 'Exited before end'
                     qt.msleep(2)
                     self.set_pidyellowfrq_running(True)
                     self.set_pidgate_running(True)        
@@ -586,10 +589,23 @@ class purification_optimizer(mo.multiple_optimizer):
             else:
                 # Even if all counts are fine, the newfocus might still be off
                 if qt.instruments['auto_optimizer'].check_detuned_repump():
-                    self.busy = True                    
+                    e_primer_was_running = self.get_pid_e_primer_running()
+                    self.set_pid_e_primer_running(False) 
+                    self.busy = True     
+                    self.set_invalid_data_marker(1)               
                     self.optimize_nf()
-                    self._busy = False                    
+                    self._busy = False      
+                    qt.msleep(2.5)
+                    self.set_pid_e_primer_running(e_primer_was_running)   
+
+
+                ### are other benchmarks off? Such as the strain splitting?            
+                elif qt.instruments['e_primer'].get_strain_splitting() > self.get_max_strain_splitting():
+                    text = 'The strain splitting is too high :  {:.2f} compare to {:.2f}.\n'.format(qt.instruments['e_primer'].get_strain_splitting(), self.get_max_strain_splitting())
+                    print text
+                    self.set_invalid_data_marker(1)
                 else:
+                    self.set_invalid_data_marker(0)
                     print 'Everything OK'
         return True;
 

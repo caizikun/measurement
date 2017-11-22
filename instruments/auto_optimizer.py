@@ -38,7 +38,7 @@ class auto_optimizer(Instrument):
         self._newfocus_iterations = 0;
         self._gate_iterations = 0;
         self._yellow_iterations = 0; 
-       
+
         ins_pars  ={'do_plot'               :   {'type':types.BooleanType,'val':True,'flags':Instrument.FLAG_GETSET},
                     'plot_name'             :   {'type':types.StringType, 'val':plot_name,'flags':Instrument.FLAG_GETSET},
                     'external_break'        :   {'type':types.BooleanType,'val':False,'flags':Instrument.FLAG_GETSET},                                                            
@@ -78,9 +78,10 @@ class auto_optimizer(Instrument):
                     'max_yellow_iterations' :   {'type':types.IntType,    'val':5,'flags':Instrument.FLAG_GETSET},                    
                     'max_nf_iterations'     :   {'type':types.IntType,    'val':1,'flags':Instrument.FLAG_GETSET},                                        
                     }
-        
         instrument_helper.create_get_set(self,ins_pars)
                     
+        self.add_parameter('is_pidgate_running',type=types.BooleanType, flags = Instrument.FLAG_GETSET)
+        self.add_parameter('is_yellowfrq_running',type=types.BooleanType,flags = Instrument.FLAG_GETSET)
         self.add_function('optimize_gate')
         self.add_function('optimize_yellow')
         self.add_function('optimize_newfocus')
@@ -227,6 +228,9 @@ class auto_optimizer(Instrument):
             state = -1;
             return False;               
         # No switch statement in python :(
+        print 'Sleeping'
+        qt.msleep(self._flow_sleep)
+
         if state == 0:
             # Allow to run
             qt.instruments['purification_optimizer'].set_stop_optimize(False)
@@ -283,7 +287,7 @@ class auto_optimizer(Instrument):
                 # Optimize gate
                 if self.optimize_gate():
                     # Allow laser to follow before going on
-                    qt.msleep(self._flow_sleep)              
+                    qt.msleep(self._flow_sleep)
                     return self.flow(state = 1);
                 else:
                     # User exited ('q') optimization
@@ -322,10 +326,10 @@ class auto_optimizer(Instrument):
                     return self.flow(state = -1);
         elif state == 8:
             print 'Auto optimization successful.'
-            return True;
+            return True
         elif state == -1:
             print 'Auto optimization exited before completion.'
-            return False;            
+            return False         
 
     def optimize_newfocus(self):
         self._newfocus_iterations += 1;
@@ -351,7 +355,12 @@ class auto_optimizer(Instrument):
         finishedNF = False;  
         currentNFStep = 0;
         currentNFFreq = nf_start;
-        NFStepTime = time.time();    
+        NFStepTime = time.time();
+
+        self.set_is_pidgate_running(True)
+        self.set_is_yellowfrq_running(True)
+        qt.msleep(0.1)
+
         # Each for iteration is one sweep step (dwell)
         for currentNFStep,currentNFFreq in enumerate(nf_sweep):
             # Allow to break
@@ -363,7 +372,7 @@ class auto_optimizer(Instrument):
             self._set_freq_newfocus(currentNFFreq)
             NFStepTime = time.time()   
             # Debug
-            print 'Starting NF iteration', currentNFStep, 'out of', len(nf_sweep), 'at frequency', currentNFFreq;           
+            #print 'Starting NF iteration', currentNFStep, 'out of', len(nf_sweep), 'at frequency', currentNFFreq;           
 
             # Each while iteration is one gate sweep substep
             while (time.time() - NFStepTime <= self._opt_nf_dwell) and not finishedNF:
@@ -393,8 +402,8 @@ class auto_optimizer(Instrument):
             # Sweeps plot
             p1 = plt.plot(name=(self._plot_name+'_nf'))
             p1.clear()
-            plt.plot(nf_t,nf_x,'O',name=(self._plot_name+'_nf')) 
-            plt.plot(np.arange(len(nf_sweep))*self._opt_nf_dwell, nf_sweep,'O',name=(self._plot_name+'_nf'))             
+            # plt.plot(nf_t,nf_x,'O',name=(self._plot_name+'_nf')) 
+            # plt.plot(np.arange(len(nf_sweep))*self._opt_nf_dwell, nf_sweep,'O',name=(self._plot_name+'_nf'))             
             plt.plot(nf_t,nf_y,'O',name=(self._plot_name+'_nf'))  
 
         print 'Finished NewFocus optimization'
@@ -448,6 +457,10 @@ class auto_optimizer(Instrument):
         yellowStepTime = time.time();
         gateStepTime = time.time();
 
+        self.set_is_pidgate_running(False)
+        self.set_is_yellowfrq_running(True)
+        qt.msleep(0.1)
+
         # Each for iteration is one sweep step (dwell)
         for currentGateStep,currentGateFreq in enumerate(gate_sweep):
             # Allow to break
@@ -474,6 +487,9 @@ class auto_optimizer(Instrument):
                 if (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros or len(gate_y) < 10):  
                     # Debug
                     #print 'Currently in NV-, checking gate'
+                    if self.get_is_pidgate_running():
+                        self.set_is_pidgate_running(False)
+                        self.set_is_yellowfrq_running(True)
 
                     # Get yellow val
                     yellow_x = np.append(yellow_x,self._get_freq_yellow())
@@ -492,10 +508,14 @@ class auto_optimizer(Instrument):
                     if len(gate_y) == 9 and max(yellow_y) > self._opt_yellow_good:
                         finishedYellow = True
                 else: # We are in NV0. Check if yellow is good
+
+
                     if np.mean(yellow_y[-min(5,len(yellow_y)):])>self._opt_yellow_good or finishedYellow or currentYellowStep == len(yellow_sweep): # Yellow is good. Continue gate
                         # Debug
                         print 'Currently in NV0, but yellow is OK, so go on checking gate'
-
+                        if self.get_is_pidgate_running():
+                            self.set_is_pidgate_running(False)
+                            self.set_is_yellowfrq_running(True)
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
                         yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
@@ -511,8 +531,12 @@ class auto_optimizer(Instrument):
                             break;
                     else: # Yellow is bad. Optimize yellow where we ended last time
                         # Debug
-                        print 'Currently in NV0, yellow is bad, optimize yellow'
 
+                        if self.get_is_yellowfrq_running():
+                            self.set_is_pidgate_running(True)
+                            self.set_is_yellowfrq_running(False)
+
+                        print 'Currently in NV0, yellow is bad, optimize yellow'
                         while currentYellowStep < len(yellow_sweep) and (not finishedYellow) and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):                           
                             # Allow to break
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -526,7 +550,7 @@ class auto_optimizer(Instrument):
                             yellowStepTime = time.time();
 
                             # Debug
-                            print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
+                            #print 'Currently in NV0, optimizing yellow. Starting iteration', currentYellowStep, 'out of', len(yellow_sweep), 'at frequency', currentYellowFreq;                           
 
                             while (time.time() - yellowStepTime <= self._opt_yellow_dwell) and not finishedYellow and (sum(gate_y[-min(10,len(gate_y)):]==0) > self._NV0_zeros):
                                 # Allow to break
@@ -589,14 +613,14 @@ class auto_optimizer(Instrument):
             # Yellow plot
             p2 = plt.plot(name=(self._plot_name+'_yellow'))
             p2.clear()
-            plt.plot(yellow_t,yellow_x,'O',name=(self._plot_name+'_yellow')) 
-            plt.plot(np.arange(len(yellow_sweep))*self._opt_yellow_dwell, yellow_sweep,'O',name=(self._plot_name+'_yellow'))             
+            # plt.plot(yellow_t,yellow_x,'O',name=(self._plot_name+'_yellow')) 
+            # plt.plot(np.arange(len(yellow_sweep))*self._opt_yellow_dwell, yellow_sweep,'O',name=(self._plot_name+'_yellow'))             
             plt.plot(yellow_t,yellow_y,'O',name=(self._plot_name+'_yellow'))  
             # Gate plot
             p3 = plt.plot(name=(self._plot_name+'_gate'))
             p3.clear()
-            plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
-            plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
+            # plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
+            # plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
             plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))  
 
         print 'Finished gate optimization.'
@@ -651,8 +675,11 @@ class auto_optimizer(Instrument):
         currentGateFreq = gate_start;
         yellowStepTime = time.time();
         gateStepTime = time.time();
-
+        self.set_is_pidgate_running(True)
+        self.set_is_yellowfrq_running(False)
+        qt.msleep(0.1)
         # Each for iteration is one sweep step (dwell)
+
         for currentYellowStep,currentYellowFreq in enumerate(yellow_sweep):
             # Allow to break
             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -676,6 +703,9 @@ class auto_optimizer(Instrument):
                     return False;                 
                 # Check if we are still in NV0: more than 1 zero in last 10 vals on gate
                 if (sum(gate_y[-min(10,len(gate_y)):]==0) > 1 or len(gate_y) < 10):  
+                    if self.get_is_yellowfrq_running():
+                        self.set_is_pidgate_running(True)
+                        self.set_is_yellowfrq_running(False)
                     # Debug
                     # print 'Currently in NV0, checking yellow'
 
@@ -699,8 +729,10 @@ class auto_optimizer(Instrument):
                 else: # We are in NV-. Check if gate is good
                     if max(gate_y[-min(5,len(gate_y)):])>self._opt_gate_good or finishedGate or currentGateStep == len(gate_sweep): # Gate is good. Continue yellow
                         # Debug
-                        print 'Currently in NV-, but gate is OK, so go on checking yellow'
-
+                        #print 'Currently in NV-, but gate is OK, so go on checking yellow'
+                        if self.get_is_yellowfrq_running():
+                            self.set_is_pidgate_running(True)
+                            self.set_is_yellowfrq_running(False)
                         # Get yellow val
                         yellow_x = np.append(yellow_x,self._get_freq_yellow())
                         yellow_y = np.append(yellow_y,self.get_value_ext(self._data_time,1))
@@ -717,8 +749,12 @@ class auto_optimizer(Instrument):
                             break;
                     else: # Gate is bad. Optimize gate where we ended last time
                         # Debug
-                        print 'Currently in NV-, gate is bad, optimize gate'
+                        #print 'Currently in NV-, gate is bad, optimize gate'
+                        if self.get_is_pidgate_running():
+                            self.set_is_pidgate_running(False)
+                            self.set_is_yellowfrq_running(True)
 
+                        qt.msleep(0.1)
                         while currentGateStep < len(gate_sweep) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):                           
                             # Allow to break
                             if (msvcrt.kbhit() and (msvcrt.getch() == 'q')) or qt.instruments['purification_optimizer'].get_stop_optimize(): 
@@ -733,7 +769,7 @@ class auto_optimizer(Instrument):
                             gateStepTime = time.time();
 
                             # Debug
-                            print 'Currently in NV-, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
+                            #print 'Currently in NV-, optimizing gate. Starting iteration', currentGateStep, 'out of', len(gate_sweep), 'at frequency', currentGateFreq;                           
 
                             while (time.time() - gateStepTime <= self._opt_gate_dwell) and not finishedGate and (sum(gate_y[-min(10,len(gate_y)):]==0) <= self._NV0_zeros):
                                 # Allow to break
@@ -754,6 +790,9 @@ class auto_optimizer(Instrument):
                                 if gate_y[-1] > self._opt_gate_good:
                                     self._set_freq_gate(gate_x[-1])
                                     finishedGate = True
+                                    self.set_is_pidgate_running(True)
+                                    self.set_is_yellowfrq_running(True)
+                                    qt.msleep(0.1)
                                     break; 
                             currentGateStep = currentGateStep + 1; 
                         # If gate sweep has finished without exceeding the threshold: immediately set gate to optimal value.
@@ -761,6 +800,9 @@ class auto_optimizer(Instrument):
                             # Scan didn't exceed threshold at any point. Take optimum value from scan.
                             self._set_freq_gate(gate_x[np.argmax(gate_y)]);
                             print 'Gate: scan failed, set to best value ', max(gate_y), 'at frequency', gate_x[np.argmax(gate_y)];
+                            self.set_is_pidgate_running(True)
+                            self.set_is_yellowfrq_running(True)
+                            qt.msleep(0.1)
             if finishedYellow:
                 break;                                                            
 
@@ -796,14 +838,14 @@ class auto_optimizer(Instrument):
             # Yellow plot
             p2 = plt.plot(name=(self._plot_name+'_yellow'))
             p2.clear()
-            plt.plot(yellow_t,yellow_x,'O',name=(self._plot_name+'_yellow')) 
-            plt.plot(np.arange(len(yellow_sweep))*self._opt_yellow_dwell, yellow_sweep,'O',name=(self._plot_name+'_yellow'))             
+            # plt.plot(yellow_t,yellow_x,'O',name=(self._plot_name+'_yellow')) 
+            # plt.plot(np.arange(len(yellow_sweep))*self._opt_yellow_dwell, yellow_sweep,'O',name=(self._plot_name+'_yellow'))             
             plt.plot(yellow_t,yellow_y,'O',name=(self._plot_name+'_yellow'))  
             # Gate plot
             p3 = plt.plot(name=(self._plot_name+'_gate'))
             p3.clear()
-            plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
-            plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
+            # plt.plot(gate_t,gate_x,'O',name=(self._plot_name+'_gate')) 
+            # plt.plot(np.arange(len(gate_sweep))*self._opt_gate_dwell, gate_sweep,'O',name=(self._plot_name+'_gate'))             
             plt.plot(gate_t,gate_y,'O',name=(self._plot_name+'_gate'))  
 
         print 'Finished yellow optimization.'
@@ -829,3 +871,23 @@ class auto_optimizer(Instrument):
             # When there are zero attemps, should be distinguishable from zero counts
             return -1.  
         
+    def _do_set_is_pidgate_running(self,val):
+        if val:
+            qt.instruments['pidgate'].start()
+        else:
+            qt.instruments['pidgate'].stop()
+
+
+    def _do_get_is_pidgate_running(self):
+        return qt.instruments['pidgate'].get_is_running()
+
+
+
+    def _do_set_is_yellowfrq_running(self,val):
+        if val:
+            qt.instruments['pidyellowfrq'].start()
+        else:
+            qt.instruments['pidyellowfrq'].stop()
+
+    def _do_get_is_yellowfrq_running(self):
+        return qt.instruments['pidyellowfrq'].get_is_running()

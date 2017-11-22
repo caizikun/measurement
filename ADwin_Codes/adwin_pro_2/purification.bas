@@ -9,8 +9,8 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
-' Bookmarks                      = 3,3,16,16,22,22,93,93,95,95,216,216,421,421,422,422,437,437,663,663,734,734,913,914,915,922,923,924
-' Foldings                       = 593,616,644,697,857
+' Bookmarks                      = 3,3,16,16,22,22,95,95,97,97,218,218,440,440,441,441,456,456,682,682,753,753,932,933,934,941,942,943
+' Foldings                       = 612,635
 '<Header End>
 ' Purification sequence, as sketched in the purification/planning folder
 ' AR2016
@@ -44,13 +44,13 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-#INCLUDE .\cr_mod_Bell.inc
+'#INCLUDE .\cr_mod_Bell.inc
 #INCLUDE math.inc
 
 ' #DEFINE max_repetitions is defined as 500000 in cr check. Could be reduced to save memory
-#DEFINE max_purification_repetitions    52000 ' high number needed to have good statistics in the repump_speed calibration measurement
+#DEFINE max_purification_repetitions    500000 ' high number needed to have good statistics in the repump_speed calibration measurement
 #DEFINE max_SP_bins       2000  
 
 'init
@@ -84,7 +84,9 @@ DIM DATA_110[100] AS FLOAT ' carbon offset phases for dynamic phase feedback via
 DIM DATA_111[360] AS LONG at DRAM_Extern' lookup table for number of repetitions
 DIM DATA_112[360] as FLOAT at DRAM_Extern' lookup table for min deviation 
 DIM DATA_113[600] AS LONG at DRAM_Extern' lookup table for phase to compensate
-   
+
+DIM DATA_114[max_purification_repetitions] AS LONG at DRAM_Extern' invalid data marker
+
 ' these parameters are used for data initialization.
 DIM Initializer[100] as LONG AT EM_LOCAL ' this array is used for initialization purposes and stored in the local memory of the adwin 
 DIM array_step as LONG
@@ -122,7 +124,7 @@ DIM C13_MBI_RO_duration, RO_duration as long
 DIM purify_RO_is_MBI_RO as long
 
 ' Phase compensation
-DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation AS FLOAT
+DIM phase_to_compensate, total_phase_offset_after_sequence, phase_per_sequence_repetition, phase_per_compensation_repetition,acquired_phase_during_compensation,overall_phase AS FLOAT
 DIM phase_to_calculate, phase_compensation_repetitions, required_phase_compensation_repetitions,phase_correct_max_reps, phase_repetitions as long
 DIM current_phase_deviation, min_phase_deviation, phase_feedback_resolution as float
 DIM AWG_sequence_repetitions_first_attempt, AWG_sequence_repetitions_second_attempt as long
@@ -280,7 +282,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   '  ' note: the MemCpy function only works for T11 processors.
   '  ' this is a faster way of filling up global data arrays in the external memory. See Adbasic manual
   array_step = 1
-  FOR i = 1 TO 520 ' 520 is derived from max_purification_length/100
+  FOR i = 1 TO 5000 ' 520 is derived from max_purification_length/100
     MemCpy(Initializer[1],DATA_100[array_step],100)
     MemCpy(Initializer[1],DATA_101[array_step],100)
     MemCpy(Initializer[1],DATA_102[array_step],100)
@@ -289,6 +291,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     MemCpy(Initializer[1],DATA_105[array_step],100)
     MemCpy(Initializer[1],DATA_106[array_step],100)
     MemCpy(Initializer[1],DATA_107[array_step],100)
+    MemCpy(Initializer[1],DATA_114[array_step],100)
     '    MemCpy(Initializer[1],DATA_108[array_step],100)
     '    MemCpy(Initializer[1],DATA_109[array_step],100)
     
@@ -311,19 +314,35 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     min_phase_deviation = 361
     acquired_phase_during_compensation = phase_per_compensation_repetition
     phase_repetitions = 1
+    required_phase_compensation_repetitions = 2
     Do   
       inc(phase_repetitions)                           
       acquired_phase_during_compensation = acquired_phase_during_compensation + phase_per_compensation_repetition
       IF (acquired_phase_during_compensation > 360) THEN
         acquired_phase_during_compensation =   acquired_phase_during_compensation-360
       ENDIF
+      
+      overall_phase = phase_to_calculate + acquired_phase_during_compensation 
+      IF (overall_phase > 360) THEN
+        overall_phase = overall_phase - 360
+      ENDIF
+      ' overall_phase should now satisfy 0 < overall_phase < 360
+      IF ((overall_phase > 360) OR (overall_phase < 0)) THEN
+        Par_65 = 0DEADBEEFh
+        EXIT ' hard break if this condition is not satisfied
+      ENDIF      
+      
+      IF (overall_phase > 180) THEN
+        current_phase_deviation = 360 - overall_phase
+      ELSE
+        current_phase_deviation = overall_phase
+      ENDIF
             
-      current_phase_deviation = Abs(phase_to_calculate-acquired_phase_during_compensation)
       IF (current_phase_deviation  < min_phase_deviation) THEN
         min_phase_deviation = current_phase_deviation
         required_phase_compensation_repetitions = phase_repetitions
       ENDIF
-    Until ((phase_repetitions = phase_correct_max_reps-1) or (min_phase_deviation <= phase_feedback_resolution))
+    Until ((phase_repetitions = phase_correct_max_reps-1)) ' or (min_phase_deviation <= phase_feedback_resolution)) ' just try to select the best feedback for every offset
           
     Dec(required_phase_compensation_repetitions)  ' we do one unaccounted repetition in the AWG.
      
@@ -343,7 +362,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
           
     ENDIF
     
-    Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate
+    Data_113[AWG_sequence_repetitions_second_attempt] = phase_to_compensate ' note that this converts a float to a long!
     
   Next AWG_sequence_repetitions_second_attempt
   AWG_sequence_repetitions_second_attempt = 0 ' reinit. otherwise error
@@ -368,7 +387,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
   par_13 = -1
   par_14 = -1
   par_15 = -1
-  
+  PAR_55 = 0                      ' invalid data marker
   Par_62 = 0
 '''''''''''''''''''''''''
   ' flow control: 
@@ -391,7 +410,7 @@ LOWINIT:    'change to LOWinit which I heard prevents adwin memory crashes
     mode_after_phase_correction = mode_after_purification ' as defined above
   ENDIF
   
-  if ((do_phase_correction=1) and (do_purifying_gate = 1)) then ' special case: in the adwin do phase only makes sense in conjunction with do_purify
+  if ((do_phase_correction=1)) then ' and (do_purifying_gate = 1)) then ' special case: in the adwin do phase only makes sense in conjunction with do_purify
     mode_after_LDE_2 = 7 'phase correction
   else
     mode_after_LDE_2 = mode_after_phase_correction ' as defined above
@@ -835,7 +854,7 @@ EVENT:
           timer = -1
           if (AWG_done_was_low >0) then ' prevents double jump in case the awg trigger is long
             IF (do_SSRO_after_electron_carbon_SWAP = 0) then
-              mode = mode_after_swap ' see flow control
+              mode = 51 ' see flow control
             ELSE
               mode = 200   ' dsSSRO
               is_mbi_readout = 1 ' ... in MBI mode
@@ -971,6 +990,7 @@ EVENT:
         ENDIF
         
         IF (phase_compensation_repetitions = required_phase_compensation_repetitions) THEN 'give jump trigger and go to next mode: tomography
+          FPAR_62 = 12.0
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,1) ' tell the AWG to jump to tomo pulse sequence
           CPU_SLEEP(9) ' need >= 20ns pulse width; adwin needs >= 9 as arg, which is 9*10ns
           P2_DIGOUT(DIO_MODULE, AWG_event_jump_DO_channel,0) 
@@ -1051,7 +1071,7 @@ EVENT:
       CASE 10 'store the result of the tomography and the sync number counter
         DATA_106[repetition_counter+1] = SSRO_result
         DATA_102[repetition_counter+1] = cumulative_awg_counts + AWG_sequence_repetitions_first_attempt + AWG_sequence_repetitions_second_attempt ' store sync number of successful run
-       
+        DATA_114[repetition_counter+1] = PAR_55 'what was the state of the invalid data marker?
         mode = 12 'go to reinit and CR check
         INC(repetition_counter) ' count this as a repetition. DO NOT PUT IN 12, because 12 can be used to init everything without previous success!!!!!
         first_CR=1 ' we want to store the CR after result in the next run

@@ -20,7 +20,7 @@ class adwin(Instrument):
         self.processes = processes
         self.default_processes = kw.get('default_processes', [])
 
-
+        
         self._last_loaded_process = '' #this flag prevents double loading of processes.
         self.add_function('get_latest_process')
         self.add_function('set_latest_process')
@@ -29,7 +29,8 @@ class adwin(Instrument):
         # self.add_parameter('adcs',
         #     type = types.IntType)
 
-        self.dacs = kw.get('dacs', {})
+
+        self.dacs = kw.get('dacs', {}) 
         self.adcs = kw.get('adcs', {})
 
         self.use_cfg = use_cfg
@@ -149,9 +150,6 @@ class adwin(Instrument):
                 self.physical_adwin.Stop_Process(pidx)
             self.physical_adwin.Load(os.path.join(self.process_dir, fn))
             
-            # SSRO processes have id 9 and are in general bulky / can cause memory problems on frequent loading
-            if pidx == 9:
-                self.set_latest_process(fn)
             return True
         
         f.__name__ = funcname
@@ -492,7 +490,6 @@ class adwin(Instrument):
         if 'set_dac' in self.processes:
             self.start_set_dac(dac_no=self.dacs[name], 
                     dac_voltage=value, timeout=timeout, **kw)
-
             self._dac_voltages[name] = value
             self.save_cfg()
             return True
@@ -577,6 +574,7 @@ class adwin(Instrument):
             if True, check if linescan is running, and if so, quit right away
         
         """
+
         if abort_if_running and self.is_linescan_running():
             return
                
@@ -595,8 +593,8 @@ class adwin(Instrument):
             time.sleep(0.05)
 
         p = self.processes['linescan']
-        dacs = [ self.dacs[n] for n in dac_names ]
-        
+        dacs = [ self.dacs[n] for n in dac_names ] 
+
         # set all the required input params for the adwin process
         # see the adwin process for details
         self.physical_adwin.Set_Par(p['par']['set_cnt_dacs'], len(dac_names))
@@ -629,6 +627,7 @@ class adwin(Instrument):
         # if the scan is not finished properly
         for i,n in enumerate(dac_names):
             self._dac_voltages[n] = stop_voltages[i]
+
         self.save_cfg()
 
     def speed2px(self, dac_names, target_voltages, speed=50000, pxtime=5,
@@ -698,10 +697,12 @@ class adwin(Instrument):
             time.sleep(0.01)
         return self.get_last_counts()
 
-
+        #XXXXXXXXXXXXXX functions related to adwin latest process removed by Bas 
+        # before. Now the purify scrip does not work, I put them back.
+        # To fix later. Anais - 11-10-2016
     def get_latest_process(self):
         return self._last_loaded_process
 
     def set_latest_process(self,fn):
         self._last_loaded_process = fn
-        return
+        return 

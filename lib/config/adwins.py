@@ -51,6 +51,7 @@ config['adwin_lt1_processes'] = {
                 },
             },
 
+
         'counter' : {
 
             'doc' : '',
@@ -394,6 +395,46 @@ config['adwin_lt1_processes'] = {
                 'completed_reps'    : 73,
             },
         },
+
+        'laserscan_green_red' : {
+
+            'index' : 9,
+            'file' : 'laserscan_green_red.TB9',
+            'params_long' : [
+                ['freq_dac_channel'         ,   7],
+                ['green_aom_dac_channel'    ,   8 ],
+                ['red_aom_dac_channel'      ,   5], 
+                ['noof_pixels'              ,   200],
+                ['pixel_time'               , 100000], #us
+                ['green_time'               , 10], #us
+                ['red_time'                 , 100], #us
+                ['wait_after_green_time'    , 10], #us
+            ],
+            'params_long_index'  : 20,
+            'params_float' : [
+                    ['green_voltage'        , 0.8],
+                    ['red_voltage'          , 0.8],
+                   
+                    ['scan_start_voltage'   , 0. ],
+                    ['scan_stop_voltage'    , 0. ],
+                    ['green_off_voltage'    , 0.],
+                    ['red_off_voltage'      , 0.],
+                    ],
+            'params_float_index'  : 21,
+            'par' : {
+                'pixel_clock' : 4,
+                },
+            'fpar' : {
+                'laser_freq' : 46,
+                },
+            'data_long' : {
+                'counts' : [11,12,13],
+                },
+            'data_float' : {
+                'laser_frequencies' : 15,
+                'voltages' : 16
+                },
+            },
 
         'integrated_ssro_msp1' : {
                 'index' : 9,
@@ -1227,6 +1268,24 @@ config['adwin_lt2_processes'] = {
                     'statistics' : 26,
                     },
                 },
+
+
+        'green_readout' : {
+            'index' : 9,
+            'file'  : 'green_readout_lt2.TB9',
+            'params_long' : [
+                ['AWG_start_DO_channel'         ,   16],
+                ['AWG_event_jump_DO_channel'    ,   8 ],
+                ['total_sync_nr'                ,   5], 
+                ['sync_counter_idx'             ,   4],
+                ['AWG_done_DI_channel'          ,   16]
+            ],
+            'params_long_index' : 20,
+            'params_long_length': 10,
+            'par'               : {
+                'completed_reps'    : 73,
+            },
+        },
 # ADwin SSRO. This process can not run stand-alone and should be included in another adwin script/process
 # For now all parameters are passed from the other ADwin script/process, this seems more flexible to me.
 # Not sure if this function is then needed. - Machiel 30-12-'13'
@@ -1984,6 +2043,33 @@ config['adwin_lt2_processes'] = {
                 'fpar': {}
                 },
 
+        'dynamic_jump' : {
+                    'index' : 9,
+                    'file' : 'dynamic_jump.TB9',
+                    'par' : {
+                        
+                    },
+                    'params_long' : [
+                        ['cycle_duration'           ,   300 ],
+                        ['AWG_start_DO_channel'     ,   1   ],
+                        ['AWG_jump_strobe_DO_channel' ,   12 ],
+                        ['do_init_only'             ,   0   ],
+                        ['jump_bit_shift'           ,   7   ],
+                    ],
+                    'params_long_index'  : 20,
+                    # 'params_long_length' : 100,
+                    'params_float' : [
+                    ],
+                    'params_float_index' : 21,
+                    'data_long' : {
+                        'jump_table' :   100,
+                        'delay_cycles'  :   101,
+                        'next_seq_table'    :   102,
+                        'seq_indices'   : 103,
+                        'random_ints'   : 110,
+                    },
+                },
+
         ###########################
         ### QEC Carbon Control ####
         ###########################
@@ -2139,6 +2225,174 @@ config['adwin_lt2_processes'] = {
                     },
                 },
 
+        'cr_check_mod_dummy_lt34' : {
+            'no_process_start': 'prevent automatic generation of start functions for this process',
+            'index' : 999,
+            'file' : 'cr_mod_Bell.inc',
+            'par' : {
+                    'CR_preselect'              : 75,
+                    'CR_probe'                  : 68,
+                    'CR_repump'                 : 69,
+                    'total_CR_counts'           : 70,
+                    'noof_repumps'              : 71,
+                    'noof_cr_checks'            : 72,
+                    'cr_below_threshold_events' : 79,
+                    'repump_counts'             : 76,
+                    'repump_mod_activate'       : 66,
+                    'cr_mod_activate'           : 67,
+                    },
+                    'fpar' : {
+                    'repump_mod_err' : 78,
+                    'cr_mod_err'     : 79,
+
+
+                    },
+            'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['counter_channel'             ,   1],
+                    ['repump_laser_DAC_channel'    ,   7],
+                    ['Ex_laser_DAC_channel'        ,   6],
+                    ['A_laser_DAC_channel'         ,   8],
+                    ['repump_duration'             ,   5],
+                    ['CR_duration'                 ,  50],
+                    ['cr_wait_after_pulse_duration',   1],
+                    ['CR_preselect'                ,  10],
+                    ['CR_probe'                    ,  10],
+                    ['CR_repump'                   ,  10],
+                    ['repump_mod_DAC_channel'      ,   7],
+                    ['cr_mod_DAC_channel'          ,   8],
+                    #['counter_ch_input_pattern'    ,   0]
+                    ],
+                'params_long_index'  : 30,
+                'params_float' : [
+                    ['repump_voltage'           ,   0.8],
+                    ['repump_off_voltage'       ,  0.07],
+                    ['Ex_CR_voltage'            ,   0.8],
+                    ['A_CR_voltage'             ,   0.8],
+                    ['Ex_off_voltage'           ,   0.0],
+                    ['A_off_voltage'            , -0.08],
+                    ['repump_mod_control_offset',   0.0],
+                    ['repump_mod_control_amp'   ,   0.0],
+                    ['cr_mod_control_offset'    ,   0.0],
+                    ['cr_mod_control_amp'       ,   0.0],
+                    ['cr_mod_control_avg_pts'   ,   100000.],
+                    ],
+                'params_float_index'  : 31,
+                'data_long' : {
+                    'CR_before' : 22,
+                    'CR_after' : 23,
+                    'statistics' : 26,
+                    },
+                },
+
+        'purification_delayfb' : {
+                'index' : 9,
+                'file' : 'purification_delayfb_lt2.TB9',
+                'include_cr_process' : 'cr_check', # 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       , 100],
+                    ['MBI_attempts_before_CR'          ,   1], 
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,  20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['do_carbon_init'                  ,   1], # goes to mbi sequence, ends with tomography
+                    ['do_C_init_SWAP_wo_SSRO'          ,   1],
+                    ['do_swap_onto_carbon'             ,   1],
+                    ['do_SSRO_after_electron_carbon_SWAP', 0],
+                    ['do_LDE_2'                        ,   1],
+                    ['do_phase_correction'             ,   1],
+                    ['do_purifying_gate'               ,   1],
+                    ['do_carbon_readout'               ,   1],
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['phase_correct_max_reps'          ,   5],   
+                    ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
+                    ['delay_trigger_DI_channel'        ,   0],
+                    ['delay_trigger_DO_channel'        ,   0],
+                    ['number_of_carbons'               ,   0],
+                    ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
+                    ['do_sweep_delay_cycles'           ,   0],
+                    ['delay_feedback_N'                ,   1],
+                    ['number_of_C_init_ROs'            ,   0],
+                    ['number_of_C_encoding_ROs'        ,   0],
+                    ['do_LDE_1'                        ,   0],
+                    ['do_phase_offset_sweep'           ,   0],
+                    ['delay_HH_trigger_DO_channel'     ,   0],
+                    ['do_HH_trigger'                   ,   0]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['E_C13_MBI_RO_voltage' , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['delay_time_offset'    , 0.0],
+                    ['delay_feedback_target_phase'  , 1800.0],
+                    ['delay_feedback_static_dec_duration', 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    'flowchart_index': 50
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
+                    'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    'overlong_cycles_per_mode'  : 115,
+                    'mode_flowchart'            : 110,
+                    'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
+                    }, 
+                'data_float' : {
+                    'compensated_phase'             : 108, # how much phase feedback has been given on the carbon                
+                    'nuclear_frequencies'           : 120, # list of e-spin state averaged carbon frequencies
+                    'nuclear_phases'                : 121, # current carbon phase (used primarily during ADwin operation to track phases)
+                    'nuclear_phases_per_seqrep'     : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'         : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
+                    'nuclear_phases_offset_sweep'   : 124, # array that holds the offsets in case we want to sweep
+                    },
+                },
         }
 
 config['adwin_lt3_dacs'] = {
@@ -2154,6 +2408,8 @@ config['adwin_lt3_dacs'] = {
         'yellow_aom_frq':10,
         'lock_aom':11,
         'pulse_aom_frq':12,
+        'yellow_voltage':13,
+        'delay_voltage':14
         }
 
 config['adwin_lt3_dios'] = {
@@ -2317,7 +2573,7 @@ config['adwin_pro_processes'] = {
          'cr_check_mod' : {
             'no_process_start': 'prevent automatic generation of start functions for this process',
             'index' : 999,
-            'file' : 'cr_mod.inc',
+            'file' : 'cr_mod_Bell.inc',
             'par' : {
                     'CR_preselect'              : 75,
                     'CR_probe'                  : 68,
@@ -2533,6 +2789,183 @@ config['adwin_pro_processes'] = {
                 'data_long' : {
                     'SP_hist' : 24,
                     'RO_data' : 25,
+                    },
+                },
+
+        'integrated_ssro_delay_timing' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_delay_timing.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['delay_voltage_DAC_channel'   ,  16],
+                    ['do_delay_voltage_control'    ,   1]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                'data_float' : {
+                    'delay_voltages' : 40,
+                    },
+                },
+
+        'integrated_ssro_tico_delay_timing' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_tico_delay_timing.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['do_tico_delay_control'       ,   0],
+                    ['delay_trigger_DI_channel'    ,  20],
+                    ['delay_trigger_DO_channel'    ,  12],
+                    ['delay_HH_trigger_DO_channel' ,   0],
+                    ['do_delay_HH_trigger'         ,   0]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    'delay_cycles': 41,
+                    },
+                },
+
+
+        'integrated_ssro_tico_controlled' : {
+                'index' : 9,
+                'file' : 'integrated_ssro_tico_controlled.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,  8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['SP_duration'                 , 100],
+                    ['sequence_wait_time'          ,   0],
+                    ['wait_after_pulse_duration'   ,   1],
+                    ['SSRO_repetitions'            ,1000],
+                    ['SSRO_duration'               ,  50],
+                    ['SSRO_stop_after_first_photon',   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['do_random_gates'             ,   0],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'SP_hist' : 24,
+                    'RO_data' : 25,
+                    },
+                },
+
+        'dummy_selftrigger' : {
+                'index' : 9,
+                'file' : 'dummy_selftrigger.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['delay_voltage_DAC_channel'   ,  16],
+                    ['do_delay_voltage_control'    ,   1]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float': [
+                    ],
+                'params_float_index': 21,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_float' : {
+                    'delay_voltages' : 40,
+                    },
+                },
+
+        'dummy_tico_selftrigger' : {
+                'index' : 9,
+                'file' : 'dummy_tico_selftrigger.TB9',
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['AWG_start_DO_channel'        ,  16],
+                    ['AWG_done_DI_channel'         ,   8],
+                    ['send_AWG_start'              ,   0],
+                    ['wait_for_AWG_done'           ,   0],
+                    ['cycle_duration'              , 300], #on T11 processor 300 corresponds to 1us
+                    ['sweep_length'                ,   1],
+                    ['do_tico_delay_control'       ,   0],
+                    ['delay_trigger_DI_channel'    ,  20],
+                    ['delay_trigger_DO_channel'    ,  12],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 25,
+                'params_float': [
+                    ],
+                'params_float_index': 21,
+                'par' : {
+                    'completed_reps' : 73,
+                    },
+                'data_long' : {
+                    'delay_cycles' : 41,
                     },
                 },
 
@@ -2844,6 +3277,7 @@ config['adwin_pro_processes'] = {
                     'stop_flag': 63,
                     'completed_reps' : 73,
                     'entanglement_events': 77,
+                    'invalid_data_marker': 55,
                     },
                 'data_long' : {
                     'CR_before'      : 22,
@@ -2857,10 +3291,500 @@ config['adwin_pro_processes'] = {
                     'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
                     'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
                     'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
                     },
                 'data_float' : {
                     'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
                     'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
+                    },
+                },
+
+        'telcrification' : {
+                'index' : 9,
+                'file' : 'telcrification.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       , 100],
+                    ['MBI_attempts_before_CR'          ,   1], 
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,  20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['do_carbon_init'                  ,   1], # goes to mbi sequence, ends with tomography
+                    ['do_C_init_SWAP_wo_SSRO'          ,   1],
+                    ['do_swap_onto_carbon'             ,   1],
+                    ['do_SSRO_after_electron_carbon_SWAP', 0],
+                    ['do_LDE_2'                        ,   1],
+                    ['do_phase_correction'             ,   1],
+                    ['do_purifying_gate'               ,   1],
+                    ['do_carbon_readout'               ,   1],
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['phase_correct_max_reps'          ,   5],   
+                    ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
+                    ['Phase_stab_duration'             ,   1],
+                    ['Phase_stab_interval'             ,   1],
+                    ['phase_stab_signal_channel'       ,   1],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['E_C13_MBI_RO_voltage' , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['phase_per_sequence_repetition'    , 0.],
+                    ['phase_per_compensation_repetition', 0.],
+                    ['phase_feedback_resolution', 4.5],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
+                    'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    },
+                'data_float' : {
+                    'compensated_phase'         : 108, # how much phase feedback has been given on the carbon 
+                    'min_phase_deviation'         : 109, # accuracy that can be achieved in phase compensation                 
+                    },
+                },
+
+        'purification_delayfb' : {
+                'index' : 9,
+                'file' : 'purification_delayfb.TB9',
+                'include_cr_process' : 'cr_check_mod', # 'cr_check', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       , 100],
+                    ['MBI_attempts_before_CR'          ,   1], 
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,  20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['do_carbon_init'                  ,   1], # goes to mbi sequence, ends with tomography
+                    ['do_C_init_SWAP_wo_SSRO'          ,   1],
+                    ['do_swap_onto_carbon'             ,   1],
+                    ['do_SSRO_after_electron_carbon_SWAP', 0],
+                    ['do_LDE_2'                        ,   1],
+                    ['do_phase_correction'             ,   1],
+                    ['do_purifying_gate'               ,   1],
+                    ['do_carbon_readout'               ,   1],
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['C13_MBI_RO_duration'             ,  25],   
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['phase_correct_max_reps'          ,   5],   
+                    ['PLU_during_LDE'                  ,   1],
+                    ['pts'                             ,   1],
+                    ['LDE_1_is_init'                   ,   1],
+                    ['delay_trigger_DI_channel'        ,   0],
+                    ['delay_trigger_DO_channel'        ,   0],
+                    ['number_of_carbons'               ,   0],
+                    ['minimal_delay_cycles'            ,   0],
+                    ['do_phase_fb_delayline'           ,   0],
+                    ['do_sweep_delay_cycles'           ,   0],
+                    ['delay_feedback_N'                ,   1],
+                    ['number_of_C_init_ROs'            ,   0],
+                    ['number_of_C_encoding_ROs'        ,   0],
+                    ['do_LDE_1'                        ,   0],
+                    ['do_phase_offset_sweep'           ,   0],
+                    ['delay_HH_trigger_DO_channel'     ,   0],
+                    ['do_delay_HH_trigger'             ,   0],
+                    ['do_phase_per_seqrep_sweep'       ,   0],
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['E_C13_MBI_RO_voltage' , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['delay_time_offset'    , 0.0],
+                    ['delay_feedback_target_phase'  , 1800.0],
+                    ['delay_feedback_static_dec_duration', 0.0],
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 10,
+                'par' : {
+                    'remote_mode': 60,
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    'flowchart_index': 50
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    # 'Phase_correction_repetitions' : 100, # time needed until mbi success (in process cycles)
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'attempts_first'            : 103,  # number of repetitions until the first succesful entanglement attempt
+                    'attempts_second'           : 104, # number of repetitions after swapping until the second succesful entanglement attempt
+                    'electron_readout_result'   : 105,  # electron readout, e.g. after purification step
+                    'carbon_readout_result'     : 106, # SSRO counts final spin readout after tomography
+                    'ssro_results'              : 107, # result of the last ssro in the adwin
+                    'feedback_delay_cycles'     : 109,
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    'overlong_cycles_per_mode'  : 115,
+                    'mode_flowchart'            : 110,
+                    'mode_flowchart_cycles'     : 111,
+                    'delay_cycles_sweep'        : 125,
+                    }, 
+                'data_float' : {
+                    'compensated_phase'                     : 108, # how much phase feedback has been given on the carbon
+                    'nuclear_frequencies'                   : 120, # list of e-spin state averaged carbon frequencies
+                    'nuclear_phases'                        : 121, # current carbon phase (used primarily during ADwin operation to track phases)
+                    'nuclear_phases_per_seqrep'             : 122, # acquired phase per sequence repetition
+                    'nuclear_phases_offset'                 : 123, # phase offset of the whole sequence per nucleus, gets fed into the feedback
+                    'nuclear_phases_offset_sweep'           : 124, # array that holds the offsets in case we want to sweep
+                    'nuclear_phases_per_seqrep_sweep'       : 126,
+                    },
+                },
+
+        'single_click_ent' : {
+                'index' : 9,
+                'file' : 'single_click_ent.TB9',
+                'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                'params_long' : [           # keep order!!!!!!!!!!!!!
+                    ['cycle_duration'                  ,   1],
+                    ['SP_duration'                     ,   5],
+                    ['wait_after_pulse_duration'       ,   100],
+                    ['Dynamical_stop_ssro_threshold'   ,   1], 
+                    ['Dynamical_stop_ssro_duration'    ,   20], 
+                    ['is_master'                       ,   1], 
+                    ['is_two_setup_experiment'         ,   1], 
+                    ['PLU_event_di_channel'            ,   0], 
+                    ['PLU_which_di_channel'            ,   0], 
+                    ['AWG_start_DO_channel'            ,   0], 
+                    ['AWG_done_DI_channel'             ,   0],
+                    ['wait_for_awg_done_timeout_cycles',   0], 
+                    ['AWG_event_jump_DO_channel'       ,   0], 
+                    ['AWG_repcount_DI_channel'         ,   0], 
+                    ['remote_adwin_di_success_channel' ,   1], 
+                    ['remote_adwin_di_fail_channel'    ,   1], 
+                    ['remote_adwin_do_success_channel' ,   1], 
+                    ['remote_adwin_do_fail_channel'    ,   1], 
+                    ['adwin_comm_safety_cycles'        ,   1], 
+                    ['adwin_comm_timeout_cycles'       ,   1], 
+                    ['remote_awg_trigger_channel'      ,   1],
+                    ['invalid_data_marker_do_channel'  ,   1],  
+                    ['repetitions'                     ,   0],  
+                    ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                    ['PLU_during_LDE'                  ,   1],
+                    ['LDE_is_init'                     ,   1],
+                    ['do_phase_stabilisation'          ,   1],
+                    ['only_meas_phase'                 ,   1],
+                    ['do_dynamical_decoupling'         ,   1],
+                    ['Phase_msmt_DAC_channel'          ,   2],
+                    ['Phase_stab_DAC_channel'          ,   2],
+                    ['zpl1_counter_channel'            ,   2],
+                    ['zpl2_counter_channel'            ,   3],
+                    ['pid_points'                      ,   10],
+                    ['pid_points_to_store'             ,   10],
+                    ['sample_points'                   ,   100],
+                    ['count_int_time_stab'             ,   1000], # units of us
+                    ['count_int_time_meas'             , 1000], # units of us
+                    ['phase_stab_max_time'             ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                    ['modulate_stretcher_during_phase_msmt' , 0],
+                    ['LDE_attempts'                     ,  1],
+                    ['do_post_ent_phase_msmt'           ,  0]
+                    ],
+                'params_long_index'  : 20,
+                'params_long_length' : 100,
+                'params_float' : [
+                    ['Ex_SP_voltage'        , 0.8],
+                    ['A_SP_voltage'         , 0.8],
+                    ['Ex_RO_voltage'        , 0.8],
+                    ['A_RO_voltage'         , 0.8],
+                    ['Phase_Msmt_voltage'         , 2.0],
+                    ['Phase_Msmt_off_voltage'         , 0.0],
+                    ['PID_GAIN'       , 1.0],
+                    ['PID_Kp'         , 0.000],
+                    ['PID_Ki'         , 0.0],
+                    ['PID_Kd'         , 0.0],
+                    ['phase_setpoint', 3.14/2],
+                    ['stretcher_V_2pi', 11],
+                    ['stretcher_V_max', 9.5],
+                    ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
+                    ['Phase_Msmt_Vis', 1], # Vis of interference'
+                    ['LDE_element_length', 2.2e-6],
+                    ['decoupling_element_duration', 8.8e-6]
+                    ],
+                'params_float_index'  : 21,
+                'params_float_length' : 100,
+                'par' : {
+                    'remote_mode': 60, # PH This is the timer?
+                    'local_mode': 61,
+                    'timeout_events': 62,
+                    'stop_flag': 63,
+                    'completed_reps' : 73,
+                    'store_index_stab' : 74, #amount of phase stabilization points (array length)
+                    'entanglement_events': 77,
+                    'invalid_data_marker': 55,
+                    },
+                'data_long' : {
+                    'CR_before'      : 22,
+                    'CR_after'       : 23,
+                    'SP_hist'                   : 29,    #SP histogram
+                    'DD_repetitions'            : 100, # Not used yet (PH) but eventually the number of reps needed for DD
+                    'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                    'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                    'ssro_results'              : 103,  # electron readout
+                    'pid_counts_1'                : 104, # Counts measured during the PID process
+                    'pid_counts_2'                : 105, # Counts measured during the PID process
+                    'sampling_counts_1'           : 106, # Counts during the sample process
+                    'sampling_counts_2'           : 107, # Counts during the sample process
+                    'elapsed_since_phase_stab'  : 108, #
+                    'last_phase_stab_index'     : 109, #
+                    'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                    },
+                'data_float' : {
+                    'expm_mon_taper_freq'       : 40,
+                    'expm_mon_nf_freq'          : 41,
+                    'expm_mon_yellow_freq'      : 42,
+                    'expm_mon_gate_voltage'     : 43,
+                    'expm_mon_cr_counts'        : 44,
+                    'expm_mon_repump_counts'    : 45, 
+                    },
+                },
+
+                'single_click_on_demand' : {
+                        'index' : 9,
+                        'file' : 'single_click_on_demand.TB9',
+                        'include_cr_process' : 'cr_check_mod', #This process includes the CR check lib
+                        'params_long' : [           # keep order!!!!!!!!!!!!!
+                            ['cycle_duration'                  ,   1],
+                            ['SP_duration'                     ,   5],
+                            ['wait_after_pulse_duration'       ,   100],
+                            ['Dynamical_stop_ssro_threshold'   ,   1], 
+                            ['Dynamical_stop_ssro_duration'    ,   20], 
+                            ['is_master'                       ,   1], 
+                            ['is_two_setup_experiment'         ,   1], 
+                            ['PLU_event_di_channel'            ,   0], 
+                            ['PLU_which_di_channel'            ,   0], 
+                            ['AWG_start_DO_channel'            ,   0], 
+                            ['AWG_done_DI_channel'             ,   0],
+                            ['wait_for_awg_done_timeout_cycles',   0], 
+                            ['AWG_event_jump_DO_channel'       ,   0], 
+                            ['AWG_repcount_DI_channel'         ,   0], 
+                            ['remote_adwin_di_success_channel' ,   1], 
+                            ['remote_adwin_di_fail_channel'    ,   1], 
+                            ['remote_adwin_do_success_channel' ,   1], 
+                            ['remote_adwin_do_fail_channel'    ,   1], 
+                            ['adwin_comm_safety_cycles'        ,   1], 
+                            ['adwin_comm_timeout_cycles'       ,   1], 
+                            ['remote_awg_trigger_channel'      ,   1],
+                            ['invalid_data_marker_do_channel'  ,   1],  
+                            ['repetitions'                     ,   0],  
+                            ['master_slave_awg_trigger_delay'  ,   1], # times 10ns  
+                            ['PLU_during_LDE'                  ,   1],
+                            ['LDE_is_init'                     ,   1],
+                            ['do_phase_stabilisation'          ,   1],
+                            ['only_meas_phase'                 ,   1],
+                            ['do_dynamical_decoupling'         ,   1],
+                            ['Phase_msmt_DAC_channel'          ,   2],
+                            ['Phase_stab_DAC_channel'          ,   2],
+                            ['zpl1_counter_channel'            ,   2],
+                            ['zpl2_counter_channel'            ,   3],
+                            ['pid_points'                      ,   10],
+                            ['pid_points_to_store'             ,   10],
+                            ['sample_points'                   ,   100],
+                            ['count_int_time_stab'             ,   1000], # units of us
+                            ['count_int_time_meas'             , 1000], # units of us
+                            ['phase_stab_max_time'             ,   15000000], # units of 3.3 ns (currently set to 50 ms)
+                            ['modulate_stretcher_during_phase_msmt' , 0],
+                            ['LDE_attempts'                     ,  1],
+                            ['do_post_ent_phase_msmt'           ,  0]
+                            ],
+                        'params_long_index'  : 20,
+                        'params_long_length' : 100,
+                        'params_float' : [
+                            ['Ex_SP_voltage'        , 0.8],
+                            ['A_SP_voltage'         , 0.8],
+                            ['Ex_RO_voltage'        , 0.8],
+                            ['A_RO_voltage'         , 0.8],
+                            ['Phase_Msmt_voltage'         , 2.0],
+                            ['Phase_Msmt_off_voltage'         , 0.0],
+                            ['PID_GAIN'       , 1.0],
+                            ['PID_Kp'         , 0.000],
+                            ['PID_Ki'         , 0.0],
+                            ['PID_Kd'         , 0.0],
+                            ['phase_setpoint', 3.14/2],
+                            ['stretcher_V_2pi', 11],
+                            ['stretcher_V_max', 9.5],
+                            ['Phase_Msmt_g_0', 1], # Scaling factor to match APD channels
+                            ['Phase_Msmt_Vis', 1], # Vis of interference'
+                            ['LDE_element_length', 2.2e-6],
+                            ['decoupling_element_duration', 8.8e-6]
+                            ],
+                        'params_float_index'  : 21,
+                        'params_float_length' : 100,
+                        'par' : {
+                            'remote_mode': 60, # PH This is the timer?
+                            'local_mode': 61,
+                            'timeout_events': 62,
+                            'stop_flag': 63,
+                            'completed_reps' : 73,
+                            'store_index_stab' : 74, #amount of phase stabilization points (array length)
+                            'entanglement_events': 77,
+                            'invalid_data_marker': 55,
+                            },
+                        'data_long' : {
+                            'CR_before'      : 22,
+                            'CR_after'       : 23,
+                            'SP_hist'                   : 29,    #SP histogram
+                            'DD_repetitions'            : 100, # Not used yet (PH) but eventually the number of reps needed for DD
+                            'adwin_communication_time'  : 101,  #time spent for communication between adwins
+                            'counted_awg_reps'          : 102,  #Information of how many awg repetitions passed between events (-1)
+                            'ssro_results'              : 103,  # electron readout
+                            'pid_counts_1'                : 104, # Counts measured during the PID process
+                            'pid_counts_2'                : 105, # Counts measured during the PID process
+                            'sampling_counts_1'           : 106, # Counts during the sample process
+                            'sampling_counts_2'           : 107, # Counts during the sample process
+                            'elapsed_since_phase_stab'  : 108, #
+                            'last_phase_stab_index'     : 109, #
+                            'invalid_data_markers'      : 114, # gets changed via the purification optimizer
+                            'time_in_cr_and_comm'       : 113,
+                            },
+                        'data_float' : {
+                            'expm_mon_taper_freq'       : 40,
+                            'expm_mon_nf_freq'          : 41,
+                            'expm_mon_yellow_freq'      : 42,
+                            'expm_mon_gate_voltage'     : 43,
+                            'expm_mon_cr_counts'        : 44,
+                            'expm_mon_repump_counts'    : 45, 
+                            },
+                        },
+                
+                'green_readout' : {
+                    'index' : 9,
+                    'file'  : 'green_readout.TB9',
+                    'params_long' : [
+                        ['AWG_start_DO_channel'         ,   16],
+                        ['AWG_event_jump_DO_channel'    ,   8 ],
+                        ['total_sync_nr'                ,   5], 
+                        ['sync_counter_idx'             ,   4],
+                        ['AWG_done_DI_channel'          ,   16]
+                    ],
+                    'params_long_index' : 20,
+                    'params_long_length': 10,
+                    'par'               : {
+                        'completed_reps'    : 73,
+                    },
+                    },
+
+                'test_sin_scan' : {
+                'index' : 8,
+                'file' : 'test_sin_scan_wavelength.TB8',
+                'par' :{
+                    'delay'         : 10, # processdelay
+                },
+                'fpar' : {
+                    'amp'           : 12, # Amplification of sin
+                    'setpoint'      : 13, # setpoint of the PID
+                    },
+                },
+                'oscilloscope' : {
+                'index' : 8,
+                'file' : 'oscilloscope.TB8',
+                 'params_long' : [
+                    ['sample_cycles'                ,   50],
+                    ['max_repetitions'              ,   10],
+                    ],
+                'params_float' :[],
+                'params_long_index'  : 20,
+                'params_float_index' : 21,
+                'data_long' : {
+                    'sample_counts_1' : 24,
+                    'sample_counts_2' : 25,
+                },
+                },
+                'dynamic_jump' : {
+                    'index' : 9,
+                    'file' : 'dynamic_jump.TB9',
+                    'par' : {
+                        
+                    },
+                    'params_long' : [
+                        ['cycle_duration'           ,   1000],
+                        ['AWG_start_DO_channel'     ,   9   ],
+                        ['AWG_jump_strobe_DO_channel' ,   0 ],
+                        ['do_init_only'             ,   0   ],
+                        ['jump_bit_shift'           ,   4   ],
+                        ['sweep_length'             ,   1   ],
+                        ['reps'                     ,   1000],
+                    ],
+                    'params_long_index'  : 20,
+                    # 'params_long_length' : 100,
+                    'params_float' : [
+                    ],
+                    'params_float_index' : 21,
+                    'data_long' : {
+                        'jump_table' :   100,
+                        'delay_cycles'  :   101,
+                        'next_seq_table'    :   102,
+                        'seq_indices'   : 103,
+                        'random_ints'   : 110,
                     },
                 },
         }
@@ -3022,7 +3946,15 @@ config['adwin_lt4_dacs'] = { #TODO describe
         'gate' : 8, #D
         'gate_2' : 9, #D
         'gate_mod': 10, #D
-        'yellow_aom_frq':11, #D
+        'yellow_aom_frq': 11, #D
+        'phase_aom': 12, #D
+        'yellow_voltage': 13, #D
+        'fibre_stretcher': 14, #D
+        'delay_voltage': 16         # Control voltage for self-trigger delay line
+        }
+
+
+config['adwin_qn1_dacs'] = {
         }
 
 config['adwin_m1_dacs'] = {
@@ -3490,12 +4422,14 @@ config['adwin_cav1_dacs'] = {
         'jpe_fine_tuning_3': 3,
         'green_aom' : 4,
         'newfocus_freqmod': 5,
-        'scan_mirror_x' : 6,
-        'scan_mirror_y': 7,
+        'PI_fine_tuning': 8,
+        'PI_scan_x': 13,
+        'PI_scan_y': 14,
+        'PI_scan_z': 15,
         }
 
-config['adwin_cav1_dios'] = {
-        }
+# config['adwin_cav1_dios'] = {
+#         }
 
 config['adwin_cav1_adcs'] = {
         'photodiode': 16,
@@ -3506,9 +4440,13 @@ config['adwin_cav1_dios'] = {
         'montana_sync_ch': 21,
         }
 
-
 config['adwin_cav1_processes'] = {
 
+        # SvD: I removed a few unused processes: 
+        #laserscan_photodiode
+        #fine_piezo_jpe_scan_sync
+        #widerange_laserscan
+        
         'counter' : {
             'doc' : '',
             'info' : {
@@ -3562,7 +4500,7 @@ config['adwin_cav1_processes'] = {
                 },
             'data_long' : {
                 'set_dac_numbers' : 200,
-                'get_counts' : [11,12,13],
+                'get_counts' : [11,12,13,14],
                 },
             'data_float' : {
                 'set_start_voltages' : 199,
@@ -3576,7 +4514,7 @@ config['adwin_cav1_processes'] = {
             'file' : 'SetDac.TB3',
             'par' : {
                 'dac_no' : 20,
-                },
+                                },
             'fpar' : {
                 'dac_voltage' : 20,
                 },
@@ -3607,134 +4545,13 @@ config['adwin_cav1_processes'] = {
             'file' : 'init_data.TB5',
             },
 
-        'timeseries_photodiode' : {
-            'index' : 2,
-            'file' : 'timeseries_photodiode.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['ADC_channel'                 ,   1],
-                    ['ADC_ref_channel'             ,   2],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,   1],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'photodiode_reference' : 12,
-                    },
-                'data_long' : {
-                    'timer' : 13,
-                    },
-
-            },
-
-
-        'laserscan_photodiode' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'voltagescan_photodiode.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_channel'                 ,   8],
-                    ['ADC_channel'                 ,   1],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,  50],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage'               , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    },
-            },
-
-        'fine_piezo_jpe_scan' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'fine_piezo_jpe_scan.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_ch_fpz1'                 ,   0],
-                    ['DAC_ch_fpz2'                 ,   0],
-                    ['DAC_ch_fpz3'                 ,   0],
-                    ['ADC_channel'                 ,   1],
-                    ['ADC_ref_channel'             ,   2],
-                    ['nr_steps'                    ,   1],
-                    ['wait_cycles'                 ,  50],
-                    ['use_counter'                 ,   0],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage_1'            , 0.0],
-                    ['start_voltage_2'            , 0.0],
-                    ['start_voltage_3'            , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'photodiode_reference' : 12,
-                    },
-            },
-
-        'fine_piezo_jpe_scan_sync' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
-                },
-            'index' : 2,
-            'file' : 'fine_piezo_jpe_scan_sync.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_ch_fpz1'                 ,   0],
-                    ['DAC_ch_fpz2'                 ,   0],
-                    ['DAC_ch_fpz3'                 ,   0],
-                    ['ADC_channel'                 ,   1],
-                    ['montana_sync_channel'        ,   1],
-                    ['nr_steps'                    ,   1],
-                    ['nr_scans'                    ,   1],                    
-                    ['wait_cycles'                 ,  50],
-                    ['delay_us'                    ,   0],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_voltage_1'            , 0.0],
-                    ['start_voltage_2'            , 0.0],
-                    ['start_voltage_3'            , 0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    },
-                'data_long'   : {
-                    'timestamps' : 12,
-                },
-            },
 
         'voltage_scan_sync' : {
             'index' : 5,
             'file' : 'voltage_scan_sync.TB5',
+            'fpar' : {
+                'curr_voltage' : 53, 
+                },
             'params_long' : [           # keep order!!!!!!!!!!!!!
                     ['DAC_ch_1'                    ,   0],
                     ['DAC_ch_2'                    ,   0],
@@ -3744,64 +4561,31 @@ config['adwin_cav1_processes'] = {
                     ['sync_ch'                     ,   1],
                     ['nr_steps'                    ,   1],
                     ['nr_scans'                    ,   1],                    
-                    ['wait_cycles'                 ,  50],
+                    ['wait_cycles'                 ,  10],
                     ['delay_us'                    ,   0],
-                    ['ADC_averaging_cycles'        ,   50],
-                    ['scan_auto_reverse'           ,   50],
+                    ['ADC_averaging_cycles'        ,   1],
+                    ['scan_auto_reverse'           ,    0],
+                    ['cycle_duration'              ,  1000], #1000 corresponds to 300kHz in adwin. this is slow enough for ADC
+                    ['save_cycles'                 ,  100]
                     ],
-                'params_long_index'  : 20,
-                'params_long_length' : 15,
-                'params_float' : [
-                    ['start_voltage_1'            ,  0.0],
-                    ['start_voltage_2'            ,  0.0],
-                    ['start_voltage_3'            ,  0.0],
-                    ['voltage_step'               , 0.01],
-                    ],
-                'params_float_index'  : 21,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage' : 11,
-                    'laser_frequency' : 13,
-                    },
-                'data_long'   : {
-                    'timestamps' : 12,
+            'params_long_index'  : 20,
+            'params_long_length' : 100,
+            'params_float' : [
+                ['start_voltage_1'            ,  0.0],
+                ['start_voltage_2'            ,  0.0],
+                ['start_voltage_3'            ,  0.0],
+                ['voltage_step'               , 0.01],
+                ],
+            'params_float_index'  : 21,
+            'params_float_length' : 100,
+            'data_float' : {
+                'photodiode_voltage' : 24,
+                'laser_frequency' : 25,
+                'photodiode_voltage_ms' :27,
                 },
-            },
-
-
-        'widerange_laserscan' : {
-            'doc' : '',
-            'info' : {
-                'counters' : 4,
+            'data_long'   : {
+                'timestamps' : 26,
                 },
-            'index' : 2,
-            'file' : 'longrange_laserscan.TB2',
-            'params_long' : [           # keep order!!!!!!!!!!!!!
-                    ['DAC_coarse_ch'               ,   0],
-                    ['DAC_fine_ch'                 ,   0],
-                    ['ADC_ch'                      ,   0],
-                    ['nr_fine_steps'               ,   1],
-                    ['nr_coarse_steps'             ,   1],
-                    ['wait_cycles'                 ,   1],
-                    ],
-                'params_long_index'  : 200,
-                'params_long_length' : 8,
-                'params_float' : [
-                    ['start_coarse_volt'          , 0.0],
-                    ['step_size_coarse'           , 0.0],
-                    ['start_fine_volt'            , 0.0],
-                    ['stop_fine_volt'             , 0.0],
-                    ],
-                'params_float_index'  : 199,
-                'params_float_length' : 8,
-                'par' : {
-                    },
-                'data_float' : {
-                    'photodiode_voltage'    : 11,
-                    'wavemeter'             : 12,
-                    },
             },
 
 

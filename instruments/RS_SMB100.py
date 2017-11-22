@@ -18,7 +18,7 @@
 #
 # 2012/09
 # modification by Wolfgang Pfaff <wolfgangpfff@gmail.com>:
-# added parameter max_cw_power: can not be surpassed if pulse-modulation is
+# added parameter max_cw_power: can not be surpassed if pulse-modulatmasion is
 # turned off.
 
 from instrument import Instrument
@@ -39,7 +39,7 @@ class RS_SMB100(Instrument):
         reset=<bool>)
     '''
 
-    def __init__(self, name, address, reset=False, max_cw_pwr=-5):
+    def __init__(self, name, address, reset=False, max_cw_pwr=-20):
         '''
         Initializes the RS_SMB100, and communicates with the wrapper.
 
@@ -104,7 +104,7 @@ class RS_SMB100(Instrument):
 
 
         # can be different from device to device, set by argument
-        #self.set_max_cw_pwr(max_cw_pwr)
+        self.set_max_cw_pwr(max_cw_pwr)
 
 
         self.add_function('reset')

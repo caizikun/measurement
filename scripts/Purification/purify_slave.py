@@ -87,7 +87,7 @@ class purify_single_setup(DD.MBI_C13):
 
         # add values from AWG calibrations
         self.params['SP_voltage_AWG'] = \
-                self.A_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
+                self.E_aom.power_to_voltage( self.params['AWG_SP_power'], controller='sec')
 
         qt.pulsar.set_channel_opt('AOM_Newfocus', 'high', self.params['SP_voltage_AWG'])
 
@@ -102,6 +102,11 @@ class purify_single_setup(DD.MBI_C13):
         elif (self.params['do_general_sweep'] > 0) and (self.params['general_sweep_name'] != 'total_phase_offset_after_sequence'):
             length = self.params['pts']
             self.physical_adwin.Set_Data_Float(np.array(length*[self.params['total_phase_offset_after_sequence']])%360, 110, 1, length)
+        
+        if qt.current_setup == 'lt3':
+            self.params['Yellow_voltage_AWG'] = \
+                    self.repump_aom.power_to_voltage( self.params['Yellow_AWG_power'], controller='sec')
+            qt.pulsar.set_channel_opt('AOM_Yellow', 'high', self.params['Yellow_voltage_AWG'])
         
         ### in order to sweep the offset phase for dynamic phase correction we manipulate a data array in the adwin here.
 
@@ -159,13 +164,12 @@ class purify_single_setup(DD.MBI_C13):
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
         # sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
-
-
         self.save_adwin_data(name,
                 [   ('CR_before',1, reps),
                     ('CR_after',1, reps),
                     ('Phase_correction_repetitions',1, reps), 
                     ('statistics', 10),
+                    ('invalid_data_markers'                  ,1,reps), 
                     ('adwin_communication_time'              ,1,reps),  
                     ('counted_awg_reps'                      ,1,reps),  
                     ('attempts_first'                        ,1,reps),  
@@ -175,6 +179,7 @@ class purify_single_setup(DD.MBI_C13):
                     ('ssro_results'                          ,1,reps), 
                     ('compensated_phase'                     ,1,reps), 
                     ('min_phase_deviation'                   ,1,reps), 
+                    
                     'completed_reps'
                     ])
         return
@@ -516,6 +521,40 @@ class purify_single_setup(DD.MBI_C13):
 
 
 
+
+    def generate_delayline_phase_correction_elements(self,g1,g2,g3):
+        """
+        generate the elements for doing phase correction using the delay line
+        """
+
+        pulse_pi = ps.X_pulse(self)
+
+        self_trigger = pulse.SquarePulse(channel='self_trigger',
+            length = self.params['self_trigger_duration'],
+            amplitude = 2.)
+
+        final_wait = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['self_trigger_duration'], 
+            amplitude = 0.)
+
+
+
+        ## do stuff generate g1_elt ,g2_elt...
+        g1_elt = element.Element(g1.name, pulsar=qt.pulsar, global_time=True)
+        g1_elt.append(pulse.cp(self_trigger))
+
+        g2_elt = element.Element(g2.name, pulsar=qt.pulsar, global_time=True)
+        g2_elt.append(pulse.cp(pulse_pi))
+        g2_elt.append(pulse.cp(self_trigger))
+
+        g3_elt = element.Element(g3.name, pulsar=qt.pulsar, global_time=True)
+        g3_elt.append(pulse.cp(final_wait))
+
+        g1.elements = [g1_elt]
+        g2.elements = [g2_elt]
+        g3.elements = [g3_elt]
+
+
     def generate_LDE_rephasing_elt(self,Gate):
         ### used in non-local msmts syncs master and slave AWGs
         ### uses the scheme 'single_element' --> this will throw a warning in DD_2.py
@@ -674,79 +713,107 @@ class purify_single_setup(DD.MBI_C13):
             ### Dynamic phase correction ###
             ################################
 
+            #### put jesse phawse correction gates here
+            if self.params['do_phase_fb_delayline'] > 0:
+                #generate gates g1,g2,g3
 
+                g1 = DD.Gate(
+                    'C13_correct_delay_start' +str(pt),
+                    'single_element',
+                    no_connection_elt = True
+                    )
+                g1.scheme = 'single_element'
 
-            final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
-                    'Final_C13_correct_even'+str(pt),
-                    'Carbon_Gate',
-                    Carbon_ind  = self.params['carbon'], 
-                    tau         = self.params['dynamic_phase_tau'],
-                    N           = self.params['dynamic_phase_N'], 
+                g2 = DD.Gate(
+                    'C13_correct_delay_pi' + str(pt),
+                    'single_element',
                     no_connection_elt = True,
-                    go_to = 'second_next')
+                    wait_for_trigger = True
+                    )
+                g2.scheme = 'single_element'
 
-            final_dynamic_phase_correct_odd = DD.Gate( ### this gate does X - Y in order to finish off a clean XY-4 sequence
-                    'Final_C13_correct_odd'+str(pt),
-                    'Carbon_Gate',
-                    Carbon_ind  = self.params['carbon'], 
-                    tau         = self.params['dynamic_phase_tau'],
-                    N           = self.params['dynamic_phase_N'], 
-                    no_connection_elt = True)
+                g3 = DD.Gate(
+                    'C13_correct_delay_wait' + str(pt),
+                    'single_element',
+                    no_connection_elt = True,
+                    wait_for_trigger = True
+                    )
+                g3.scheme = 'single_element'
 
-            ### by definition the AWG does not have to do anything here. --> therefore we reset the phase
-            final_dynamic_phase_correct_even.scheme = 'carbon_phase_feedback_end_elt'
-            final_dynamic_phase_correct_even.C_phases_after_gate = [None]*10
-            final_dynamic_phase_correct_even.C_phases_after_gate[self.params['carbon']] = 'reset'
+                self.generate_delayline_phase_correction_elements(g1,g2,g3)
+                dynamic_phase_correct_list = [g1,g2,g3]
+            else:
+                final_dynamic_phase_correct_even = DD.Gate( #### this gate does X - mX for the applied pi-pulses
+                        'Final_C13_correct_even'+str(pt),
+                        'Carbon_Gate',
+                        Carbon_ind  = self.params['carbon'], 
+                        tau         = self.params['dynamic_phase_tau'],
+                        N           = self.params['dynamic_phase_N'], 
+                        no_connection_elt = True,
+                        go_to = 'second_next')
 
-            final_dynamic_phase_correct_odd.scheme = 'carbon_phase_feedback_end_elt'
-            final_dynamic_phase_correct_odd.C_phases_after_gate = [None]*10
-            final_dynamic_phase_correct_odd.C_phases_after_gate[self.params['carbon']] = 'reset'
-            ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
+                final_dynamic_phase_correct_odd = DD.Gate( ### this gate does X - Y in order to finish off a clean XY-4 sequence
+                        'Final_C13_correct_odd'+str(pt),
+                        'Carbon_Gate',
+                        Carbon_ind  = self.params['carbon'], 
+                        tau         = self.params['dynamic_phase_tau'],
+                        N           = self.params['dynamic_phase_N'], 
+                        no_connection_elt = True)
 
-            start_dynamic_phase_correct = DD.Gate(
-                    'Start_C13_Phase_correct'+str(pt),
-                    'Carbon_Gate',
-                    Carbon_ind          = self.params['carbon'], 
-                    event_jump          = final_dynamic_phase_correct_odd.name,
-                    tau                 = self.params['dynamic_phase_tau'],
-                    N                   = self.params['dynamic_phase_N'], 
-                    no_connection_elt = True)
+                ### by definition the AWG does not have to do anything here. --> therefore we reset the phase
+                final_dynamic_phase_correct_even.scheme = 'carbon_phase_feedback_end_elt'
+                final_dynamic_phase_correct_even.C_phases_after_gate = [None]*10
+                final_dynamic_phase_correct_even.C_phases_after_gate[self.params['carbon']] = 'reset'
 
-            # additional parameters needed for DD_2.py
-            start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
+                final_dynamic_phase_correct_odd.scheme = 'carbon_phase_feedback_end_elt'
+                final_dynamic_phase_correct_odd.C_phases_after_gate = [None]*10
+                final_dynamic_phase_correct_odd.C_phases_after_gate[self.params['carbon']] = 'reset'
+                ### apply phase correction to the carbon. gets a jump element via the adwin to the next element.
 
-            dynamic_phase_correct_list = [start_dynamic_phase_correct]
-
-            for i in range(self.params['phase_correct_max_reps']-2):
-
-                if (i+1) % 2 == 0:
-                    dynamic_phase_correct = DD.Gate(
-                            'C13_Phase_correct'+str(pt)+'_'+str(i),
-                            'Carbon_Gate',
-                            Carbon_ind          = self.params['carbon'], 
-                            event_jump          = final_dynamic_phase_correct_odd.name, ### odd because the starting element counts as the first correction
-                            tau                 = self.params['dynamic_phase_tau'],
-                            N                   = self.params['dynamic_phase_N'], 
-                            no_connection_elt = True)
-                else:
-                    dynamic_phase_correct = DD.Gate(
-                            'C13_Phase_correct'+str(pt)+'_'+str(i),
-                            'Carbon_Gate',
-                            Carbon_ind          = self.params['carbon'], 
-                            event_jump          = final_dynamic_phase_correct_even.name,
-                            tau                 = self.params['dynamic_phase_tau'],
-                            N                   = self.params['dynamic_phase_N'], 
-                            no_connection_elt = True)
+                start_dynamic_phase_correct = DD.Gate(
+                        'Start_C13_Phase_correct'+str(pt),
+                        'Carbon_Gate',
+                        Carbon_ind          = self.params['carbon'], 
+                        event_jump          = final_dynamic_phase_correct_odd.name,
+                        tau                 = self.params['dynamic_phase_tau'],
+                        N                   = self.params['dynamic_phase_N'], 
+                        no_connection_elt = True)
 
                 # additional parameters needed for DD_2.py
-                dynamic_phase_correct.scheme = 'carbon_phase_feedback'
-                dynamic_phase_correct.reps = 1
-                ### append to list
-                dynamic_phase_correct_list.append(dynamic_phase_correct)
+                start_dynamic_phase_correct.scheme = 'carbon_phase_feedback_start_elt'
 
-            #### finish the list of phase correcting gates
-            dynamic_phase_correct_list.append(final_dynamic_phase_correct_even)
-            dynamic_phase_correct_list.append(final_dynamic_phase_correct_odd)
+                dynamic_phase_correct_list = [start_dynamic_phase_correct]
+
+                for i in range(self.params['phase_correct_max_reps']-2):
+
+                    if (i+1) % 2 == 0:
+                        dynamic_phase_correct = DD.Gate(
+                                'C13_Phase_correct'+str(pt)+'_'+str(i),
+                                'Carbon_Gate',
+                                Carbon_ind          = self.params['carbon'], 
+                                event_jump          = final_dynamic_phase_correct_odd.name, ### odd because the starting element counts as the first correction
+                                tau                 = self.params['dynamic_phase_tau'],
+                                N                   = self.params['dynamic_phase_N'], 
+                                no_connection_elt = True)
+                    else:
+                        dynamic_phase_correct = DD.Gate(
+                                'C13_Phase_correct'+str(pt)+'_'+str(i),
+                                'Carbon_Gate',
+                                Carbon_ind          = self.params['carbon'], 
+                                event_jump          = final_dynamic_phase_correct_even.name,
+                                tau                 = self.params['dynamic_phase_tau'],
+                                N                   = self.params['dynamic_phase_N'], 
+                                no_connection_elt = True)
+
+                    # additional parameters needed for DD_2.py
+                    dynamic_phase_correct.scheme = 'carbon_phase_feedback'
+                    dynamic_phase_correct.reps = 1
+                    ### append to list
+                    dynamic_phase_correct_list.append(dynamic_phase_correct)
+
+                #### finish the list of phase correcting gates
+                dynamic_phase_correct_list.append(final_dynamic_phase_correct_even)
+                dynamic_phase_correct_list.append(final_dynamic_phase_correct_odd)
 
 
             #######################
@@ -978,10 +1045,10 @@ class purify_single_setup(DD.MBI_C13):
             if not (self.params['do_purifying_gate'] > 0 and self.params['do_carbon_readout'] > 0):
                 gate_seq = self.generate_AWG_elements(gate_seq,pt)
 
-
+            
             #### for carbon phase debbuging purposes.
             # for g in gate_seq:
-            #     if not 'corect' in g.name:
+            #     if not 'correct' in g.name:
             #         print g.name
             #         self.print_carbon_phases(g,[self.params['carbon']],verbose=True)
 
@@ -996,10 +1063,10 @@ class purify_single_setup(DD.MBI_C13):
         if upload:
             print ' uploading sequence'
             qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
-
+            self.dump_AWG_seq()
         else:
+
             print 'upload = false, no sequence uploaded to AWG'
-
-
+            
 
 

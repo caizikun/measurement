@@ -32,20 +32,20 @@ hist = np.zeros((hist_length,2), dtype='u4')
 t_ofl = np.uint64(0)
 t_lastsync = np.uint64(0)
 last_sync_number = np.uint32(0)
-entanglement_marker_number = 1
+count_marker_channel = 1
 
 t1 = time.clock()
 for i in range(100):
     hhtime, hhchannel, hhspecial, sync_time, hist, sync_number,\
             newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
             T2_tools_v3.T2_live_filter(_t, _c, _s, hist, t_ofl, t_lastsync, last_sync_number,\
-            MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,entanglement_marker_number)
+            MIN_SYNC_BIN, MAX_SYNC_BIN, MIN_HIST_SYNC_BIN, MAX_HIST_SYNC_BIN, T2_WRAPAROUND,T2_TIMEFACTOR,count_marker_channel)
 
     #hhtime, hhchannel, hhspecial, sync_time, sync_number, \
     #                    newlength, t_ofl, t_lastsync, last_sync_number, new_entanglement_markers = \
     #                    T2_tools_bell.Bell_live_filter(_t, _c, _s, t_ofl, t_lastsync, last_sync_number,
     #                                            MIN_SYNC_BIN, MAX_SYNC_BIN,
-    #                                            T2_WRAPAROUND,T2_TIMEFACTOR, entanglement_marker_number)
+    #                                            T2_WRAPAROUND,T2_TIMEFACTOR, count_marker_channel)
 
 
 t2 = time.clock()

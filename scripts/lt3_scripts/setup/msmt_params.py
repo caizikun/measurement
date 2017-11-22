@@ -2,7 +2,7 @@ import numpy as np
 
 cfg={}
 sample_name = 'Pippin'
-sil_name = 'SIL2'
+sil_name = 'SIL3'
 name=sample_name+'_'+sil_name
 cfg['samples'] = {'current':sample_name}
 cfg['protocols'] = {'current':name}
@@ -18,8 +18,8 @@ print 'updating msmt params lt3 for {}'.format(cfg['samples']['current'])
 ##############################################################################
 ##############################################################################
 
-f_msm1_cntr = 1.705722e9 #Electron spin ms=-1 frquency 
-f_msp1_cntr = 4.048784e9 #Electron spin ms=+1 frequency
+f_msm1_cntr = 1.719319e9-100e3 # from SIL 2: 1.705722e9 #Electron spin ms=-1 frquency 
+f_msp1_cntr = 4.037144e9#4.05e9 # from SIL 2: 4.048784e9 #Electron spin ms=+1 frequency
 
 mw_mod_frequency = 0
 mw_power = 20
@@ -41,13 +41,13 @@ if electron_transition == '+1':
 	mw_frq     = f_msp1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 90e-9 #even
-	hermite_pi_amp = 0.7087#0.70#0.694#0.7058#0.681#0.667 # 06-02
-	hermite_pi2_length = 46e-9 # even
-	hermite_pi2_amp = 0.480#0.483 # 06-02 
+	hermite_pi_length = 100e-9 # 82e-9 2017/08/03 #was at 80e-6 106e-9 #even #was 120e-9 for SIL 2.
+	hermite_pi_amp =  0.617 # 0.650 #0.829 #0.8467  # 28-02
+	hermite_pi2_length = 40e-9 # 46e-9 # even
+	hermite_pi2_amp = 0.575 #  # 28-02 
 
 	square_pi_length = 18e-9 # even
-	square_pi_amp = 0.799 # 02-19
+	square_pi_amp = 0.797 # 02-19
 	square_pi2_length = 16e-9 # even
 	square_pi2_amp = 0.88 # 02-19
 
@@ -56,12 +56,12 @@ else:
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 100e-9 
-	hermite_pi_amp = 0.368
+	hermite_pi_length = 150e-9#100e-9 
+	hermite_pi_amp = 0.95#0.394
 	hermite_pi2_length = 90e-9
-	hermite_pi2_amp = 0.189
+	hermite_pi2_amp = 0.475165#0.157
 
-	square_pi_length = 30e-9
+	square_pi_length = 10e-9
 	square_pi_amp = 0.79 
 	square_pi2_length = 16e-9
 	square_pi2_amp = 0.88 
@@ -83,7 +83,7 @@ mw2_square_pi2_amp  = 0.42
 cfg['protocols']['AdwinSSRO']={
 		'AWG_done_DI_channel':          17,
 		'AWG_start_DO_channel':         9,
-		'AWG_event_jump_DO_channel'	:   10,
+		'AWG_event_jump_DO_channel'	:   11,
 		'counter_channel':              1,
 		#'counter_ch_input_pattern':	0,
 		'cycle_duration':               300,
@@ -98,8 +98,8 @@ cfg['protocols']['AdwinSSRO']={
 		'wait_for_AWG_done':            0,
 		'Ex_off_voltage':               0.,
 		'A_off_voltage':                -0.0,
-		'yellow_repump_amplitude':      28e-9,#20e-9, #50e-9
-		'yellow_repump_duration':       300, # maximum is 1000 for CR_mod
+		'yellow_repump_amplitude':      85e-9,#XXx28e-9,#28e-9, #50e-9
+		'yellow_repump_duration':       300,#300, XXX# maximum is 1000 for CR_mod
 		'yellow_CR_repump':             1, 
 		'green_CR_repump':              1000,
 		'CR_probe_max_time':            1000000,
@@ -117,7 +117,21 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
+
+cfg['protocols']['GreenRO+PQ'] = {
+    'sync_counter_idx':4,   # counter channel on ADwin that recieves pulse from AWG everytime a sync is sent to PQ, to compare sync nr's
+    'Green_RO_power'    : 55e-6,
+    'GreenAOM_pulse_length' : 2e-6,
+    'measurement_time':                         1200,#sec
+    'measurement_abort_check_interval':         1,#sec
+    'pq_sync_length':                           75e-9,
+    'time_between_syncs':                       50e-9,
+    'syncs_per_sweep':                          2,
+    'summed_binsize':                           250,
+    'RO_start':                                 500,#ns
+    'RO_stop':                                  1000, 
+        }
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
 if yellow:
     cfg['protocols']['AdwinSSRO']['repump_duration']  =  cfg['protocols']['AdwinSSRO']['yellow_repump_duration']
@@ -134,7 +148,7 @@ else:
 ### General settings for AdwinSSRO+espin ###
 ############################################
 
-# mw_frq = 2.78e9
+
 cfg['protocols']['AdwinSSRO+espin'] = {
 		'mw_frq':                                  mw_frq, 
 		'mw_power':                                mw_power,
@@ -195,6 +209,9 @@ cfg['protocols']['AdwinSSRO+PQ'] = {
 		'count_marker_channel':						1,
 		}
 
+cfg['protocols']['AdwinSSRO+delay'] = {
+	'delay_voltage_DAC_channel':		16
+}
 
 ###############################
 ### NV and field parameters ###
@@ -225,8 +242,8 @@ cfg['samples'][sample_name] = {
 	'Carbon_LDE_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[0.0]*7),
 	'Carbon_LDE_init_phase_correction_list' : np.array([0.0]+[0.0]+[0.0]*2+[180.]+[0.0]*7),
     'phase_per_sequence_repetition'    : 328.057+1.-0.09, #adwin needs positive values
-    'phase_per_compensation_repetition': 12.551, # adwin needs positive values
-    'total_phase_offset_after_sequence': 148.72+13.9-1.7+1.15+3.5+2.13, # adwin needs positive values
+    'phase_per_compensation_repetition': 12.583, # adwin needs positive values
+    'total_phase_offset_after_sequence': 159.77, # adwin needs positive values
 
 	# #########################
 	# #####     SIL1      #####
@@ -266,88 +283,88 @@ cfg['samples'][sample_name] = {
 	################
 	#### C1 ~ -35 ###
 	################
-	'C1_freq_m1'        : (447929.95 + 483714)/2., 
-	'C1_freq_1_m1' 		: 483714,
+	# 'C1_freq_m1'        : (447929.95 + 483714)/2., 
+	# 'C1_freq_1_m1' 		: 483714,
 
-	'C1_Ren_tau_m1'    :   [4.822e-6],
-	'C1_Ren_N_m1'      :   [12],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_Ren_tau_m1'    :   [4.822e-6],
+	# 'C1_Ren_N_m1'      :   [12],
+	# 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-55.46] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_freq_p1'        : 434421.63, #### don't change this unless you measure it! 
-	'C1_freq_0' 		: 447734.89,
-	'C1_freq_1_p1' 		: 425345.88,
+	# 'C1_freq_p1'        : (447747.11+425341.4)/2,#434421.63, #### don't change this unless you measure it! 
+	# 'C1_freq_0' 		: 447747.11,
+	# 'C1_freq_1_p1' 		: 425341.4,
 
-	'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
-	'C1_Ren_N_p1'      :   [12], #12
-	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [33.97] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_Ren_tau_p1'    :   [10.886e-6],#[10.89e-6],#10.886e-6], #8.608e-6
+	# 'C1_Ren_N_p1'      :   [12], #12
+	# 'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [36.64] + [0.0] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C1_unc_tau_p1'    :   [9.132e-6],
-	'C1_unc_N_p1'      :   [12],
-	'C1_unc_phase_offset_p1' : 82.6,
-	'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C1_unc_tau_p1'    :   [9.132e-6],
+	# 'C1_unc_N_p1'      :   [12],
+	# 'C1_unc_phase_offset_p1' : 82.6,
+	# 'C1_unc_extra_phase_correction_list_p1': np.array([0.0] + [104.32] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C2 ~ 15 ###
-	###############
-	'C2_freq_m1'        : (447774.53+432700)/2.,
-	'C2_freq_0' 		: 447725.47,
-	'C2_freq_1_m1' 		: 432700, 
+	# ###############
+	# #### C2 ~ 15 ###
+	# ###############
+	# 'C2_freq_m1'        : (447774.53+432700)/2.,
+	# 'C2_freq_0' 		: 447725.47,
+	# 'C2_freq_1_m1' 		: 432700, 
 
-	'C2_Ren_tau_m1'    :   [10.786e-6],
-	'C2_Ren_N_m1'      :   [24],
-	'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C2_Ren_tau_m1'    :   [10.786e-6],
+	# 'C2_Ren_N_m1'      :   [24],
+	# 'C2_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	'C2_freq_p1'        : 456025,
-	'C2_freq_0' 		: 447725.47,
-	'C2_freq_1_p1' 		: 464353.86,
+	# 'C2_freq_p1'        : 456025,
+	# 'C2_freq_0' 		: 447725.47,
+	# 'C2_freq_1_p1' 		: 464353.86,
 	
-	'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
-	'C2_Ren_N_p1'      :   [24],#[26],
-	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C2_Ren_tau_p1'    :   [9.316e-6],#[10.79e-6],
+	# 'C2_Ren_N_p1'      :   [24],#[26],
+	# 'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [5.51] + [-46.89] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C3 ~ 42 ###
-	###############
-	'C3_freq_m1'        : (447528.84*2 - 42e3)/2.,
-	'C3_freq_0' 		: 447528.84,
-	'C3_freq_1_m1' 		: 447e3-42e3, 
+	# ###############
+	# #### C3 ~ 42 ###
+	# ###############
+	# 'C3_freq_m1'        : (447528.84*2 - 42e3)/2.,
+	# 'C3_freq_0' 		: 447528.84,
+	# 'C3_freq_1_m1' 		: 447e3-42e3, 
 
-	'C3_Ren_tau_m1'    :   [4.11e-6],
-	'C3_Ren_N_m1'      :   [32],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C3_Ren_tau_m1'    :   [4.11e-6],
+	# 'C3_Ren_N_m1'      :   [32],
+	# 'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C4 ~ -80 ###
-	###############
-	'C4_freq_m1'        : (447953.99*2 + 42e3)/2.,
-	'C4_freq_0' 		: 447953.99,
-	'C4_freq_1_m1' 		: 447e3+82e3, 
+	# ###############
+	# #### C4 ~ -80 ###
+	# ###############
+	# 'C4_freq_m1'        : (447953.99*2 + 42e3)/2.,
+	# 'C4_freq_0' 		: 447953.99,
+	# 'C4_freq_1_m1' 		: 447e3+82e3, 
 
-	'C4_Ren_tau_m1'    :   [4.51e-6],
-	'C4_Ren_N_m1'      :   [66],
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C4_Ren_tau_m1'    :   [4.51e-6],
+	# 'C4_Ren_N_m1'      :   [66],
+	# 'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C5 ~-114 ###
-	###############
-	'C5_freq_m1'        : (446138*2 + 114e3)/2.,
-	'C5_freq_0' 		: 447479.34,
-	'C5_freq_1_m1' 		: 447e3+114e3, 
+	# ###############
+	# #### C5 ~-114 ###
+	# ###############
+	# 'C5_freq_m1'        : (446138*2 + 114e3)/2.,
+	# 'C5_freq_0' 		: 447479.34,
+	# 'C5_freq_1_m1' 		: 447e3+114e3, 
 
-	'C5_Ren_tau_m1'    :   [5.445e-6],
-	'C5_Ren_N_m1'      :   [38],
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C5_Ren_tau_m1'    :   [5.445e-6],
+	# 'C5_Ren_N_m1'      :   [38],
+	# 'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-	###############
-	#### C6 ~ 14 ###
-	###############
-	'C6_freq_m1'        : (447765.59 +433431)/2.,
-	'C6_freq_0' 		: 447765.59,
-	'C6_freq_1_m1' 		: 433431, 
+	# ###############
+	# #### C6 ~ 14 ###
+	# ###############
+	# 'C6_freq_m1'        : (447765.59 +433431)/2.,
+	# 'C6_freq_0' 		: 447765.59,
+	# 'C6_freq_1_m1' 		: 433431, 
 
-	'C6_Ren_tau_m1'    :   [21.895e-6],
-	'C6_Ren_N_m1'      :   [26],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	# 'C6_Ren_tau_m1'    :   [21.895e-6],
+	# 'C6_Ren_N_m1'      :   [26],
+	# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [5.51] + [7.12] + [20.11] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 	#########################
 	#####      SIL3    ######
@@ -356,29 +373,37 @@ cfg['samples'][sample_name] = {
 	# ###########
 	# #### C1 ###
 	# ###########
-	# 'C1_freq_m1'        : (447024.+1296429.)/2., # random
-	# 'C1_freq_0' 		: 447024.,
-	# 'C1_freq_1_m1' 		: 1296429.,
+	'C1_freq_p1'        : (443932.+428732.)/2., # random
+	'C1_freq_0' 		: 442470.36,
+	'C1_freq_1_p1' 		: 430387.02,
 
-	# 'C1_Ren_tau_m1'    :   [10.786e-6],
-	# 'C1_Ren_N_m1'      :   [26],
-	# 'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_tau_p1'    :   [6.31e-6],
+	'C1_Ren_N_p1'      :   [32],
+	'C1_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [44.33] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+	'C2_freq_p1'        : (442681.+424544.)/2., # random
+	'C2_freq_0' 		: 442442.82,
+	'C2_freq_1_p1' 		: 422822.15,
+
+	'C2_Ren_tau_p1'    :   [6.356e-6],
+	'C2_Ren_N_p1'      :   [58],
+	'C2_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [13.79] + [8.82] + [0.0] + [0.0] + [-37.25] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 }
 
 cfg['protocols'][name]['AdwinSSRO'] = {
-		'A_CR_amplitude':				 5.5e-9,#2.5e-9,
+		'A_CR_amplitude':				 2.5e-9,#2.5e-9,
 		'A_RO_amplitude' :				 0,
 		'A_SP_amplitude':				 12e-9,
 		'CR_duration' :				 	 50, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 2.0e-9,#2.0e-9,
+		'Ex_CR_amplitude':				 1.5e-9,#2.0e-9,
 		'Ex_RO_amplitude':				 4e-9,#4e-9, #5e-9
 		'Ex_SP_amplitude':				 0e-9,  #2015-05-25
-		'Ex_SP_calib_amplitude':		 12e-9, ## used for ssro calib
+		'Ex_SP_calib_amplitude':		 4e-9,#4e-9, ## used for ssro calib
 		'SP_duration':					 100, ## hardcoded in the adwin to be 500 max.
 		'SP_duration_ms0':				 400, ## used for ssro calib
 		'SP_duration_ms1':				 1000, ## used for ssro calib
@@ -427,8 +452,8 @@ cfg['protocols'][name]['pulses'] = {
 		'pulse_shape': pulse_shape,
 		'MW_modulation_frequency'   :   f_mod_0,
 		'mw2_modulation_frequency'   :  0,
-		'MW_switch_risetime'	:	10e-9,
-		'MW_switch_channel'		:	'None', ### if you want to activate the switch, put to MW_switch
+		'MW_switch_risetime'	:	450e-9,
+		'MW_switch_channel'		:	'none', ### usually 'none' if you want to activate the switch, put to MW_switch
     	'CORPSE_rabi_frequency' :   9e6,
     	'CORPSE_amp' : 				0.201 ,
     	'CORPSE_pi2_amp':			0.543,
@@ -440,8 +465,8 @@ cfg['protocols'][name]['pulses'] = {
         'Hermite_pi2_amp': 			hermite_pi2_amp, 
         'Hermite_Npi4_length':		45e-9,
         'Hermite_Npi4_amp':			0.373683, # 2014-08-21
-        'Hermite_theta_amp':		0.585,#0.68,
-		'Hermite_theta_length':		46e-9,#0.68,
+        'Hermite_theta_amp':		hermite_pi_amp,#0.585,#0.68,
+		'Hermite_theta_length':		hermite_pi_length,#46e-9,#0.68,
 
         'Square_pi_length' :		square_pi_length,
       	'Square_pi_amp' :			square_pi_amp, 
@@ -450,8 +475,8 @@ cfg['protocols'][name]['pulses'] = {
     	'IQ_Square_pi_amp' :		0.068, 
       	'IQ_Square_pi2_amp'  :		0.6967,
       	'extra_wait_final_pi2' :	-30e-9,
-    	'DESR_pulse_duration' :		4e-6,
-    	'DESR_pulse_amplitude' :	0.0018,#0.194,
+    	'DESR_pulse_duration' :		4.5e-6,
+    	'DESR_pulse_amplitude' :	0.012,#0.194,
 
     	# Second mw source
     	'mw2_Hermite_pi_length': 	mw2_hermite_pi_length,
@@ -464,15 +489,15 @@ cfg['protocols'][name]['pulses'] = {
     	'mw2_Square_pi2_amp' :		mw2_square_pi_amp,
 
     	'eom_pulse_duration':				2e-9,
-        'eom_off_duration':					50e-9, # 50e-9
-        'eom_off_amplitude':				-0.02, #-0.02
+        'eom_off_duration':					44e-9, # 50e-9
+        'eom_off_amplitude':				-0.033, # for 44 ns of off duration
         'eom_pulse_amplitude':				2, # (for long pulses it is 1.45, dor short:2.0) calibration from 19-03-2014
         'eom_overshoot_duration1':			18e-9,
-        'eom_overshoot1':					-0.03, # calibration from 19-03-2014# 
+        'eom_overshoot1':					-0.025, # calibration from 29-05-2017# 
         'eom_overshoot_duration2':			10e-9,
         'eom_overshoot2':					0,
-        'aom_risetime':						12e-9,#40e-9
-        'aom_amplitude':					0.58,#0.2
+        'aom_risetime':						40e-9,#16e-9,
+        'aom_amplitude':					0.7,#0.2
 }
 
 
@@ -512,7 +537,7 @@ cfg['protocols'][name]['AdwinSSRO+C13']={
 		# phase correction
 		'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
 		'min_dec_tau'         :     30e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'],#2.05e-6,#16e-9 + cfg['protocols'][name]['pulses']['Hermite_pi_length'], 
-		'max_dec_tau'         :     0.255e-6,#0.35e-6,
+		'max_dec_tau'         :     0.355e-6,#0.35e-6,
 		'dec_pulse_multiple'  :     4,      #4.
 
 		# Memory entanglement sequence parameters

@@ -122,7 +122,7 @@ class ADwin_Pro_II(Instrument): #1
         return ret
 
     def Load(self, filename):
-        #print 'filename', filename
+        # print 'filename', filename
         ErrorMsg=c_int32(0)
         self._adwin32.e_ADBload(filename,self._address,0,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
@@ -154,7 +154,7 @@ class ADwin_Pro_II(Instrument): #1
                 count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
             error_text= str(ErrorMsg.value) + ':' + self.Get_Error_Text(ErrorMsg.value)
-            print 'Set_Data_Long: index:',index, 'data', data, 'type', type(data) ,'start', start, 'count', count
+            print 'Set_Data_Long: index:',index, 'data', data, ', type', type(data) ,'start', start, 'count', count
             logging.warning(self.get_name() + ' : error in ADwin.Set_Data_Long: %s'%error_text)
 
     def Get_Data_Float(self, index, start, count):
@@ -163,6 +163,7 @@ class ADwin_Pro_II(Instrument): #1
         success = self._adwin32.e_Get_Data(data.ctypes.data,5,index,start,count, self._address,ctypes.byref(ErrorMsg))
         if ErrorMsg.value != 0:
             error_text= str(ErrorMsg.value) + ':' + self.Get_Error_Text(ErrorMsg.value)
+            print 'Get_Data_Float: index:',index, 'data:', data, ', count; ', count
             logging.warning(self.get_name() + ' : error in ADwin.Get_Data_Float: %s'%error_text)
         return data
 

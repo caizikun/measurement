@@ -40,6 +40,9 @@ def recalibrate_laser(name, servo, adwin, awg=False):
     qt.instruments[name].turn_off()
     if awg: #set back to adwin because most scripts do not initialize this
         qt.instruments[name].set_cur_controller('ADWIN')
+
+    qt.instruments[name].save_cfg()
+    
     qt.msleep(1)
     qt.instruments[servo].move_out()
     qt.msleep(1)

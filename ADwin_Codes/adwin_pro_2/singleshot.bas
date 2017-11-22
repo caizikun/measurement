@@ -8,7 +8,8 @@
 ' ADbasic_Version                = 5.0.8
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
-' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Info_Last_Save                 = TUD277513  DASTUD\TUD277513
+' Foldings                       = 112,284
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -24,9 +25,9 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr_mod.inc
 '#INCLUDE .\cr.inc
-'#INCLUDE .\cr_mod_Bell.inc
+#INCLUDE .\cr_mod_Bell_cached.inc
 
 #DEFINE max_SP_bins       2000
 #DEFINE max_SSRO_dim      500000

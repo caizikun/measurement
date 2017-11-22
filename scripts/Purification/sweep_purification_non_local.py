@@ -396,7 +396,6 @@ def characterize_el_to_c_swap(name, upload_only = False,debug=False):
     m.finish()
 
 
-
 def calibrate_dynamic_phase_correct(name, upload_only = False,debug=False):
     """
     same as calibrate LDE_phase but here we add a dynamic phase correct element and
@@ -738,6 +737,70 @@ def phase_compensation_with_PLU(name,debug=False,upload_only = False,PLU = False
 
     run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = False)
 
+
+def check_classical_correlations(name,debug=False,upload_only = False,inputState = 'X'):
+    """
+    Does the full sequence in non-local mode.
+    No plu and no optical pi pulses. (therefore very similar to check phase offset)
+    Has the ability to use different input states that are swapped onto the nuclear spin.
+    Sweeps the tomography bases, X,Y,Z
+
+    """
+    m = purify_slave.purify_single_setup(name)
+    prepare(m)
+
+    ### general params
+    
+    m.params['reps_per_ROsequence'] = 1000
+
+    turn_all_sequence_elements_off(m)
+
+    ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['is_two_setup_experiment'] = 1
+    m.params['do_carbon_init'] = 1
+    m.params['do_swap_onto_carbon'] = 1
+    m.params['do_C_init_SWAP_wo_SSRO'] = 1
+    m.params['do_SSRO_after_electron_carbon_SWAP'] = 1
+    m.params['do_LDE_2'] = 1
+    m.params['do_phase_correction'] = 1
+    m.params['do_purifying_gate'] = 1
+    m.params['do_carbon_readout']  = 1
+    m.joint_params['LDE2_attempts'] = 1
+
+    ### awg sequencing logic / lde parameters
+    m.params['LDE_1_is_init'] = 1 
+    m.joint_params['opt_pi_pulses'] = 0 
+    m.params['input_el_state'] = inputState ### 'Z' puts the carbon in 'X' and 'X' puts the carbon in 'Z'; Y puts in Y
+    m.params['mw_first_pulse_phase'] = m.params['X_phase'] #+ 180 #align with the phase of the purification gate.
+    m.params['mw_first_pulse_amp'] = m.params['Hermite_pi2_amp']
+    # m.params['Tomography_bases'] = tomo
+
+
+    ### define sweep
+    m.params['do_general_sweep']    = 1
+
+    m.params['general_sweep_name'] = 'Tomography_bases'
+    print 'sweeping the', m.params['general_sweep_name']
+    m.params['general_sweep_pts'] = [['X'],['Y'],['Z']]
+    m.params['pts'] = len(m.params['general_sweep_pts'])
+    m.params['sweep_name'] = 'Tomography_bases'
+    m.params['sweep_pts'] = [1,2,3]#m.params['general_sweep_pts']
+
+
+    ### loop over RO directions upload & run
+    breakst = False
+    autoconfig = True
+    for ro in ['positive']:
+        breakst = show_stopper()
+        if breakst:
+            break
+        save_name = ro
+        m.params['carbon_readout_orientation'] = ro
+
+        run_sweep(m,debug = debug,upload_only = upload_only,multiple_msmts = True,save_name=save_name,autoconfig= autoconfig)
+        autoconfig = False
+
+    m.finish()
 if __name__ == '__main__':
 
     #repump_speed(name+'_repump_speed',upload_only = False)
@@ -747,8 +810,6 @@ if __name__ == '__main__':
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C')
 
-    
-
     # calibrate_dynamic_phase_correct(name+'_phase_compensation_calibration',upload_only = False)
 
     # apply_dynamic_phase_correction(name+'_ADwin_phase_compensation',upload_only = False)
@@ -756,9 +817,11 @@ if __name__ == '__main__':
 
     #check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_X',upload_only = False,tomo = 'X')
     # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Y',upload_only = False,tomo = 'Y')
-    check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
+    # check_phase_offset_after_LDE2(name+'_phase_offset_after_LDE_Z',upload_only = False,tomo = 'Z')
     # full_sequence(name+'_full_sequence', upload_only = False,do_Z = False)
     # full_sequence(name+'_full_sequence_Z', upload_only = False,do_Z = True)
 
     # phase_compensation_with_PLU(name+'_ADwin_phase_compensation_PLU',upload_only = False)
 
+    for inputstate in ['X','Y','Z']:
+        check_classical_correlations(name+'_classical_correlations_onC13_'+inputstate,upload_only = True, inputState = inputstate)

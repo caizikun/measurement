@@ -130,7 +130,7 @@ class Master_of_magnet(Instrument):
                 negative steps. Valid inputs: +/- 1,2,3,4,5... and 'c','-c' for continious
         '''
         axis_number = self.Axis_config[axis]
-        print (self.get_frequency(axis)[12:15])
+        # print (self.get_frequency(axis)[12:15])
         freq = int(self.get_frequency(axis)[12:15])
         if steps == 'c':
             self._anc_ins.StepUp(axis_number, steps)

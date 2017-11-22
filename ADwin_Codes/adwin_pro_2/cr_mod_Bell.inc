@@ -10,7 +10,7 @@
 
 
 #DEFINE max_stat           10
-#DEFINE max_repetitions 100000
+#DEFINE max_repetitions 150000
 #DEFINE max_CR_duration   500
 #DEFINE max_repump_duration 2000
 
@@ -196,7 +196,6 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
           CR_preselect                 = PAR_75
           CR_probe                     = PAR_68
           cr_mod_activated             = PAR_67
-          P2_DIGOUT(DIO_MODULE,11,1) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_CR_voltage+32768) ' turn on E laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_CR_voltage+32768) ' turn on A laser
           P2_CNT_CLEAR(CTR_MODULE,counter_pattern)    'clear counter
@@ -232,7 +231,6 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
       CASE 2    ' E/A laser CR check
                  
         IF (cr_timer = CR_duration) THEN
-          P2_DIGOUT(DIO_MODULE,11,0) ' set repumper modulation high.
           P2_DAC(DAC_MODULE,E_laser_DAC_channel, 3277*E_off_voltage+32768) ' turn off E laser
           P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off A laser
           cr_counts = P2_CNT_READ(CTR_MODULE,counter_channel)
@@ -267,6 +265,15 @@ FUNCTION CR_check(first_cr, repetition_index) As LONG
   
 ENDFUNCTION
   
+SUB reset_CR()
+  cr_timer = 0  
+  cr_mode = 0 ' I think that in principle we only need to reset the mode. But this makes me happier.
+  cr_counts = CR_repump + 1
+  cr_r_old_counts = 0
+  cr_i = 0
+  cr_old_counts = 0
+ENDSUB
+
 SUB finish_CR()
   DATA_26[1] = repumps
   DATA_26[2] = total_repump_counts

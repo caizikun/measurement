@@ -20,7 +20,7 @@ def convert(fn_in,fn_out,conversion=(0,1)):
 				i=i+1
 				if '#INCLUDE ADwinGoldII.inc' in line:
 					line='#INCLUDE ADwinPro_All.inc\n#INCLUDE .\configuration.inc\n'
-				if  (('#INCLUDE .\configuration.inc' in line) and conversion==(1,0)):
+				if  (('#INCLUDE .\configuration.inc' in line) and conversion==(0,1)):
 					line=''
 				if 'DIGIN' in line:
 					print 'WARNING: DIGIN found in line',i,'check output'
@@ -33,6 +33,6 @@ if __name__ == '__main__':
 	#conversion (source,target), 0 = gold, 1 = pro 
 	#--> (0,1) = gold to pro
 	#--> (1,0) = pro to gold
-	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2_lt2\C13_multiple_lt2.bas',
-			r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\C13_multiple_lt1.bas', 
-			conversion=(1,0))
+	convert(r'D:\measuring\measurement\ADwin_Codes\adwin_gold_2_lt1\green_readout_lt1.bas',
+			r'D:\measuring\measurement\ADwin_Codes\adwin_pro_2_lt2\green_readout_lt2.bas', 
+			conversion=(0,1))

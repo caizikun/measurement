@@ -118,19 +118,19 @@ def electronramseyHermite(name, debug = False):
     m.params['wait_for_AWG_done']=1
     m.params['sequence_wait_time']=1
 
-    pts = 61
+    pts = 99
     m.params['pts'] = pts
-    m.params['repetitions'] = 1500
+    m.params['repetitions'] = 1000
     #m.params['wait_for_AWG_done']=1
     #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
-    m.params['evolution_times'] = np.linspace(0,7000e-9,pts)
+    m.params['evolution_times'] = np.linspace(500e-9,5000e-9,pts)
 
     # MW pulses
-    m.params['detuning']  = 0.5e6
+    m.params['detuning']  = 0 #-1e6 #0.5e6
     X_pi2 = ps.Xpi2_pulse(m)
     m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * m.params['X_phase']    # First pi/2 = +X
-    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase'] )   # Second pi/2 = mX
-    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times'] + m.params['Hermite_pi2_length']) * m.params['detuning'])
+    # m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']+180 )   # Second pi/2 = mX
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times']) * m.params['detuning'])
 
 
     # for the autoanalysis
@@ -146,8 +146,60 @@ def electronramseyHermite(name, debug = False):
         m.save()
         m.finish()
 
+def electronramseyHermiteSelfTriggered(name, debug = False):
+    m = pulsar_msmt.GeneralElectronRamseySelfTriggered(name)
+    print m.adwin
+    # funcs.prepare(m)
+    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
+    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
+    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
+
+    m.params['pulse_type'] = 'Hermite'
+
+    m.params['Ex_SP_amplitude']=0
+    m.params['AWG_to_adwin_ttl_trigger_duration']=2e-6  # commenting this out gives an erro
+    m.params['wait_for_AWG_done']=1
+    m.params['sequence_wait_time']=1
+
+    pts = 99
+    m.params['pts'] = pts
+    m.params['repetitions'] = 1000
+    #m.params['wait_for_AWG_done']=1
+    #m.params['evolution_times'] = np.linspace(0,0.25*(pts-1)*1/m.params['N_HF_frq'],pts)
+    m.params['evolution_times'] = np.linspace(500e-9,5000e-9,pts)
+
+    # MW pulses
+    m.params['detuning']  = 0 #-1e6 #0.5e6
+    X_pi2 = ps.Xpi2_pulse(m)
+    m.params['pulse_sweep_pi2_phases1'] = np.ones(pts) * m.params['X_phase']    # First pi/2 = +X
+    # m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']+180 )   # Second pi/2 = mX
+    m.params['pulse_sweep_pi2_phases2'] = np.ones(pts) * (m.params['X_phase']  + 180 + 360 * (m.params['evolution_times']) * m.params['detuning'])
+
+
+    # for the autoanalysis
+    m.params['sweep_name'] = 'evolution time (ns)'
+    m.params['sweep_pts'] = (m.params['evolution_times'] + m.params['Hermite_pi2_length'] )* 1e9
+
+    # for the self-triggering through the delay line
+    m.params['self_trigger_delay'] = 500e-9 # 0.5 us
+    m.params['self_trigger_duration'] = 100e-9
+
+    # Start measurement
+    m.autoconfig()
+    m.generate_sequence(upload=True, pulse_pi2 = X_pi2)
+
+    if not debug:
+        m.run(autoconfig=False)
+        m.save()
+        m.finish()
+
+
 if __name__ == '__main__':
     
     # electronramsey(name)
-    electronramseyHermite(name, debug = False)
+    electronramseyHermiteSelfTriggered('onzintest', debug = False)
 

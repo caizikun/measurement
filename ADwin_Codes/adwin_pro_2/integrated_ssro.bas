@@ -9,6 +9,7 @@
 ' Optimize                       = Yes
 ' Optimize_Level                 = 1
 ' Info_Last_Save                 = TUD277299  DASTUD\TUD277299
+' Foldings                       = 117,129,146,185,192
 '<Header End>
 ' this program implements single-shot readout fully controlled by ADwin Gold II
 '
@@ -23,11 +24,13 @@
 
 #INCLUDE ADwinPro_All.inc
 #INCLUDE .\configuration.inc
-#INCLUDE .\cr_mod.inc
+'#INCLUDE .\cr_mod.inc
+#INCLUDE .\cr_mod_Bell.inc
 
 #DEFINE max_SP_bins        500
+
 #DEFINE max_stat            10
-#DEFINE max_sweep           50000
+#DEFINE max_sweep           500000
 
 'init
 DIM DATA_20[100] AS LONG

@@ -112,10 +112,7 @@ class ScanPanel(Panel):
         self.ui.dsb_maxV_pzscan.setValue(self._ins.get_maxV_lengthscan())
         self.ui.sb_nr_steps_pzscan.setValue(self._ins.get_nr_steps_lengthscan())
         #general
-        self._ins.averaging_samples = 1
         self.ui.sb_avg.setValue(self._ins.get_nr_avg_scans())
-        self._ins.autosave = False
-        self._ins.autostop = False
         #fine laser scan
         self.ui.dsb_minV_finelaser.setValue(self._ins.get_minV_finelaser())
         self.ui.dsb_maxV_finelaser.setValue(self._ins.get_maxV_finelaser())
@@ -128,8 +125,6 @@ class ScanPanel(Panel):
         self.ui.sb_nr_steps_msyncdelay.setValue(self._ins.get_nr_steps_msyncdelay())
         #others
         self._ins.file_tag = ''
-        self._2D_scan_is_active = False
-        self._use_sync = False
         self.ui.sb_nr_scans_msync.setValue(self._ins.get_nr_avg_scans())
         self.set_nr_scans_msync(self._ins.get_nr_avg_scans())
         self.ui.sb_delay_msync.setValue(self._ins.get_sync_delay_ms())
@@ -159,7 +154,24 @@ class ScanPanel(Panel):
             self.ui.dsb_maxV_pzscan.setValue(changes['maxV_lengthscan'])
         if changes.has_key('nr_steps_lengthscan'): 
             self.ui.sb_nr_steps_pzscan.setValue(changes['nr_steps_lengthscan'])
-
+        if changes.has_key('minV_finelaser'): 
+            self.ui.dsb_minV_finelaser.setValue(changes['minV_finelaser'])
+        if changes.has_key('maxV_finelaser'): 
+            self.ui.dsb_maxV_finelaser.setValue(changes['maxV_finelaser'])
+        if changes.has_key('nr_steps_finelaser'): 
+            self.ui.sb_nr_steps_finelaser.setValue(changes['nr_steps_finelaser'])
+        if changes.has_key('wait_cycles'): 
+            self.ui.sb_wait_cycles.setValue(changes['wait_cycles'])
+        # if changes.has_key('autostop'): 
+        #     if changes['autostop'] == True:
+        #         self.ui.cb_autostop.setCheckState(True)
+        #     if changes['autostop'] == False:
+        #         self.ui.cb_autostop.setCheckState(False)
+        # if changes.has_key('autosave'): 
+        #     if changes['autosave'] == True:
+        #         self.ui.cb_autosave.setCheckState(True)
+        #     if changes['autosave'] == False:
+        #         self.ui.cb_autosave.setCheckState(False)
 
         if 'data_update' in changes:
             d = changes['data_update']

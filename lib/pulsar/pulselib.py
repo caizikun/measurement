@@ -57,7 +57,7 @@ class MW_IQmod_pulse(pulse.Pulse):
         # self.Sw_channel = 'MW_switch'
         # self.channels = [I_channel, Q_channel, PM_channel, 'MW_switch']
         # For implementation of MW Switch (has been implemented on lt2)
-        if 'Sw_channel' in kw and kw['Sw_channel'] != 'None':
+        if 'Sw_channel' in kw and kw['Sw_channel'].lower() != 'none':
             self.Sw_channel = kw['Sw_channel']
             self.channels.append(self.Sw_channel)
 
@@ -67,12 +67,10 @@ class MW_IQmod_pulse(pulse.Pulse):
         self.length = kw.pop('length', 1e-6)
         self.phase = kw.pop('phase', 0.)
         self.PM_risetime = kw.pop('PM_risetime', 0)
-        # self.Sw_risetime = kw.pop('Sw_risetime', 100e-9)
         self.Sw_risetime = kw.pop('Sw_risetime', 0)
 
         self.phaselock = kw.pop('phaselock', True)
         self.risetime = kw.pop('risetime', max(self.PM_risetime,self.Sw_risetime))
-        
         self.length += 2*self.risetime
         self.start_offset = self.risetime
         self.stop_offset = self.risetime

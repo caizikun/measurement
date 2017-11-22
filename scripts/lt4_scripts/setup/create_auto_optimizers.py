@@ -4,7 +4,7 @@ if True:
     _get_count_rej = lambda: qt.instruments['physical_adwin'].Get_Par(43)
     _get_msmt_running_rej = lambda: qt.instruments['lt4_measurement_helper'].get_is_running()
     rejecter = qt.instruments.create('rejecter', 'laser_reject0r_v3', rotator='rotator',
-            rotation_config_name='waveplates_lt3',waveplates = ['zpl_half','zpl_quarter','pulse_half'],
+            rotation_config_name='waveplates_lt3',waveplates = ['zpl_half','zpl_quarter','pulse_half','cryo_half'],
             get_value_f=_getval_rej, get_norm_f=_getnorm_rej, 
             get_count_f = _get_count_rej, get_msmt_running_f = _get_msmt_running_rej)
 
@@ -52,7 +52,7 @@ if True:
     _get_freq_newfocus=lambda: qt.instruments['physical_adwin'].Get_FPar(41)
     _set_freq_newfocus=lambda x: qt.instruments['physical_adwin'].Set_FPar(51,x)
 
-    auto_optimizer = qt.instruments.create('auto_optimizer', 'auto_optimizer',  
+    auto_optimizer = qt.instruments.create('auto_optimizer', 'auto_optimizer_2',  
             get_freq_yellow = _get_freq_yellow, set_freq_yellow = _set_freq_yellow, get_counts_yellow = _get_counts_yellow, get_attemps_yellow = _get_attemps_yellow,
             get_freq_gate = _get_freq_gate, set_freq_gate = _set_freq_gate, get_counts_gate = _get_counts_gate, get_attemps_gate = _get_attemps_gate,
             get_freq_newfocus = _get_freq_newfocus, set_freq_newfocus = _set_freq_newfocus, plot_name='opt_plot')                
