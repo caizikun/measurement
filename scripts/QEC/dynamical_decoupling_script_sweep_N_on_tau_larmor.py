@@ -182,8 +182,8 @@ if __name__ == '__main__':
         Nmax = 128
         Nstep = 8
         larmor_nr = 5
-        reps = 800
-        tau_larmor = 1/447968.42
+        reps = 500
+        tau_larmor = 1/442829.51
         pts = 10
         #Number_of_pulses = 5
         nr_of_runs = int(np.floor((Nmax-Nmin)/float(Nstep)))

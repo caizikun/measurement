@@ -24,35 +24,44 @@ electron_transition_string = qt.exp_params['samples'][SAMPLE]['electron_transiti
 
 import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
+import measurement.scripts.carbonspin.write_to_msmt_params as write_to_msmt_params
+reload(funcs)
 n = 1
 
 #######################################################
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-carbons = [1]
+qt.exp_params['simplify_wfnames'] = True
+
+carbons = [7]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
 
-The measured values are directly written into msmt_params.py
+The measured values are directly written into msmt_params.py,
+if the following parameter is true
 """
+do_update_msmt_params = True
+
 use_queue = False
 
-f_ms0 = True
-
-f_ms1 = True
+f_ms0 = False
+f_ms1 = False
+update_average_freq = False
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
-cross_phase_calibration = False
+cross_phase_calibration = True
 cross_phase_steps       = 1
 
+
+
 # Note that you wont save to msmt params if debug is on.
-debug = False 
+debug = False
 
 ### repetitions per data point.
 freq_reps = 750
@@ -83,27 +92,17 @@ elif SETUP == 'lt3':
         '8' : detuning_basic}
 
 elif SETUP == 'lt4':
-    detuning_basic = 2e3
+    detuning_basic = 5e3
     detuning_dict = {
         '1' : detuning_basic,
+        '2' : detuning_basic,
         '3' : detuning_basic,
         '4' : detuning_basic,
         '5' : detuning_basic,
         '6' : detuning_basic,
+        '7' : detuning_basic,
         '8' : detuning_basic
         }
-
-
-if SETUP == 'm1':
-    detuning_basic = 2e3
-    detuning_dict = {
-        '1' : detuning_basic,
-        '2' : detuning_basic*2,
-        '3' : detuning_basic*3.,
-        '4' : detuning_basic*2,
-        '5' : detuning_basic,
-        '6' : detuning_basic*4.,
-        '7' : detuning_basic*4}
 ######
 
 
@@ -148,7 +147,7 @@ def NuclearRamseyWithInitialization_cal(name,
         # 1A - Rotating frame with detuning
     m.params['add_wait_gate'] = True
     m.params['pts'] = 25
-    if carbon_nr == 6:
+    if carbon_nr == 8:
         m.params['pts'] = 18
     m.params['free_evolution_time'] = 400e-6 + np.linspace(0e-6, 3*1./detuning,m.params['pts'])
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
@@ -284,9 +283,9 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     m.params['init_state']          = 'up' 
     # m.params['nr_of_gates']          = nr_of_gates
     
-    m.params['pts']                 = 19
-    if C_measured == 6:
-        m.params['pts'] = 16
+    m.params['pts']                 = 16
+    # if C_measured == 6:
+    #     m.params['pts'] = 16
 
     if smart_sweep_pts:
         if np.mod(m.params['pts'],2)!=0:
@@ -316,105 +315,52 @@ def Crosstalk_vs2(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False, C13_
     m.params['Nr_parity_msmts']   = 0
    
     funcs.finish(m, upload =True, debug=debug)
-
-
-def write_to_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_phase,self_unc_phase_offset,debug):
+            
+def update_msmt_params(carbons,f_ms0,f_ms1,self_phase,cross_phase,self_unc_phase,self_unc_phase_offset,debug):
 
     """
     This routine automatically takes the measured values and writes them to the measurement parameters.
     Takes a list of carbons as input and the booleans which decode which calibrations have been done.
     """
 
-    if not debug:
-        with open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','r') as param_file:
-            data = param_file.readlines()
+    if debug:
+        return # bail out!
 
-        for c in carbons:
-            if f_ms0:
+    calibrated_params = qt.exp_params['samples'][SAMPLE]
 
-                search_string = 'C'+str(c)+'_freq_0'
-                data = write_to_file_subroutine(data,search_string)
+    search_strings = []
+    param_string_overrides = []
 
-            if f_ms1:
+    for c in carbons:
+        if f_ms0:
+            search_strings.append('C'+str(c)+'_freq_0')
+            param_string_overrides.append(None)
 
-                search_string = 'C'+str(c)+'_freq_1'+electron_transition_string
-                data = write_to_file_subroutine(data,search_string)
+        if f_ms1:
+            search_strings.append('C'+str(c)+'_freq_1'+electron_transition_string)
+            param_string_overrides.append(None)
 
-            if self_phase or cross_phase:
+        if update_average_freq and f_ms0 and f_ms1:
 
-                search_string = 'C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string
-                data = write_to_file_subroutine(data,search_string)
+            Cf0_string = 'C'+str(c)+'_freq_0'
+            Cf1_string = 'C'+str(c)+'_freq_1'+electron_transition_string
 
-            if self_unc_phase:
-                search_string = 'C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string
-                data = write_to_file_subroutine(data,search_string)
+            search_strings.append('C'+str(c)+'_freq'+electron_transition_string)
+            param_string_overrides.append("(%.2f + %.2f)/2" % (calibrated_params[Cf0_string], calibrated_params[Cf1_string]))
 
-            if self_unc_phase_offset:
-                search_string = 'C'+str(c)+'_unc_phase_offset'+electron_transition_string
-                data = write_to_file_subroutine(data,search_string)
-                
-        ### after compiling the new msmt_params, the are flushed to the python file.
-        f = open(r'D:/measuring/measurement/scripts/'+SETUP+'_scripts/setup/msmt_params.py','w')
-        f.writelines(data)
-        f.close()
+        if self_phase or cross_phase:
+            search_strings.append('C'+str(c)+'_Ren_extra_phase_correction_list'+electron_transition_string)
+            param_string_overrides.append(None)
 
+        if self_unc_phase:
+            search_strings.append('C'+str(c)+'_unc_extra_phase_correction_list'+electron_transition_string)
+            param_string_overrides.append(None)
 
-def write_to_file_subroutine(data,search_string):
-    """
-    Takes a list of read file lines and a search string.
-    Scans the file for uncommented lines with this specific string in it.
-    It is assumed that the string occurs within the dictionary part of msmt_params.
-    Beware: Will delete any comments attached to the specific parameter.
-    """
+        if self_unc_phase_offset:
+            search_strings.append('C'+str(c)+'_unc_phase_offset'+electron_transition_string)
+            param_string_overrides.append(None)
 
-    ## get the calibrated value
-    params = qt.exp_params['samples'][SAMPLE][search_string]
-
-    ### correct file position (makes sure that we do not overwrite parameters for the wrong sample.
-    ### is also used to break the loop when we have looped over the sample
-    correct_pos = False
-
-    for ii,x in enumerate(data):
-
-        ### check if we write params to the correct sample.
-
-        if 'samples' in x and (SAMPLE in x or 'name' in x): ## 'name added for the msmt params of lt3'
-            correct_pos = True
-        elif 'samples' in x and (not SAMPLE in x or not 'name' in x): ## 'name added for the msmt params of lt3'
-            corrrect_pos = False
-
-        ### write params to sample
-        if search_string in x and not '#' in x[:5] and correct_pos:
-
-            ### detect if we must write a list to the msmt_params or an integer
-            if type(params) == list or type(params) == np.ndarray:
-                array_string = 'np.array('
-
-                for i,phi in enumerate(params):
-                    if i+1 == len(params):
-                        array_string += '['+str(round(phi,2))+']),\n'
-
-                    else:
-                        array_string += '['+str(round(phi,2))+'] + '
-
-            else:
-                array_string = str(round(params,2))+',\n'
-
-
-            ## search for the colon in the dictionary and append the numpy array to the string.
-            fill_in = x[:x.index(':')+1] + ' '+ array_string
-
-            # print fill_in
-            data[ii] = fill_in
-
-            # print 'this is the string I am looking for', search_string
-            # print 'this is what i write', data[ii]
-
-    ### return the contents of msmt_params.py
-    return data
-
-            
-            
+    write_to_msmt_params.write_to_msmt_params_file(search_strings, param_string_overrides, debug)
 
 ################################################################
 ######              Calibrate ms=-1 frequencies           ######
@@ -747,8 +693,8 @@ if cross_phase_calibration and len(carbons)>1:
 # print phase_overview
 
 # write to msmt_params.py if the calibration was finished succesfully.
-if n== 1 and not debug:
-    write_to_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,self_unc_phase_calibration,self_unc_phase_offset_calibration,debug)
+if n== 1 and not debug and do_update_msmt_params:
+    update_msmt_params(carbons,f_ms0,f_ms1,True,cross_phase_calibration,self_unc_phase_calibration,self_unc_phase_offset_calibration,debug)
 else:
     print 'Sequence was aborted: I did not save the calibration results'
 

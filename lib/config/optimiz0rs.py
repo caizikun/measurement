@@ -11,8 +11,8 @@ dimension_sets = {
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 4.,
-                    'nr_of_points' : 31,
+                    'scan_length' : 5.,
+                    'nr_of_points' : 41,
 #                    'pixel_time' : 50,
                     },
                 'zyx' : ['z','y','x'],
@@ -41,17 +41,17 @@ dimension_sets = {
 
             'lt3' : {
                 'x' : {
-                    'scan_length' : 1.0,
+                    'scan_length' : 1.5,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 0.8,
+                    'scan_length' : 1.20,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 1.5,
+                    'scan_length' : 2.,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
@@ -61,17 +61,17 @@ dimension_sets = {
 
             'lt4' : {
                 'x' : {
-                    'scan_length' : 0.6,
+                    'scan_length' : 1.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'y' : {
-                    'scan_length' : 1.3,
+                    'scan_length' : 2.0,
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
                 'z' : {
-                    'scan_length' : 2.,
+                    'scan_length' : 4.0,
                     'nr_of_points' : 51,#99,
 #                    'pixel_time' : 50,
                     },
@@ -110,6 +110,12 @@ dimension_sets = {
                     'nr_of_points' : 31,#99,
 #                    'pixel_time' : 50,
                     },
+                'z' : {
+                    'scan_length' : 6.,
+                    'nr_of_points' : 31,#99,
+#                    'pixel_time' : 50,
+                    },
+                'zyx' : ['z','y','x'],
                 'xyonly':['y','x'],
                 },
 

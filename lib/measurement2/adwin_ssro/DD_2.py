@@ -9,10 +9,8 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-reload(pulsar)
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt;
 import pulse_select as ps; reload(ps)
-
 
 
 
@@ -28,7 +26,8 @@ class Gate(object):
         '''
         Supported gate types in the scripts are
         connection/phase gates: 'Connection_element' , 'electron_Gate',
-        decoupling gates:  'Carbon_Gate', 'electron_decoupling'
+        decoupling gates:  'Carbon_Gate', 'electron_decoupling', 'feedback_trigger_decoupling'
+        active phase feedback gate: 'carbon_delay_phase_feedback'
         misc gates: 'passive_elt', (also has tau_cut)
         special gates: 'mbi', 'Trigger', 'LDE'
         '''
@@ -56,7 +55,10 @@ class Gate(object):
         self.wait_time  = kw.pop('wait_time',None)
         self.reps = kw.pop('reps',1) # only overwritten in case of Carbon decoupling elements or RF elements
         self.dec_duration = kw.pop('dec_duration', None)  # can be specified if a custom dec duration is desired
+        self.dec_pulse_sequence = kw.pop('dec_pulse_sequence', None)
 
+        self.delayfb_add_triggers = kw.pop('delayfb_add_triggers', True)
+        self.feedback_target_carbon_ind = kw.pop('feedback_target_carbon_ind', None)
 
         self.specific_transition = kw.pop('specific_transition',None) # used to specify the mw transition 
         self.fixed_dec_duration = kw.pop('fixed_dec_duration',False)
@@ -71,6 +73,8 @@ class Gate(object):
         #Scheme is used both for generating decoupling elements as well as the combine to sequence command
         if self.Gate_type in ['Connection_element','electron_Gate','passive_elt','mbi']:
             self.scheme = 'single_element'
+        elif self.Gate_type in ['carbon_delay_phase_feedback']:
+            self.scheme = self.Gate_type
         else:
             self.scheme = kw.pop('scheme','auto')
 
@@ -81,6 +85,7 @@ class Gate(object):
         self.event_jump         = kw.pop('event_jump',None)
         self.go_to              = kw.pop('go_to',None)
 
+        self.phase_tracked_by_adwin = kw.pop('phase_tracked_by_adwin', False)
         # Empty list of C_phases before gate
         self.C_phases_before_gate   = [None]*10
         self.C_phases_after_gate    = [None]*10
@@ -92,11 +97,16 @@ class Gate(object):
             else :
                 self.C_phases_after_gate[self.Carbon_ind] = (self.phase + self.extra_phase_after_gate)/180.*np.pi
 
+        if self.Gate_type == 'carbon_delay_phase_feedback':
+            # reset all carbon phases after delay feedback
+            # the adwin will take care of them
+            self.phase = 'reset'
+            # self.C_phases_after_gate = ['reset']*10
+
 
         ### In case a gate adds phases to other Carbon spins that cannot be corrected by the precession frq alone
         ### this parameter can add an extra phase correction to each Carbon spin, default is 0.
-        self.extra_phase_correction_list = [0]*10
-
+        self.extra_phase_correction_list = [0.0]*10
 
         '''
         Description of other attributes that get added by functions
@@ -113,6 +123,7 @@ class Gate(object):
                        Currently possible channel names for LT2: 'AOM_Newfocus'
         If there are any attributes being used frequently that are still missing here please add them for documentation
         '''
+
 
 class DynamicalDecoupling(pulsar_msmt.MBI):
 
@@ -182,19 +193,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #print 'selecting mwsource 2 because el =m1'
                 return X
             else:
-                print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-
-
-        
-        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['X_phase'])     
+                print 'Please define the used transition: transition is (%s)' %self.params['electron_transition'] 
       
     def _mX_elt(self):
         '''
@@ -215,15 +214,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 return X
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-        # X = pulselib.MW_IQmod_pulse('electron X-Pi-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['AWG_MBI_MW_pulse_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi_duration'],
-        #     amplitude = self.params['fast_pi_amp'],
-        #     phase =  self.params['X_phase']+180)       
+      
 
     def _pi2_elt(self):
         '''
@@ -243,15 +234,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 return X
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
-        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-        #     frequency = self.params['fast_pi2_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     Sw_risetime = self.params['MW_switch_risetime'],
-        #     length = self.params['fast_pi2_duration'],
-        #     amplitude = self.params['fast_pi2_amp'],
-        #     phase = self.params['X_phase'])
 
     def _mpi2_elt(self):
         '''
@@ -272,14 +254,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
         
-        # pi2 = pulselib.MW_IQmod_pulse('electron Pi/2-pulse',
-        #     I_channel='MW_Imod', Q_channel='MW_Qmod',
-        #     PM_channel='MW_pulsemod',
-        #     frequency = self.params['fast_pi2_mod_frq'],
-        #     PM_risetime = self.params['MW_pulse_mod_risetime'],
-        #     length = self.params['fast_pi2_duration'],
-        #     amplitude = self.params['fast_pi2_amp'],
-        #     phase = self.params['X_phase'])
+
 
     def _Ypi2_elt(self):
         '''
@@ -424,6 +399,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         '''
         Trigger element that is used in different measurement child classes
         '''
+
         if outputChannel == 'adwin_sync':
             Trig = pulse.SquarePulse(channel = outputChannel,
                 length = duration, amplitude = 2)
@@ -575,8 +551,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse']
-        gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling']
+        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse', 'carbon_delay_phase_feedback']
+        gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling','carbon_delay_phase_feedback']
         #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
         #TODO_THT: What  does this mean??? Clearly it does not work...
 
@@ -779,6 +755,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             return
         elif Gate.tau<0.5e-6:
             Gate.scheme = 'single_block'
+            g = Gate
+            print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
+
         elif Gate.N%8:           ## ERROR? Should be N%8 == 0: ?
             Gate.scheme = 'XY8'
         elif Gate.N%2:           ## ERROR?
@@ -798,12 +777,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             Cdecstr = 'C'+str(i)+'_freq'+self.params['electron_transition']
             try:
                 C_freq_0.append(self.params[C0str]*2*np.pi)
+            except:
+                C_freq_0.append(None)
+            try:
                 C_freq_1.append(self.params[C1str]*2*np.pi)
                 C_freq.append (self.params[Cdecstr]*2*np.pi)
             except:
-                C_freq_1.append(None)
-                C_freq_0.append(None)
                 C_freq.append (None)
+                C_freq_1.append(None)
 
         return C_freq_0, C_freq_1, C_freq
 
@@ -968,12 +949,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 #print 'this gate does not have a carbon ind or spec freq',g.name
                     C_freq_0, C_freq_1, C_freq = self.load_C_freqs_in_radians_sec()       
 
-            
+            if g.phase_tracked_by_adwin:
+                # just transfer over the phase before the gate to after the gate
+                # the phases added by this element are tracked by the adwin
+                g.C_phases_after_gate = g.C_phases_before_gate
             ###########################
             ### Decoupling elements ###
             ###########################
             # print 'Gate type', g.Gate_type
-            if g.Gate_type == 'Carbon_Gate':
+            elif g.Gate_type == 'Carbon_Gate':
 
                 ### load the extra phase corrections for specific C13 crosstalks
                 ### (note that this could in principle be done with a list of frequencies
@@ -982,10 +966,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 for iC in range(len(g.C_phases_before_gate)):
                     if g.C_phases_before_gate[iC] == None and g.C_phases_after_gate[iC] == None :
                         if iC == g.Carbon_ind:
-                            g.C_phases_after_gate[iC] = 0
+                            g.C_phases_after_gate[iC] = 0.0
 
                     elif g.C_phases_after_gate[iC] == 'reset':
-                        g.C_phases_after_gate[iC] = 0
+                        g.C_phases_after_gate[iC] = 0.0
 
 
 
@@ -998,8 +982,23 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
                     #if (iC==1) and (g.C_phases_before_gate[iC] != None):
                         #print g.name,iC,g.C_phases_before_gate[iC], g.C_phases_after_gate[iC],(g.C_phases_after_gate[iC]-g.extra_phase_correction_list[iC])
+
+            elif g.Gate_type == 'carbon_delay_phase_feedback':
+                # reset the carbon phase of the feedback target
+                # for the other carbons, we keep on tracking their phase and use that as the phase offset
+                # for their respective feedback gates. The adwin keeps track of the phase accumulated
+                # in feedback sequences preceding this one and adds that as well.
+                if g.feedback_target_carbon_ind is None:
+                    print("Warning: no feedback target specified for gate: " + g.name)
+                else:
+                    # carry over phases from before the gate
+                    g.C_phases_after_gate = copy.deepcopy(g.C_phases_before_gate)
+                    if g.C_phases_before_gate[g.feedback_target_carbon_ind] is not None:
+                        g.C_phases_after_gate[g.feedback_target_carbon_ind] = 0.0
+                    else:
+                        print("Warning: applying feedback on an unitialized carbon")
                         
-            elif g.Gate_type =='electron_decoupling':
+            elif g.Gate_type =='electron_decoupling' or g.Gate_type == 'feedback_trigger_decoupling':
 
                  #print 'I need help here with this gate',g.name,g.tau,g.N,g.C_phases_before_gate,g.C_phases_after_gate
                 for iC in range(len(g.C_phases_before_gate)):
@@ -1071,7 +1070,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                         #print 'C_phases_before_gate', g.C_phases_before_gate
                         #print 'dec_duration', g.dec_duration
                         #print 'C_freq', C_freq
-                        #print 'iC',iC
+                        #print 'iC',
                         if g.el_state_before_gate == '0':
                             g.C_phases_after_gate[iC] = (g.C_phases_before_gate[iC]+ g.dec_duration*C_freq_0[iC])%(2*np.pi)
                         elif g.el_state_before_gate == '1':
@@ -1152,6 +1151,10 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             else: # I want the program to spit out an error if I messed up i.e. forgot a gate type
                 print 'Error: %s, Gate type not recognized %s' %(g.name,g.Gate_type)
+
+            # print("%s: %s" % (g.name, g.Gate_type))
+            # print("\t%s" % g.C_phases_before_gate[0:5])
+            # print("\t%s" % g.C_phases_after_gate[0:5])
         
         # for g in Gate_sequence:
         #     if 'inal' in g.name:
@@ -1181,7 +1184,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         adds trigger element to Gate object
         '''
         Gate.scheme ='trigger'
-
         #implement output of the awg on a laser channel.
         if hasattr(Gate,'channel'):
             Gate.elements = [self._Trigger_element(Gate.elements_duration,Gate.prefix,outputChannel=Gate.channel)]
@@ -1320,7 +1322,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     pulsar = qt.pulsar, global_time=True)
             
             decoupling_elt.append(T_around_pi2)
-            decoupling_elt.append(initial_pulse)
+            if 'x' in self.params['Initial_Pulse']:
+                decoupling_elt.append(initial_pulse)
             decoupling_elt.append(T_around_pi2)
             for n in range(N-1) :
                 if n !=0:
@@ -1356,7 +1359,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ## finish off with a pi/2 pulse.
 
             decoupling_elt.append(T_around_pi2)
-            decoupling_elt.append(final_pulse)
+            if 'x' in self.params['Final_Pulse']:
+                decoupling_elt.append(final_pulse)
             decoupling_elt.append(T_around_pi2)
             list_of_elements.append(decoupling_elt)
 
@@ -1712,11 +1716,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ### XY4 ###
             ###########
             element_duration_without_edge = tau + fast_pi_duration/2.0
+
             if element_duration_without_edge  > (minimum_AWG_elementsize+36e-9): #+20 ns is to make sure that elements always have a minimal size
                 tau_shortened = np.ceil((element_duration_without_edge+ 36e-9)/4e-9)*4e-9 -element_duration_without_edge
             else:
                 tau_shortened = minimum_AWG_elementsize - element_duration_without_edge
                 tau_shortened = np.ceil(tau_shortened/(4e-9))*(4e-9)
+
+            tau_shortened = tau_shortened 
             tau_cut = tau - tau_shortened - fast_pi_duration/2.0
 
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -1747,6 +1754,376 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     global_time = True)
             e_end.append(T)
             e_end.append(pulse.cp(Y))
+            e_end.append(T_after_p)
+            list_of_elements.append(e_end)
+
+        elif Gate.scheme == 'AXY4':
+            # print 'Using non-repeating delay elements XY4 decoupling method'
+            Gate.reps = N # Overwrites reps parameter that is used in sequencing 
+            if np.mod(N,4) != 0:
+                raise Exception('Gate.N has to be a multiple of 4')
+
+            #######################################################################################################
+            ### AXY4 following the sequence given in http://journals.aps.org/pra/pdf/10.1103/PhysRevA.92.042304 ###
+            #######################################################################################################
+            
+            x1 = self.params['AXY_x1']
+            x2 = self.params['AXY_x2']
+
+            rot_sign = np.sign(self.params['Y_phase'] - self.params['X_phase'])
+            Pulse60 = pulse.cp(X,phase = self.params['Y_phase'] + rot_sign * 60)
+            Pulse150 = pulse.cp(Y,phase = self.params['X_phase'] + rot_sign * 60)
+
+            gate_tau =  np.round((tau/5.0)/1e-9)*1e-9 
+            tau_1 = np.round((x1*gate_tau - fast_pi_duration/2.0)/(1e-9))*(1e-9)
+            tau_2 = np.round(((x2 - x1)* gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+            tau_3 = np.round(((5.0 - x2) * gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+
+            element_duration_without_edge = tau_1 + fast_pi_duration
+            if element_duration_without_edge  > (minimum_AWG_elementsize+120e-9): #+20 ns is to make sure that elements always have a minimal size
+                tau_shortened = np.ceil((element_duration_without_edge+ 120e-9)/4e-9)*4e-9 -element_duration_without_edge
+            else:
+                tau_shortened = minimum_AWG_elementsize - element_duration_without_edge
+                tau_shortened = np.ceil(tau_shortened/(4e-9))*(4e-9)
+
+            tau_shortened = tau_shortened
+            tau_cut = tau_1 - tau_shortened
+            T_1 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_1, amplitude = 0.)
+            T_2 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_2, amplitude = 0.)
+            T_3 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_3, amplitude = 0.)
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the unit waittime is 10e-6 s
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
+
+            ### Combine pulses to elements/waveforms and add to list of elements
+            e_X_start = element.Element('%s_X_Initial_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_start.append(T_before_p)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(Y))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_1)
+            list_of_elements.append(e_X_start)
+            ### Currently middle is XY2 with an if statement based on the value of N this can be optimised
+            e_YX_middle = element.Element('%s_YX_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_YX_middle.append(T_1)
+            e_YX_middle.append(pulse.cp(Pulse150))
+            e_YX_middle.append(T_2)
+            e_YX_middle.append(pulse.cp(Y))
+            e_YX_middle.append(T_3)
+            e_YX_middle.append(pulse.cp(mX))
+            e_YX_middle.append(T_3)
+            e_YX_middle.append(pulse.cp(Y))
+            e_YX_middle.append(T_2)
+            e_YX_middle.append(pulse.cp(Pulse150))
+            e_YX_middle.append(T_1)
+            e_YX_middle.append(T_1)
+            e_YX_middle.append(pulse.cp(Pulse60))
+            e_YX_middle.append(T_2)
+            e_YX_middle.append(pulse.cp(X))
+            e_YX_middle.append(T_3)
+            e_YX_middle.append(pulse.cp(Y))
+            e_YX_middle.append(T_3)
+            e_YX_middle.append(pulse.cp(X))
+            e_YX_middle.append(T_2)
+            e_YX_middle.append(pulse.cp(Pulse60))
+            e_YX_middle.append(T_1)
+            list_of_elements.append(e_YX_middle)
+            e_Y_end = element.Element('%s_Y_Final_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_Y_end.append(T_1)
+            e_Y_end.append(pulse.cp(Pulse150))
+            e_Y_end.append(T_2)
+            e_Y_end.append(pulse.cp(Y))
+            e_Y_end.append(T_3)
+            e_Y_end.append(pulse.cp(mX))
+            e_Y_end.append(T_3)
+            e_Y_end.append(pulse.cp(Y))
+            e_Y_end.append(T_2)
+            e_Y_end.append(pulse.cp(Pulse150))
+            e_Y_end.append(T_after_p)
+            list_of_elements.append(e_Y_end)
+
+        elif Gate.scheme == 'AXY8':
+            # print 'Using non-repeating delay elements XY4 decoupling method'
+            Gate.reps = N # Overwrites reps parameter that is used in sequencing 
+            
+            #######################################################################################################
+            ### AXY4 following the sequence given in http://journals.aps.org/pra/pdf/10.1103/PhysRevA.92.042304 ###
+            #######################################################################################################
+            
+            import analysis.lib.QEC.nuclear_spin_control_vs3 as nsc
+            f3DD = self.params['AXY_f3DD']
+            x1,x2 = nsc.composite_gate_calc_p_q_for_f3DD(f3DD)
+
+            rot_sign = np.sign(self.params['Y_phase'] - self.params['X_phase'])
+            Pulse60 = pulse.cp(X,phase = self.params['X_phase'] + rot_sign * 60)
+            Pulse150 = pulse.cp(Y,phase = self.params['Y_phase'] + rot_sign * 60)
+            Pulsem60 = pulse.cp(X,phase = self.params['X_phase'] + 180 + rot_sign * 60)
+            Pulsem150 = pulse.cp(Y,phase = self.params['Y_phase'] + 180 + rot_sign * 60)
+
+            gate_tau =  np.round((tau/5.0)/1e-9)*1e-9 
+            tau_1 = np.round((x1*gate_tau - fast_pi_duration/2.0)/(1e-9))*(1e-9)
+            tau_2 = np.round(((x2 - x1)* gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+            tau_3 = np.round(((5.0 - x2) * gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+
+
+            tau_shortened = 160e-9
+            tau_cut = tau_1 - tau_shortened
+
+            T_1 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_1, amplitude = 0.)
+            T_2 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_2, amplitude = 0.)
+            T_3 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_3, amplitude = 0.)
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the unit waittime is 10e-6 s
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
+
+            ### Combine pulses to elements/waveforms and add to list of elements
+            e_X_start = element.Element('%s_X_Initial_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_start.append(T_before_p)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(Y))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_1)
+            list_of_elements.append(e_X_start)
+
+            e_X_middle = element.Element('%s_X_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_middle.append(T_1)
+            e_X_middle.append(pulse.cp(Pulse60))
+            e_X_middle.append(T_2)
+            e_X_middle.append(pulse.cp(X))
+            e_X_middle.append(T_3)
+            e_X_middle.append(pulse.cp(Y))
+            e_X_middle.append(T_3)
+            e_X_middle.append(pulse.cp(X))
+            e_X_middle.append(T_2)
+            e_X_middle.append(pulse.cp(Pulse60))
+            e_X_middle.append(T_1)
+            list_of_elements.append(e_X_middle)
+
+            e_Y_middle = element.Element('%s_Y_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_Y_middle.append(T_1)
+            e_Y_middle.append(pulse.cp(Pulse150))
+            e_Y_middle.append(T_2)
+            e_Y_middle.append(pulse.cp(Y))
+            e_Y_middle.append(T_3)
+            e_Y_middle.append(pulse.cp(mX))
+            e_Y_middle.append(T_3)
+            e_Y_middle.append(pulse.cp(Y))
+            e_Y_middle.append(T_2)
+            e_Y_middle.append(pulse.cp(Pulse150))
+            e_Y_middle.append(T_1)
+            list_of_elements.append(e_Y_middle)
+
+            if N%8 == 2:
+                P_type = 'mX'
+                pulse1 = pulse.cp(Pulsem60)
+                pulse2 = pulse.cp(mX)
+                pulse3 = pulse.cp(mY)
+                
+            elif N%8 in [3,4,5]:
+                P_type = 'Y'
+                pulse1 = pulse.cp(Pulse150)
+                pulse2 = pulse.cp(Y)
+                pulse3 = pulse.cp(mX)
+            elif N%8 == 6:
+                P_type = 'mY'
+                pulse1 = pulse.cp(Pulsem150)
+                pulse2 = pulse.cp(mY)
+                pulse3 = pulse.cp(X)
+            elif N%8 in [0,1,7]:
+                P_type = 'X'
+                pulse1 = pulse.cp(Pulse60)
+                pulse2 = pulse.cp(X)
+                pulse3 = pulse.cp(Y)
+
+            e_end = element.Element('%s_Final_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_end.append(T_1)
+            e_end.append(pulse1)
+            e_end.append(T_2)
+            e_end.append(pulse2)
+            e_end.append(T_3)
+            e_end.append(pulse3)
+            e_end.append(T_3)
+            e_end.append(pulse2)
+            e_end.append(T_2)
+            e_end.append(pulse1)
+            e_end.append(T_after_p)
+            list_of_elements.append(e_end)
+
+        elif Gate.scheme == 'AXY16':
+            # print 'Using non-repeating delay elements XY4 decoupling method'
+            Gate.reps = N # Overwrites reps parameter that is used in sequencing 
+            
+            #######################################################################################################
+            ### AXY4 following the sequence given in http://journals.aps.org/pra/pdf/10.1103/PhysRevA.92.042304 ###
+            #######################################################################################################
+            
+            import analysis.lib.QEC.nuclear_spin_control_vs3 as nsc
+            f3DD = self.params['AXY_f3DD']
+            x1,x2 = nsc.composite_gate_calc_p_q_for_f3DD(f3DD)
+
+            rot_sign = np.sign(self.params['Y_phase'] - self.params['X_phase'])
+            Pulse60 = pulse.cp(X,phase = self.params['X_phase'] + rot_sign * 60)
+            Pulse150 = pulse.cp(Y,phase = self.params['Y_phase'] + rot_sign * 60)
+            Pulsem60 = pulse.cp(X,phase = self.params['X_phase'] + 180 + rot_sign * 60)
+            Pulsem150 = pulse.cp(Y,phase = self.params['Y_phase'] + 180 + rot_sign * 60)
+
+            gate_tau =  np.round((tau/5.0)/1e-9)*1e-9 
+            tau_1 = np.round((x1*gate_tau - fast_pi_duration/2.0)/(1e-9))*(1e-9)
+            tau_2 = np.round(((x2 - x1)* gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+            tau_3 = np.round(((5.0 - x2) * gate_tau - fast_pi_duration)/(1e-9))*(1e-9)
+
+
+            tau_shortened = 160e-9
+            tau_cut = tau_1 - tau_shortened
+
+            T_1 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_1, amplitude = 0.)
+            T_2 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_2, amplitude = 0.)
+            T_3 = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+                length = tau_3, amplitude = 0.)
+            T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the unit waittime is 10e-6 s
+            T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
+                length = tau_shortened, amplitude = 0.) #the length of this time should depends on the pi-pulse length/.
+
+            ### Combine pulses to elements/waveforms and add to list of elements
+            e_X_start = element.Element('%s_X_Initial_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_start.append(T_before_p)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(Y))
+            e_X_start.append(T_3)
+            e_X_start.append(pulse.cp(X))
+            e_X_start.append(T_2)
+            e_X_start.append(pulse.cp(Pulse60))
+            e_X_start.append(T_1)
+            list_of_elements.append(e_X_start)
+
+            e_X_middle = element.Element('%s_X_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_X_middle.append(T_1)
+            e_X_middle.append(pulse.cp(Pulse60))
+            e_X_middle.append(T_2)
+            e_X_middle.append(pulse.cp(X))
+            e_X_middle.append(T_3)
+            e_X_middle.append(pulse.cp(Y))
+            e_X_middle.append(T_3)
+            e_X_middle.append(pulse.cp(X))
+            e_X_middle.append(T_2)
+            e_X_middle.append(pulse.cp(Pulse60))
+            e_X_middle.append(T_1)
+            list_of_elements.append(e_X_middle)
+
+            e_mX_middle = element.Element('%s_mX_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_mX_middle.append(T_1)
+            e_mX_middle.append(pulse.cp(Pulsem60))
+            e_mX_middle.append(T_2)
+            e_mX_middle.append(pulse.cp(mX))
+            e_mX_middle.append(T_3)
+            e_mX_middle.append(pulse.cp(mY))
+            e_mX_middle.append(T_3)
+            e_mX_middle.append(pulse.cp(mX))
+            e_mX_middle.append(T_2)
+            e_mX_middle.append(pulse.cp(Pulsem60))
+            e_mX_middle.append(T_1)
+            list_of_elements.append(e_mX_middle)
+
+            e_Y_middle = element.Element('%s_Y_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_Y_middle.append(T_1)
+            e_Y_middle.append(pulse.cp(Pulse150))
+            e_Y_middle.append(T_2)
+            e_Y_middle.append(pulse.cp(Y))
+            e_Y_middle.append(T_3)
+            e_Y_middle.append(pulse.cp(mX))
+            e_Y_middle.append(T_3)
+            e_Y_middle.append(pulse.cp(Y))
+            e_Y_middle.append(T_2)
+            e_Y_middle.append(pulse.cp(Pulse150))
+            e_Y_middle.append(T_1)
+            list_of_elements.append(e_Y_middle)
+
+            e_mY_middle = element.Element('%s_mY_Rep_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_mY_middle.append(T_1)
+            e_mY_middle.append(pulse.cp(Pulsem150))
+            e_mY_middle.append(T_2)
+            e_mY_middle.append(pulse.cp(mY))
+            e_mY_middle.append(T_3)
+            e_mY_middle.append(pulse.cp(X))
+            e_mY_middle.append(T_3)
+            e_mY_middle.append(pulse.cp(mY))
+            e_mY_middle.append(T_2)
+            e_mY_middle.append(pulse.cp(Pulsem150))
+            e_mY_middle.append(T_1)
+            list_of_elements.append(e_mY_middle)
+
+            if N%8 == 2:
+                P_type = 'mX'
+                pulse1 = pulse.cp(Pulsem60)
+                pulse2 = pulse.cp(mX)
+                pulse3 = pulse.cp(mY)
+                
+            elif N%8 in [3,4,5]:
+                P_type = 'Y'
+                pulse1 = pulse.cp(Pulse150)
+                pulse2 = pulse.cp(Y)
+                pulse3 = pulse.cp(mX)
+            elif N%8 == 6:
+                P_type = 'mY'
+                pulse1 = pulse.cp(Pulsem150)
+                pulse2 = pulse.cp(mY)
+                pulse3 = pulse.cp(X)
+            elif N%8 in [0,1,7]:
+                P_type = 'X'
+                pulse1 = pulse.cp(Pulse60)
+                pulse2 = pulse.cp(X)
+                pulse3 = pulse.cp(Y)
+
+            e_end = element.Element('%s_Final_DD_El_tau_N_ %s_%s' %(prefix,tau_prnt,N),  pulsar=qt.pulsar,
+                    global_time = True)
+            e_end.append(T_1)
+            e_end.append(pulse1)
+            e_end.append(T_2)
+            e_end.append(pulse2)
+            e_end.append(T_3)
+            e_end.append(pulse3)
+            e_end.append(T_3)
+            e_end.append(pulse2)
+            e_end.append(T_2)
+            e_end.append(pulse1)
             e_end.append(T_after_p)
             list_of_elements.append(e_end)
 
@@ -1801,7 +2178,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Gate.no_connection_elt = True
             tau_cut = 1e-6
             Gate.tau_cut = 1e-6
-
+            
             T = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length      = pulse_tau, amplitude = 0.)
             T_twice = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -1809,6 +2186,19 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
             T_out = pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
                 length      = pulse_tau-tau_cut, amplitude = 0.)
+
+
+            # pulse_tau_pi2 = tau - self.params['fast_pi2_duration']/2.0-self.params['fast_pi_duration']/2.0
+            # pulse_tau_pi2_out = tau - self.params['fast_pi2_duration']/2.0
+            # T_pi2 =  pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+            #     length      = pulse_tau_pi2, amplitude = 0.)
+            # T_pi2_out =  pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
+            #     length      = pulse_tau_pi2_out-tau_cut, amplitude = 0.)
+
+            # print 'important timing!', pulse_tau_pi2-tau_cut
+            # initial_pulse = self._mpi2_elt()
+            # final_p_pulse = self._pi2_elt()
+
 
             x_list = [0,2,5,7]
             y_list = [1,3,4,6]
@@ -1826,27 +2216,28 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 decoupling_elt.append(T)  
 
-            for n in range(N-1):
+            if N > 1:
+                for n in range(N-1):
 
-                if n != 0:
-                    decoupling_elt.append(T)
+                    # if n != 0:
+                    #     decoupling_elt.append(T)
 
-                if n%16 in x_list:
-                    decoupling_elt.append(pulse.cp(X))
-                    # print 'X'
-                elif n%16 in y_list:
-                    decoupling_elt.append(pulse.cp(Y))
-                    # print 'Y'
-                elif n%16 in mx_list:
-                    decoupling_elt.append(pulse.cp(mX))
-                    # print 'mX'
-                elif n%16 in my_list:
-                    decoupling_elt.append(pulse.cp(mY))
-                    # print 'mY'
-                else:
-                    raise Exception('Error in pulse sequence')
+                    if n%16 in x_list:
+                        decoupling_elt.append(pulse.cp(X))
+                        # print 'X'
+                    elif n%16 in y_list:
+                        decoupling_elt.append(pulse.cp(Y))
+                        # print 'Y'
+                    elif n%16 in mx_list:
+                        decoupling_elt.append(pulse.cp(mX))
+                        # print 'mX'
+                    elif n%16 in my_list:
+                        decoupling_elt.append(pulse.cp(mY))
+                        # print 'mY'
+                    else:
+                        raise Exception('Error in pulse sequence')
 
-                decoupling_elt.append(T_twice)
+                    decoupling_elt.append(T_twice)
 
 
             #### need to adapt for final pulse and the number of pulses
@@ -1864,20 +2255,21 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 P_type = 'X'
 
             #### the ending elements in a XY-4 sequence need to adapt to the number of repetitions.
-            if 'end' in Gate.scheme and 'even' in Gate.name:
-                final_pulse = mX
-                P_type = 'X'
-            elif 'end' in Gate.scheme and 'odd' in Gate.name:
-                final_pulse = Y
-                P_type = 'Y'
+            if N == 2:
+                if 'end' in Gate.scheme and 'even' in Gate.name:
+                    final_pulse = mX
+                    P_type = 'X'
+                elif 'end' in Gate.scheme and 'odd' in Gate.name:
+                    final_pulse = Y
+                    P_type = 'Y'
 
             decoupling_elt.append(pulse.cp(final_pulse))
 
             if (not 'end' in Gate.scheme):
-                decoupling_elt.append(T)
+                decoupling_elt.append(T) 
                 adwin_sync =  pulse.SquarePulse(channel='adwin_count', name='adwin_sync_counter',
                     length = 2.5e-6, amplitude = 2)
-                decoupling_elt.add(adwin_sync,start=2500e-9)
+                decoupling_elt.add(adwin_sync,start=500e-9)
             else:
                 decoupling_elt.append(T_out)  
 
@@ -1945,7 +2337,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
         N       = Gate.N
         prefix  = Gate.prefix
-
         tau     = Gate.tau
 
         tau_prnt= int(tau*1e9)
@@ -2010,6 +2401,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 eP = self._comp_pi2_pi_pi2_elt()
             elif Gate.Gate_operation == 'general':      ### Added to make possible electron pulses with different amplitudes and phases
                 eP = self._electron_pulse_elt(length = Gate.length, amplitude = Gate.amplitude)
+            elif Gate.Gate_operation == 'no_pulse':
+                eP = self._X_elt()
+                eP.amplitude = 0.0
             eP.phase = Gate.phase
 
             T_initial = pulse.SquarePulse(channel='MW_Imod', name='wait in T',
@@ -2250,14 +2644,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             time_before_pulse = time_before_pulse  -self.params['fast_pi_duration']/2.0
             time_after_pulse = time_after_pulse  -self.params['fast_pi_duration']/2.0
 
-            X = pulselib.MW_IQmod_pulse('electron Pi-pulse',
-                I_channel='MW_Imod', Q_channel='MW_Qmod',
-                PM_channel='MW_pulsemod', Sw_channel=self.params['MW_switch_channel'],
-                frequency = self.params['fast_pi_mod_frq'],
-                PM_risetime = self.params['MW_pulse_mod_risetime'],
-                Sw_risetime = self.params['MW_switch_risetime'],
-                length = self.params['fast_pi_duration'],
-                amplitude = 0)
+            X = self._X_elt()
+
             T_before_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
                 length = time_before_pulse+20e-6, amplitude = 0.)
             T_after_p = pulse.SquarePulse(channel='MW_Imod', name='delay',
@@ -2266,7 +2654,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             e = element.Element('%s_Pi_pulse' %(prefix),  pulsar=qt.pulsar,
                     global_time = True)
             e.append(T_before_p)
-            e.append(pulse.cp(X))
+            #e.append(pulse.cp(X),amplitude = 0 )
             e.append(T_after_p)
 
         elif Gate_operation == 'y':
@@ -2516,8 +2904,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ### Possible TODO:
         ### Add an AOM delay time at the end! then there is no overlap between the following pi/2 and the repumper.
         ### note that this is not strictly necessary if the Switch risetime at the beginning of the element is long enough.
-        ### and it is at te moment
-
 
         ###################
         ## Set paramters ##
@@ -2657,9 +3043,346 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.elements =  [rep_LDE_elt]
         Gate.elements_duration = (duration_initial +  2*t-t_rep+repump_duration+duration_final)*Gate.reps
 
+    def generate_feedback_trigger_decoupling_element(self, Gate):
+        """
+        Generate an element that contains a trigger that signifies that the ADwin should set up
+        the delay line for feedback on the next carbon. This trigger is contained in a simple
+        decoupling sequence to maintain electron coherence.
+        :param Gate:
+        :return:
+        """
+        Gate.scheme = 'single_element'
+
+        if Gate.dec_duration is None:
+            Gate.dec_duration = self.params['delay_feedback_static_dec_block_duration']
+
+        if Gate.dec_pulse_sequence is None:
+            Gate.dec_pulse_sequence = self.params['delay_feedback_static_dec_block_pulse_seq']
 
 
+        Gate.N = len(Gate.dec_pulse_sequence)
+        Gate.tau = Gate.dec_duration/(2.*Gate.N)
 
+        X = self._X_elt()
+        mX = self._mX_elt()
+        Y = self._Y_elt()
+        mY = self._mY_elt()
+
+        ftd_element = element.Element('%s' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
+        element_length = Gate.dec_duration - Gate.tau_cut_before - Gate.tau_cut_after
+        T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block',
+                                        length=element_length, amplitude=0.)
+        feedback_trigger = pulse.SquarePulse(
+            channel=self.params['delay_feedback_adwin_trigger_channel'],
+            length=self.params['delay_feedback_adwin_trigger_length'],
+            amplitude=2
+        )
+
+        anchor_element = ftd_element.append(T_dec_block)
+        if Gate.delayfb_add_triggers:
+            ftd_element.add(feedback_trigger,
+                            refpulse=anchor_element,
+                            refpoint='start',
+                            refpoint_new='start',
+                            start=self.params['delay_feedback_adwin_trigger_delay'])
+
+            if self.params['delay_feedback_HHsync_include']:
+                HHsync = pulse.SquarePulse(channel = 'sync', length = self.params['delay_feedback_HHsync_duration'], amplitude = 1.0)
+                ftd_element.add(HHsync,
+                                refpulse=anchor_element,
+                                refpoint='start',
+                                refpoint_new='start',
+                                start=self.params['delay_feedback_HHsync_delay'])
+
+        current_t = Gate.tau - Gate.tau_cut_before
+        for pulse_type in Gate.dec_pulse_sequence:
+            if not pulse_type == 'I':
+                if pulse_type == 'X':
+                    cur_pulse = pulse.cp(X)
+                elif pulse_type == 'mX':
+                    cur_pulse = pulse.cp(mX)
+                elif pulse_type == 'Y':
+                    cur_pulse = pulse.cp(Y)
+                elif pulse_type == 'mY':
+                    cur_pulse = pulse.cp(mY)
+                else:
+                    print("I don't understand feedback pulse type: " + pulse_type)
+                ftd_element.add(cur_pulse,
+                    refpulse = anchor_element,
+                    refpoint = 'start',
+                    refpoint_new = 'center',
+                    start = current_t
+                )
+            current_t += 2. * Gate.tau
+
+        Gate.elements = [ftd_element]
+        Gate.elements_duration = Gate.dec_duration
+
+    def generate_carbon_delay_phase_feedback_element(self, Gate):
+        """
+        Generate the elements necessary for the delay phase feedback gate:
+
+        | e-spin decoupling  |
+        | with ADwin trigger | -- ...
+        | - tau_cut          |
+
+                /                                                                                     \ ^ N
+        ... -- |  | self-trigger | - (delay) - | e-spin pi pulse | - (delay) - | symmetrizing wait |  |     -- ...
+                \                              | + self-trigger  |                                    /
+
+               | e-spin decoupling     |
+        ... -- | without triggers      |
+               | - tau_cut (+ el flip) |
+
+        The delay feedback sequence is embedded between decoupling blocks for three reasons:
+        - the first decoupling block contains a trigger that tells the ADwin to set up the delay line for the next carbon
+        - we need some space to cut out tau_cuts to reliably embed the gate into the sequence
+        - if the number of feedback pulses is odd, the final decoupling block contains an electron flip
+
+        :param Gate:
+        :return:
+        """
+
+        initial_dec_pulse_sequence = self.params['delay_feedback_initial_static_dec_block_pulse_seq']
+
+        initial_static_dec_block_duration = self.params['delay_feedback_initial_static_dec_block_duration']
+        initial_static_dec_N = len(initial_dec_pulse_sequence)
+        initial_static_dec_tau = initial_static_dec_block_duration/(2.*initial_static_dec_N)
+
+        Gate.tau_cut = 1.0e-6 # JS 07-2017: I just set this to a static value here, I hope that's good enough
+
+        X = self._X_elt()
+        mX = self._mX_elt()
+        Y = self._Y_elt()
+        mY = self._mY_elt()
+
+        ### generate delay feedback trigger element
+        dft_element = element.Element('%s_trigger' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
+        initial_dec_element_length = self.params['delay_feedback_initial_static_dec_block_duration'] - Gate.tau_cut
+        T_dec_block = pulse.SquarePulse(channel='MW_Imod', name='T_dec_block',
+                                        length=initial_dec_element_length, amplitude=0.)
+        feedback_trigger = pulse.SquarePulse(
+            channel=self.params['delay_feedback_adwin_trigger_channel'],
+            length=self.params['delay_feedback_adwin_trigger_length'],
+            amplitude=2
+        )
+
+        HHsync = pulse.SquarePulse(
+            channel='sync',
+            length=self.params['delay_HH_sync_duration'],
+            amplitude=2.0
+        )
+
+        HHtrigger = pulse.SquarePulse(
+            channel='self_trigger_sync',
+            length=self.params['delay_HH_trigger_duration'],
+            amplitude=2.0
+        )
+
+        anchor_element = dft_element.append(pulse.cp(T_dec_block))
+        if Gate.delayfb_add_triggers:
+            dft_element.add(pulse.cp(feedback_trigger),
+                            refpulse=anchor_element,
+                            refpoint='start',
+                            refpoint_new='start',
+                            start=self.params['delay_feedback_adwin_trigger_delay'])
+
+            if self.params['delay_feedback_HHsync_include'] > 0:
+                dft_element.add(HHsync,
+                                refpulse=anchor_element,
+                                refpoint='start',
+                                refpoint_new='start',
+                                start=self.params['delay_feedback_HHsync_delay'] - Gate.tau_cut)
+
+        current_t = initial_static_dec_tau - Gate.tau_cut
+        for pulse_type in initial_dec_pulse_sequence:
+            if not pulse_type == 'I':
+                if pulse_type == 'X':
+                    cur_pulse = pulse.cp(X)
+                elif pulse_type == 'mX':
+                    cur_pulse = pulse.cp(mX)
+                elif pulse_type == 'Y':
+                    cur_pulse = pulse.cp(Y)
+                elif pulse_type == 'mY':
+                    cur_pulse = pulse.cp(mY)
+                else:
+                    print("I don't understand feedback pulse type: " + pulse_type)
+                dft_element.add(cur_pulse,
+                    refpulse = anchor_element,
+                    refpoint = 'start',
+                    refpoint_new = 'center',
+                    start = current_t
+                )
+            current_t += 2. * initial_static_dec_tau
+
+        dft_element.wait_for_trigger = False
+        Gate.elements = [dft_element]
+
+        ### generate delay feedback elements
+        self_trigger = pulse.SquarePulse(channel='self_trigger',
+                                         length=self.params['self_trigger_duration'],
+                                         amplitude=2.)
+
+        anchor_dummy_pulse = pulse.SquarePulse(channel='self_trigger',
+                                               length=10e-9,
+                                               amplitude=0.0)
+
+        final_wait = pulse.SquarePulse(channel='self_trigger',
+                                       length=self.params['delayed_element_run_up_time'],
+                                       amplitude=0.)
+
+        # we're in a part of the sequence where all timing stuff is referenced to the Imod channel
+        # but our self-trigger stuff isn't, so we manually correct for that
+        MW_Imod_delay = qt.pulsar.channels['MW_Imod']['delay']
+
+        for i in range(self.params['delay_feedback_N']):
+            pulse_type = self.params['delay_feedback_pulse_seq'][i % len(self.params['delay_feedback_pulse_seq'])]
+            if pulse_type == 'X':
+                cur_pulse = pulse.cp(X)
+            elif pulse_type == 'mX':
+                cur_pulse = pulse.cp(mX)
+            elif pulse_type == 'Y':
+                cur_pulse = pulse.cp(Y)
+            elif pulse_type == 'mY':
+                cur_pulse = pulse.cp(mY)
+            else:
+                print("I don't understand feedback pulse type: " + pulse_type)
+
+            # first element only contains a self-trigger pulse directly at the beginning and should be as short as possible
+            # we need a minimal amount of ~250 samples to be able to use the AWG in "hardware sequencer" mode
+            g1_elt = element.Element('%s_init_N%d' % (Gate.prefix, i), pulsar=qt.pulsar, global_time=True,
+                                     min_samples=256)
+            g1_self_trigger_id = g1_elt.append(pulse.cp(self_trigger))
+            g1_elt.append(pulse.cp(self_trigger, length=1e-9, amplitude=0.0))
+            if self.params['delay_feedback_HHsync_include'] > 0:
+                g1_elt.add(
+                    pulse.cp(HHtrigger),
+                    refpulse=g1_self_trigger_id,
+                    refpoint='start',
+                    refpoint_new='start',
+                    start=0.0
+                )
+
+            # second element contains a pi-pulse after a fixed run-up time (such that possible channel delays may be taken into account)
+            # in addition it outputs a self-trigger pulse again after the run-up-time
+            g2_elt = element.Element('%s_pi_N%d' % (Gate.prefix, i), pulsar=qt.pulsar, global_time=True,
+                                     min_samples=256)
+            g2_start_anchor_id = g2_elt.add(pulse.cp(anchor_dummy_pulse))
+            g2_elt.add(cur_pulse,
+                       refpulse=g2_start_anchor_id,
+                       refpoint='start',
+                       refpoint_new='center',
+                       start=self.params['delayed_element_run_up_time'] + MW_Imod_delay
+                       )
+            g2_self_trigger_id = g2_elt.add(pulse.cp(self_trigger),
+                                            refpulse=g2_start_anchor_id,
+                                            refpoint='start',
+                                            refpoint_new='start',
+                                            start=self.params['delayed_element_run_up_time']
+                                            )
+            if self.params['delay_feedback_HHsync_include'] > 0:
+                g2_elt.add(
+                    pulse.cp(HHtrigger),
+                    refpulse=g2_self_trigger_id,
+                    refpoint='start',
+                    refpoint_new='start',
+                    start=0.0
+                )
+            g2_elt.add(pulse.cp(self_trigger, length=1e-9, amplitude=0.0),
+                       refpulse=g2_self_trigger_id,
+                       refpoint='end',
+                       refpoint_new='start',
+                       start=0
+                       )
+
+            # third element contains a single waiting period that is the same length as the run-up time of the second element
+            # to make the effective delay symmetric
+            g3_elt = element.Element('%s_symwait_N%d' % (Gate.prefix, i), pulsar=qt.pulsar, global_time=True,
+                                     min_samples=256)
+            g3_elt.append(pulse.cp(final_wait))
+
+            g1_elt.wait_for_trigger = False
+            g2_elt.wait_for_trigger = True
+            g3_elt.wait_for_trigger = True
+            Gate.elements += [g1_elt, g2_elt, g3_elt]
+            final_feedback_pulse = pulse_type
+
+        ### generate final decoupling element, out of which we carve tau_cut
+        ### if necessary, we also flip the electron here
+        final_dec_pulse_sequence = self.params['delay_feedback_final_static_dec_block_pulse_seq']
+
+        final_static_dec_block_duration = self.params['delay_feedback_final_static_dec_block_duration']
+        final_static_dec_N = len(final_dec_pulse_sequence)
+        final_static_dec_tau = final_static_dec_block_duration / (2. * final_static_dec_N)
+
+        final_element = element.Element('%s_final' % Gate.prefix, pulsar=qt.pulsar, global_time=True)
+
+        final_dec_element_length = self.params['delay_feedback_final_static_dec_block_duration'] - Gate.tau_cut
+        T_dec_block_final = pulse.SquarePulse(
+            channel='MW_Imod', name='T_dec_block_final',
+            length=final_dec_element_length, amplitude=0.
+        )
+
+        anchor_element = final_element.append(pulse.cp(T_dec_block_final))
+        elflip_insert_after = self.params['delay_feedback_final_static_dec_block_elflip_insert_after']
+
+        # now we don't subtract tau_cut at the begin, instead we carve it out of the end
+        current_t = final_static_dec_tau
+        i = 0
+        for pulse_type in final_dec_pulse_sequence:
+            if not pulse_type == 'I':
+                if pulse_type == 'X':
+                    cur_pulse = pulse.cp(X)
+                elif pulse_type == 'mX':
+                    cur_pulse = pulse.cp(mX)
+                elif pulse_type == 'Y':
+                    cur_pulse = pulse.cp(Y)
+                elif pulse_type == 'mY':
+                    cur_pulse = pulse.cp(mY)
+                else:
+                    print("I don't understand feedback pulse type: " + pulse_type)
+                final_element.add(cur_pulse,
+                                refpulse=anchor_element,
+                                refpoint='start',
+                                refpoint_new='center',
+                                start=current_t
+                                )
+            i += 1
+            current_t += initial_static_dec_tau
+            if (self.params['delay_feedback_N'] % 2 == 1) and (i == elflip_insert_after):
+                # we need to insert an electron flip
+                if final_feedback_pulse == 'X':
+                    elflip_pulse = pulse.cp(mX)
+                elif final_feedback_pulse == 'mX':
+                    elflip_pulse = pulse.cp(X)
+                elif final_feedback_pulse == 'Y':
+                    elflip_pulse = pulse.cp(mY)
+                elif final_feedback_pulse == 'mY':
+                    elflip_pulse = pulse.cp(Y)
+                else:
+                    print("I don't understand final feedback pulse type: " + pulse_type)
+                final_element.add(elflip_pulse,
+                                  refpulse=anchor_element,
+                                  refpoint='start',
+                                  refpoint_new='center',
+                                  start=current_t
+                                  )
+            current_t += initial_static_dec_tau
+
+
+        final_element.wait_for_trigger = False
+        Gate.elements += [final_element]
+
+        # Let's pretend this element actually takes zero time. We account for the total time taken by this element in
+        # the ADwin phase calculations. We still need to subtract the tau_cuts if we want to be compatible with the
+        # rest of the code. I hope this works out
+        Gate.elements_duration = -2.0*Gate.tau_cut
+
+        # we actually do an electron flip now if the number of pulses is odd, so this has been taken care of
+        # # if we do an odd number of feedback pulses, we effectively do a pi rotation on the electron
+        # # let's announce that so that the phase tracking may take that into consideration
+        # if self.params['delay_feedback_N'] % 2 == 1:
+        #     self.Gate_operation = 'pi'
 
     ### function for making sequences out of elements
     def combine_to_AWG_sequence(self,gate_seq,explicit = False):
@@ -2693,6 +3416,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     gate.go_to = gate.elements[0].name
                 elif gate.go_to =='start':
                     gate.go_to = gate_seq[0].elements[0].name
+                elif gate.go_to == 'end':
+                    gate.go_to = gate_seq[-1].elements[0].name
                 else:
                     ind = self.find_gate_index(gate.go_to,gate_seq)
                     gate.go_to = gate_seq[ind].elements[0].name
@@ -2749,8 +3474,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                                 goto_target = gate.go_to,
                                 jump_target= gate.event_jump)
 
-                
-
+            elif gate.scheme == 'carbon_delay_phase_feedback':
+                list_of_elements.extend(gate.elements)
+                for e in gate.elements:
+                    # note that we set e.wait_for_trigger specifically in the generate_... function
+                    seq.append(name=e.name, wfname=e.name, trigger_wait=e.wait_for_trigger)
 
             #########################
             ###  single elements  ###
@@ -2792,7 +3520,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ######################
             ### XY4 elements
             ######################
-            elif gate.scheme == 'XY4':
+            elif gate.scheme == 'XY4' or gate.scheme == 'AXY4':
                 #TODO_THT: (Possibly) fix that last element is XX instead of XY if only 2 final elements
                 list_of_elements.extend(gate.elements)
                 # initial element
@@ -2807,6 +3535,64 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     goto_target = gate.go_to,
                     jump_target = gate.event_jump,
                     repetitions = 1)
+            elif gate.scheme =='repeating_T_elt_AXY4':
+                list_of_elements.extend(gate.elements)
+                wait_reps = gate.n_wait_reps
+                st  = gate.elements[0]
+                x   = gate.elements[1]
+                y   = gate.elements[2]
+                fin = gate.elements[3]
+                t   = gate.elements[4]
+
+                #Start elements
+                pulse_ct = 0
+                red_wait_reps = wait_reps//2
+                if red_wait_reps != 0: #Note st.name is name of the repeating t element here because of references
+                    seq.append(name=st.name, wfname=t.name, # this naming is very confusing when you first read it. Unless there is a deep reason, I suggest this gets changed to something more intuitive -MB 28-05-15
+                        trigger_wait=gate.wait_for_trigger,
+                        repetitions = red_wait_reps)#floor divisor
+               # print 'wait_reps = ', wait_reps
+               # print 'red_wait_reps = ',red_wait_reps
+                seq.append(name=st.name+'_', wfname=st.name,
+                    trigger_wait=False,repetitions = 1)
+                pulse_ct+=1
+                #Repeating centre elements
+                x_list = [0,2,5,7]
+                while pulse_ct < (gate.reps-1):
+                    seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
+                        trigger_wait=False,repetitions = wait_reps)
+                    if pulse_ct%8 in x_list:
+                        seq.append(name=x.name+str(pulse_ct), wfname=x.name,
+                            trigger_wait=False,repetitions = 1)
+                    else:
+                        seq.append(name=y.name+str(pulse_ct), wfname=y.name,
+                            trigger_wait=False,repetitions = 1)
+                    pulse_ct +=1
+                #Final elements
+                if gate.reps== 1:
+                    if red_wait_reps!=0 and red_wait_reps!=1 :
+                        seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
+                           trigger_wait=False,
+                           goto_target = gate.go_to,
+                           jump_target = gate.event_jump,
+                           repetitions = red_wait_reps-1) #floor divisor
+                else:
+                    seq.append(name=t.name+'_'+str(pulse_ct), wfname=t.name,
+                        trigger_wait=False,repetitions = wait_reps)
+                    if red_wait_reps == 0:
+                        seq.append(name=fin.name, wfname=fin.name,
+                            trigger_wait=False,
+                            goto_target = gate.go_to,
+                            jump_target = gate.event_jump,
+                            repetitions = 1)
+                    else:
+                        seq.append(name=fin.name, wfname=fin.name,
+                            trigger_wait=False,
+                            goto_target = gate.go_to,
+                            jump_target = gate.event_jump,
+                            repetitions = 1)
+                        seq.append(name=t.name+str(pulse_ct+1), wfname=t.name,
+                           trigger_wait=False,repetitions = red_wait_reps) #floor divisor
             ######################
             ### XY8 elements
             #-a-b-(c^2-b^2)^(N/8-1)-c-d-
@@ -2835,6 +3621,114 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     goto_target = gate.go_to,
                     jump_target = gate.event_jump,
                     repetitions = 1)
+
+            ######################
+            ### AXY16 elements
+            #-a-b-(c^2-b^2)^(N/8-1)-c-d-
+            ######################
+            elif gate.scheme =='AXY8':
+                #TODO_THT: fix that last element is XX instead of XY if only 2 final elements
+                list_of_elements.extend(gate.elements)
+                
+                stx  = gate.elements[0]
+                x   = gate.elements[1]
+                y  = gate.elements[2]
+                fin = gate.elements[3]
+
+                pulse_ct = 0
+                
+                #Final elements
+                if gate.reps== 1:
+                    seq.append(name=stx.name, wfname=stx.name,
+                        trigger_wait=gate.wait_for_trigger,
+                        goto_target = gate.go_to,
+                        jump_target = gate.event_jump,
+                        repetitions = 1)
+                else:
+                    seq.append(name=stx.name, wfname=stx.name,
+                        trigger_wait=gate.wait_for_trigger,
+                        repetitions = 1)
+                pulse_ct += 1
+
+                #Repeating centre elements
+                x_list = [0,2,5,7]
+                y_list = [1,3,4,6]
+                
+                while pulse_ct < (gate.reps-1):
+                    if pulse_ct%8 in x_list:
+                        seq.append(name=x.name+str(pulse_ct), wfname=x.name,
+                            trigger_wait=False,repetitions = 1)
+                    elif pulse_ct%8 in y_list:
+                        seq.append(name=y.name+str(pulse_ct), wfname=y.name,
+                            trigger_wait=False,repetitions = 1)
+                    else:
+                        raise Exception('Error in creating combine to AWG sequence for using repeating T XY16')
+                    pulse_ct +=1
+        
+                seq.append(name=fin.name, wfname=fin.name,
+                    trigger_wait=False,
+                    goto_target = gate.go_to,
+                    jump_target = gate.event_jump,
+                    repetitions = 1)
+
+            ######################
+            ### AXY16 elements
+            #-a-b-(c^2-b^2)^(N/8-1)-c-d-
+            ######################
+            elif gate.scheme =='AXY16':
+                #TODO_THT: fix that last element is XX instead of XY if only 2 final elements
+                list_of_elements.extend(gate.elements)
+                
+                stx  = gate.elements[0]
+                x   = gate.elements[1]
+                mx   = gate.elements[2]
+                y  = gate.elements[3]
+                my  = gate.elements[4]
+                fin = gate.elements[5]
+
+                pulse_ct = 0
+                
+                #Final elements
+                if gate.reps== 1:
+                    seq.append(name=stx.name, wfname=stx.name,
+                        trigger_wait=gate.wait_for_trigger,
+                        goto_target = gate.go_to,
+                        jump_target = gate.event_jump,
+                        repetitions = 1)
+                else:
+                    seq.append(name=stx.name, wfname=stx.name,
+                        trigger_wait=gate.wait_for_trigger,
+                        repetitions = 1)
+                pulse_ct += 1
+
+                #Repeating centre elements
+                x_list = [0,2,5,7]
+                y_list = [1,3,4,6]
+                mx_list = [8,10,13,15]
+                my_list = [9,11,12,14]
+                while pulse_ct < (gate.reps-1):
+                    if pulse_ct%16 in x_list:
+                        seq.append(name=x.name+str(pulse_ct), wfname=x.name,
+                            trigger_wait=False,repetitions = 1)
+                    elif pulse_ct%16 in y_list:
+                        seq.append(name=y.name+str(pulse_ct), wfname=y.name,
+                            trigger_wait=False,repetitions = 1)
+                    elif pulse_ct%16 in mx_list:
+                        seq.append(name=mx.name+str(pulse_ct), wfname=mx.name,
+                            trigger_wait=False,repetitions = 1)
+                    elif pulse_ct%16 in my_list:
+                        seq.append(name=my.name+str(pulse_ct), wfname=my.name,
+                            trigger_wait=False,repetitions = 1)
+                    else:
+                        raise Exception('Error in creating combine to AWG sequence for using repeating T XY16')
+                    pulse_ct +=1
+        
+                seq.append(name=fin.name, wfname=fin.name,
+                    trigger_wait=False,
+                    goto_target = gate.go_to,
+                    jump_target = gate.event_jump,
+                    repetitions = 1)
+        
             ######################
             ### XYn, tau > 2 mus
             # t^n a t^n b t^n
@@ -3011,7 +3905,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_RF_pulse_element(g)
             elif g.Gate_type == 'LDE':
                 self.generate_LDE_element(g)
-        
+            elif g.Gate_type == 'feedback_trigger_decoupling':
+                self.generate_feedback_trigger_decoupling_element(g)
+            elif g.Gate_type == 'carbon_delay_phase_feedback':
+                self.generate_carbon_delay_phase_feedback_element(g)
+
         Gate_sequence = self.insert_transfer_gates(Gate_sequence,pt)
         for g in Gate_sequence:
             if (g.Gate_type == 'Transfer_element'):
@@ -3283,6 +4181,10 @@ class SimpleDecoupling(DynamicalDecoupling):
             #####    Generating the sequence elements      ######
 
             ###########################################
+             
+            #sweep parameter
+            if self.params.parameters.has_key('do_general_sweep') and self.params['do_general_sweep'] == 1:
+                self.params[self.params['general_sweep_name']] = self.params['general_sweep_pts'][pt]
 
             initial_Pi2 = Gate('initial_pi2','electron_Gate')
             simple_el_dec = Gate('electron_decoupling', 'Carbon_Gate')
@@ -3306,9 +4208,10 @@ class SimpleDecoupling(DynamicalDecoupling):
 
             simple_el_dec.N = Number_of_pulses[pt]
             simple_el_dec.tau = tau_list[pt]
-            simple_el_dec.prefix = 'electron'
+            simple_el_dec.prefix = 'e'+str(pt)
             simple_el_dec.scheme = self.params['Decoupling_sequence_scheme']
 
+            
 
             ## Generate the decoupling elements
             self.generate_decoupling_sequence_elements(simple_el_dec)
@@ -3333,7 +4236,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 #else:    
                 #initial_Pi2.Gate_operation = 'x'
                 
-                initial_Pi2.time_before_pulse = 600e-9 # = MW switch risetime of 500 ns + 100 ns --> makes sure MW output = low when waiting for trigger #max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
+                initial_Pi2.time_before_pulse = 1000e-9 # = MW switch risetime of 500 ns + 100 ns --> makes sure MW output = low when waiting for trigger #max(1e-6 -  simple_el_dec.tau_cut + 36e-9,44e-9)
                 # print 'time_before_pulse'
                 # print initial_Pi2.time_before_pulse
                 initial_Pi2.time_after_pulse = simple_el_dec.tau_cut
@@ -3354,7 +4257,7 @@ class SimpleDecoupling(DynamicalDecoupling):
                 simple_el_dec.wait_for_trigger = True
                 # wait_gate = Gate('Sample_cooldown_'+str(pt),'passive_elt',wait_time = 50e-3)
                 # self.generate_passive_wait_element(wait_gate)
-                gate_seq = [simple_el_dec,wait_gate]
+                gate_seq = [simple_el_dec]#,wait_gate]
 
             ## Combine to AWG sequence that can be uploaded #
             list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq,explicit=False)
@@ -3956,7 +4859,8 @@ class MBI_C13(DynamicalDecoupling):
             el_after_init           = '0',
             do_wait_after_pi        = False,
             swap_phase              = 0,
-            wait_time               = 0
+            wait_time               = 0,
+            scheme                  = 'auto'
             ):
         
         '''
@@ -3993,12 +4897,14 @@ class MBI_C13(DynamicalDecoupling):
         C_init_Ren_a = Gate(prefix+str(addressed_carbon)+'_Ren_a_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'],
-                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
+                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'],
+                scheme =  scheme)
 
         C_init_Ren_a_y_init = Gate(prefix+str(addressed_carbon)+'_Ren_a_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_Y_phase'],
-                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
+                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'],
+                scheme =  scheme)
 
         C_init_x = Gate(prefix+str(addressed_carbon)+'_x_pt'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
@@ -4008,7 +4914,8 @@ class MBI_C13(DynamicalDecoupling):
         C_init_Ren_b = Gate(prefix+str(addressed_carbon)+'_Ren_b_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
                 phase = self.params['C13_Y_phase']+180+swap_phase,
-                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
+                specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'],
+                scheme =  scheme)
 
 
         C_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'_RO_trig_pt'+str(pt),'Trigger',
@@ -4279,7 +5186,7 @@ class MBI_C13(DynamicalDecoupling):
         Possible states: X, -X, Y, -Y, Z, -Z
         Does one of two types of swaps:
             1) swap_w_init:  C13 has been initialised in |Z|, swap sequence requires less gates
-                |Ren_-y| - |y| - |Ren_x| - |-y| 
+                |Ren_y| - |x| - |Ren_x| - |-y| 
             2) swap_wo_init: C13 in mixed state, put C13 in rotated basis after swap. The full sequence
                 |Ren_y| - |ym| - |Ren_x| - |xm, y_c| - |Ren_x|
                  
@@ -4402,7 +5309,9 @@ class MBI_C13(DynamicalDecoupling):
         flip_RO             = False,
         do_RO_electron      = False,
         wait_for_trigger    = False,
-        addressed_carbon    = 1
+        scheme              = 'auto',
+        addressed_carbon    = 1,
+        phase_feedback_sequences = None,
         ):
         
         '''
@@ -4464,7 +5373,7 @@ class MBI_C13(DynamicalDecoupling):
 
             if RO_basis_list[kk] == 'Z' or RO_basis_list[kk] == '-Z':
                 carbon_RO_seq.append( Gate(prefix + str(carbon_nr) + '_Ren_a_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr, phase = 'reset',specific_transition = self.params['C'+str(carbon_nr)+'_dec_trans']))
+                        Carbon_ind = carbon_nr, phase = 'reset',scheme = scheme,specific_transition = self.params['C'+str(carbon_nr)+'_dec_trans']))
 
         if do_init_pi2:           
          
@@ -4482,6 +5391,8 @@ class MBI_C13(DynamicalDecoupling):
         ### Add RO rotations ###
         for kk, carbon_nr in enumerate(carbon_list):
 
+            if phase_feedback_sequences is not None:
+                carbon_RO_seq.extend(phase_feedback_sequences[kk])
 
             if RO_basis_list[kk] != 'I':
                 
@@ -4509,7 +5420,8 @@ class MBI_C13(DynamicalDecoupling):
                         specific_transition      = self.params['C'+str(carbon_nr)+'_dec_trans'],
                         phase           = RO_phase, 
                         extra_phase_after_gate = phase_error[kk],
-                        Carbon_ind=carbon_nr))
+                        Carbon_ind=carbon_nr,
+                        scheme = scheme))
 
         if do_RO_electron != True:
             carbon_nr=carbons_to_RO[-1] 
@@ -5070,7 +5982,7 @@ class MBI_C13(DynamicalDecoupling):
             ['Y','X'],['Y','Y'],['Y','Z'],
             ['Z','X'],['Z','Y'],['Z','Z']])
         elif nr_of_carbons == 3:
-            Tomo_bases == ([
+            Tomo_bases = ([
             ['X','I','I'],['Y','I','I'],['Z','I','I'],
             ['I','X','I'],['I','Y','I'],['I','Z','I'],
             ['I','I','X'],['I','I','Y'],['I','I','Z'],
@@ -5153,7 +6065,10 @@ class MBI_C13(DynamicalDecoupling):
 
         ### Add electron pulse, dependent on logical state ###
 
-        if logic_state == 'Z':
+        if logic_state is None:
+            # we use the electron state as is
+            pass
+        elif logic_state == 'Z':
             pass
         elif logic_state == 'mZ':
             carbon_RO_seq.append(
@@ -7628,6 +8543,9 @@ class Sweep_Carbon_Gate(MBI_C13):
         combined_list_of_elements =[]
         combined_seq = pulsar.Sequence('SweepCarbonInit')
 
+        if not(self.params.parameters.has_key('carbon_gate_dd_scheme')):
+            self.params['carbon_gate_dd_scheme'] = 'auto'
+
         for pt in range(pts): ### Sweep over RO basis
             gate_seq = []
 
@@ -7639,10 +8557,6 @@ class Sweep_Carbon_Gate(MBI_C13):
             init_wait_for_trigger = True
             
             for kk in range(self.params['Nr_C13_init']):
-                print self.params['init_method_list'][kk]
-                print self.params['init_state_list'][kk]
-                print self.params['carbon_init_list'][kk]
-                print 
 
                 carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
                     prefix = 'C_MBI' + str(kk+1) + '_C',
@@ -7651,7 +8565,8 @@ class Sweep_Carbon_Gate(MBI_C13):
                     C_init_state          = self.params['init_state_list'][kk],
                     addressed_carbon      = self.params['carbon_init_list'][kk],
                     el_after_init         = self.params['el_after_init'],
-                    swap_phase            = self.params['init_phase_list'][pt])
+                    swap_phase            = self.params['init_phase_list'][pt],
+                    scheme                = self.params['carbon_gate_dd_scheme'])
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
 
@@ -7666,7 +8581,8 @@ class Sweep_Carbon_Gate(MBI_C13):
                     carbon_list         = self.params['carbon_list'],
                     RO_basis_list       = self.params['Tomography Bases'][pt],
                     el_state_in         = int(self.params['el_after_init']),
-                    readout_orientation = self.params['electron_readout_orientation'])            
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    scheme              = self.params['carbon_gate_dd_scheme'])            
 
 
             gate_seq.extend(carbon_tomo_seq)
@@ -8459,17 +9375,26 @@ class electron_carbon_density_matrix(MBI_C13):
                     self.params['do_wait_after_pi']            = True
                 else: 
                     self.params['do_wait_after_pi']            = False
+                if kk == 0:
+                    carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+                        prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
+                        wait_for_trigger      = init_wait_for_trigger, pt =pt,
+                        initialization_method = self.params['init_method_list'][kk],
+                        C_init_state          = self.params['init_state_list'][kk],
+                        addressed_carbon      = self.params['carbon_init_list'][kk],
+                        el_after_init         = self.params['el_after_init'],
+                        do_wait_after_pi      = self.params['do_wait_after_pi'])
 
-                carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
-                    prefix = 'C_' + self.params['init_method_list'][kk] + str(kk+1) + '_C',
-                    wait_for_trigger      = init_wait_for_trigger, pt =pt,
-                    initialization_method = self.params['init_method_list'][kk],
-                    C_init_state          = self.params['init_state_list'][kk],
-                    addressed_carbon      = self.params['carbon_init_list'][kk],
-                    el_after_init         = self.params['el_after_init'],
-                    do_wait_after_pi      = self.params['do_wait_after_pi'])
+                else:
+                    carbon_init_seq = self.carbon_swap_gate_multi_options(go_to_element = mbi,
+                        pt = pt,
+                        addressed_carbon      = self.params['carbon_init_list'][kk],
+                        swap_type             = 'swap_w_init')
+
                 gate_seq.extend(carbon_init_seq)
                 init_wait_for_trigger = False
+
+            ##### if you want to include the actual swap. do so here!
 
 
 
