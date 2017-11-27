@@ -8071,14 +8071,14 @@ class NuclearRabiWithDirectRF(MBI_C13):
             gate_seq.extend(carbon_init_seq)
 
             ### Carbon RF pulse
-            if self.params['RF_generation_method'] = 'AWG':
+            if self.params['RF_generation_method'] == 'AWG':
                 if self.params['RF_pulse_durations'][pt] > 3e-6:
                     rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
                         length      = self.params['RF_pulse_durations'][pt],
                         RFfreq      = self.params['RF_pulse_frqs'][pt],
                         amplitude   = self.params['RF_pulse_amps'][pt])
                     gate_seq.extend([rabi_pulse])
-            elif self.params['RF_generation_method'] = 'IQ':
+            elif self.params['RF_generation_method'] == 'IQ':
                 if self.params['RF_pulse_durations'][pt] > 3e-6:
                     rabi_pulse = Gate('Rabi_pulse_'+str(pt),'IQ_RF_square_pulse',
                         length      = self.params['RF_pulse_durations'][pt],

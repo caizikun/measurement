@@ -161,7 +161,7 @@ def CarbonRabiWithDirectRF(name,
 
     m.params['RF_pulse_phases'] = np.ones(m.params['pts']) * 0 
     m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 1
-    m.params['C_RO_phase'] = np.ones(m.params['pts'] )*0,#[0] #['X'] # np.ones(m.params['pts'] )*0 # m.params['pts']*['X'] 
+    m.params['C_RO_phase'] = [0]#[0] #['X'] # np.ones(m.params['pts'] )*0 # m.params['pts']*['X'] 
 
     m.params['C13_init_method'] = 'swap' #C13_init_method
     m.params['electron_readout_orientation'] = el_RO

@@ -166,8 +166,8 @@ Q        = 4.938e6        # not calibrated
 electron_transition = '-1'
 multiple_source = False
 
-pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
-# pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
+# pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
+pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
 
 if electron_transition == '-1':
     electron_transition_string = '_m1'
