@@ -30,19 +30,21 @@ def run(name, mw_switch = False):
     m.params['MW_pulse_amps']       = np.ones(pts) * m.params['AWG_MBI_MW_pulse_amp']  #0.01525 #for msm1,  ??? for msp1, 
 
     m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']
-            -1.5e6, m.params['MW_modulation_frequency']+5.5e6, pts)
+            -3.5e6, m.params['MW_modulation_frequency']+3.5e6, pts)
 
     print m.params['MW_pulse_mod_frqs']
+
+
 
     # for the autoanalysis
     m.params['sweep_name'] = 'MW pulse frequency (MHz)'
     m.params['sweep_pts']  = (m.params['MW_pulse_mod_frqs'] + m.params['mw_frq'])/1.e6
     
 
-    print m.params['MBI_threshold']
-    funcs.finish(m, debug=True)
+    # print 'MBI_Threshold', m.params['MBI_threshold']
+    funcs.finish(m, debug=False)
 
-    print m.params['AWG_MBI_MW_pulse_mod_frq']
+
 
 # def show_stopper():
 #     print '-----------------------------------'            
@@ -59,7 +61,7 @@ def run(name, mw_switch = False):
 #     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
-    run('MBI_DESR',mw_switch = False)
+    run('MBI_DESR',mw_switch = True)
 
 
 

@@ -6,7 +6,7 @@ import numpy as np
 import qt
 
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 reload(DD)
@@ -85,7 +85,7 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 ### LT 2 parameters
-    tau = 4.998e-6 # tau_L nr 32 dip in N=16
+    tau = 7.216e-6 # tau_L nr 32 dip in N=16
     NoP1=np.arange(4,80,4)
 
     # NoP2=np.arange(4,240,12)
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # NoP1=np.arange(100,160,20)
     # idx=0
     # t=tau_ctr
-    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,180,14),tau =tau, reps_per_ROsequence = 750)
+    SimpleDecoupling_swp_N(SAMPLE+'test_sweep_N',NoP=np.arange(4,90,4),tau =tau, reps_per_ROsequence = 750)
     '''
     tau_array = tau_ctr+np.linspace(-.048e-6,.048e-6,9)
     for idx,t in enumerate(tau_array):

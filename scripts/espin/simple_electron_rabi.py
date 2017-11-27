@@ -35,7 +35,7 @@ def erabi(name):
     m.params['repetitions'] = 1000
     m.params['Ex_SP_amplitude']=0
  
-    sweep_param = 'length'
+    sweep_param = 'amplitude'  # changed from 'length' to find MW amp for N MBI MJD
 
     m.params['mw_power']=20 #Do not exceed 20dBm MW
     m.params['MW_modulation_frequency'] = 43e6
@@ -46,11 +46,11 @@ def erabi(name):
     if sweep_param == 'length':
         if m. params['electron_transition'] == '_m1':
             print 'minus 1 transition'
-            m.params['MW_pulse_durations'] =  np.linspace(0, 130, pts) * 1e-9 #np.linspace(0, 130, pts)
+            m.params['MW_pulse_durations'] =  np.linspace(0, 3000, pts) * 1e-9 #np.linspace(0, 130, pts)
         elif m. params['electron_transition'] == '_p1':
             print 'plus 1 transition'
             m.params['MW_pulse_durations'] =  np.linspace(0, 800, pts) * 1e-9            
-        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.9
+        m.params['MW_pulse_amplitudes'] = np.ones(pts) * 0.01525
         # m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['fast_pi_amp'] # * 0.05 #*0.49
         # m.params['MW_pulse_amplitudes'] = np.ones(pts) * m.params['Square_pi_amp'] # * 0.05 #*0.49
         m.params['sweep_name'] = 'Pulse durations (ns)'
@@ -58,8 +58,8 @@ def erabi(name):
         
 
     elif sweep_param == 'amplitude':    
-        m.params['MW_pulse_durations'] =  np.ones(pts)*4000e-9 
-        m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.08,pts) #0.02
+        m.params['MW_pulse_durations'] =  np.ones(pts)*3000e-9 
+        m.params['MW_pulse_amplitudes'] = np.linspace(0.0,0.03,pts) #0.02
         m.params['sweep_name'] = 'MW_pulse_amplitudes (V)'
         m.params['sweep_pts'] = m.params['MW_pulse_amplitudes']
 
@@ -74,9 +74,9 @@ def erabi(name):
     m.autoconfig() #Redundant because executed in m.run()? Tim
     m.generate_sequence(upload=True)
     m.run()
-    qt.msleep(2)
+    # qt.msleep(2)
     m.save()
-    qt.msleep(2)
+    # qt.msleep(2)
     m.finish()
 
 if __name__ == '__main__':

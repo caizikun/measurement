@@ -602,7 +602,7 @@ if __name__ == '__main__':
     # pts_list=[4,4,4,4]
     #steps = 6*[40e-3]
 
-    N_list=[40]
+    N_list=[1024]
 
     for jj in range(0,1):
         for ii in range(0,len(N_list)):
@@ -616,10 +616,10 @@ if __name__ == '__main__':
             if n==1 and Cont:
                 N = N_list[ii] ### number of pulses
                 pts = 1#pts_list[ii] ### number of points per loading of the AWG (100)
-                larmor_max = 5# 29500+100*(ii+1)
+                larmor_max = 10# 29500+100*(ii+1)
                 larmor_min = 4#29500+100*ii#larmor_min_list[ii]
                 larmor_step = 4 #20
-                reps =40
+                reps =400
 
                 Number_of_pulses = N
                 nr_of_runs = int(np.floor((larmor_max-larmor_min)/float(larmor_step)))

@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
 
 
-    #SimpleDecoupling_swp_tau(SAMPLE, tau_min=2.31e-6,tau_max=2.38e-6,tau_step =10e-9, N =2)
+    SimpleDecoupling_swp_tau(SAMPLE, tau_min=7.2e-6,tau_max=7.35e-6,tau_step =2e-9, N =40)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=30e-6,tau_max=50e-6,tau_step =40e-9, N =2)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=50e-6,tau_max=70e-6,tau_step =40e-9, N =2)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=70e-6,tau_max=90e-6,tau_step =40e-9, N =2)
@@ -258,15 +258,15 @@ if __name__ == '__main__':
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=130e-6,tau_max=150e-6,tau_step =40e-9, N =2)
 
 
-    for ii in range(330,340):
-        for jj in range(0,5):
-            SimpleDecoupling_swp_tau(SAMPLE, tau_min=(ii*1e-6+jj*0.2e-6),tau_max=(ii*1.0e-6+(jj+1)*0.2e-6),tau_step =4e-9, N =32)
+    # for ii in range(330,340):
+    #     for jj in range(0,5):
+    #         SimpleDecoupling_swp_tau(SAMPLE, tau_min=(ii*1e-6+jj*0.2e-6),tau_max=(ii*1.0e-6+(jj+1)*0.2e-6),tau_step =4e-9, N =32)
 
-        if ii%2 == 0:
-            name = 'SSRO_calib'
-            ssrocalibration(name)
-            ssro_analysis.ssrocalib()
-            optimize_magnetic_field()
+    #     if ii%2 == 0:
+    #         name = 'SSRO_calib'
+    #         ssrocalibration(name)
+    #         ssro_analysis.ssrocalib()
+    #         optimize_magnetic_field()
 
     #SimpleDecoupling_swp_tau(SAMPLE, tau_min=6.522e-6-0.02e-6,tau_max=6.522e-6+0.02e-6,tau_step =1e-9, N =20)
     # SimpleDecoupling_swp_tau(SAMPLE, tau_min=113.4e-6,tau_max=113.5e-6,tau_step =10e-9, N =32)
