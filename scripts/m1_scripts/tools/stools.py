@@ -20,7 +20,7 @@ def recalibrate_laser(name, servo, nr_points = 31,control = 'AOM', awg=False):
     prevPos = qt.instruments[servo].get_position()
     qt.instruments[servo].move_in()
     qt.msleep(1)
-
+    turn_off_lasers(['NewfocusAOM','GreenAOM','DLProAOM'])
     qt.msleep(0.1)
     print 'Calibrate', name
     qt.instruments[name].turn_off()

@@ -155,7 +155,7 @@ INIT:
   P2_DAC(DAC_MODULE,A_laser_DAC_channel, 3277*A_off_voltage+32768) ' turn off Ex laser
 
   P2_CNT_ENABLE(CTR_MODULE,0000b)'turn off all counters
-  P2_CNT_MODE(CTR_MODULE,counter_channel,00001000b) 'configure counter
+  P2_CNT_MODE(CTR_MODULE,counter_channel,00000000b) 'configure counter
 
   P2_Digprog(DIO_MODULE,11) ' in  is now 16:23   'configure DIO 08:15 as input, all other ports as output
   P2_DIGOUT(DIO_MODULE,AWG_start_DO_channel,0)

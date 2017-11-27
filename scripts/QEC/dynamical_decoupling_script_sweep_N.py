@@ -85,8 +85,8 @@ def interrupt_script(wait = 5):
 
 if __name__ == '__main__':
 ### LT 2 parameters
-    tau = 10.812e-6 # tau_L nr 32 dip in N=16
-    NoP1=np.arange(4,200,8)
+    tau = 4.998e-6 # tau_L nr 32 dip in N=16
+    NoP1=np.arange(4,80,4)
 
     # NoP2=np.arange(4,240,12)
     # NoP2=np.arange(1154,1345,64)

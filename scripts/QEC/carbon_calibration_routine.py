@@ -24,14 +24,14 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-Carbon_1_f_ms0  		= False
+Carbon_1_f_ms0  		= True
 Carbon_2_f_ms0  		= False
 Carbon_5_f_ms0  		= False
 
 Carbon_3_f_ms0  		= False
 Carbon_6_f_ms0  		= False
 
-Carbon_1_f_msm1  		= False
+Carbon_1_f_msm1  		= False #True
 Carbon_2_f_msm1  		= False
 Carbon_5_f_msm1  		= False
 
@@ -39,7 +39,7 @@ Carbon_3_f_msm1  		= False
 Carbon_6_f_msm1  		= False
 
 
-Carbon_1_self_phase		= False
+Carbon_1_self_phase		= False #True
 Carbon_2_self_phase		= False
 Carbon_5_self_phase		= False
 
@@ -101,7 +101,7 @@ def NuclearRamseyWithInitialization_cal(name,
     
 
     m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
-    m.params['C'+str(carbon_nr)+'_freq_1']  += detuning
+    m.params['C'+str(carbon_nr)+'_freq_1_m1']  += detuning
     m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
 
     m.params['sweep_name'] = 'free_evolution_time'
@@ -182,7 +182,7 @@ def Crosstalk(name, C_measured = 5, C_gate = 1, RO_phase=0, RO_Z=False,
     m.params['pts'] = len(m.params['Rabi_N_Sweep']) 
     m.params['sweep_pts'] = m.params['Rabi_N_Sweep']
 
-    m.params['Rabi_tau_Sweep']= m.params['C'+str(C_gate)+'_Ren_tau']*len(m.params['Rabi_N_Sweep'])
+    m.params['Rabi_tau_Sweep']= m.params['C'+str(C_gate)+'_Ren_tau_m1']*len(m.params['Rabi_N_Sweep'])
 
     m.params['C_RO_Z']              = RO_Z 
     m.params['C_RO_phase']          = RO_phase 
@@ -236,7 +236,7 @@ qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after
 if n == 1 and (Carbon_1_f_msm1 or Carbon_2_f_msm1 or Carbon_3_f_msm1 or Carbon_5_f_msm1 or Carbon_6_f_msm1):	
 	GreenAOM.set_power(25e-6)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+	# optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
 
 detuning = 0.44e3
@@ -354,19 +354,19 @@ if n == 1 and Carbon_6_f_msm1:
 	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
 	    n = 0
 
-if n == 1 and (Carbon_1_f_ms0 or Carbon_2_f_ms0 or Carbon_3_f_ms0 or Carbon_5_f_ms0 or Carbon_6_f_ms0):	
-	GreenAOM.set_power(25e-6)
-	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-	adwin.start_set_dio(dio_no=4,dio_val=0)
+# if n == 1 and (Carbon_1_f_ms0 or Carbon_2_f_ms0 or Carbon_3_f_ms0 or Carbon_5_f_ms0 or Carbon_6_f_ms0):	
+# 	GreenAOM.set_power(25e-6)
+# 	adwin.start_set_dio(dio_no=4,dio_val=0)
+# 	# optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+# 	adwin.start_set_dio(dio_no=4,dio_val=0)
 
 ###############################################################
 ###### Calibrate ms=0 frequencies for all 3 carbon spins ######
 ###############################################################
 if n == 1 and Carbon_1_f_ms0:
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
+	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 100
+	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 100
+	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 0*15e-9
 	print 'Calibrate ms=0 frequencies for all 3 carbon spins '
 	# measure
 	NuclearRamseyWithInitialization_cal(SAMPLE+'_msm0_freq_C1', carbon_nr= 1, 
@@ -379,16 +379,16 @@ if n == 1 and Carbon_1_f_ms0:
 	              return_freq = True,
 	              return_results = False,
 	              title = '_msm0_freq_C1')
-	#update
-	qt.exp_params['samples']['111_1_sil18']['C1_freq_0'] += -f0 + detuning
-	print 'C1_freq_0'
-	print qt.exp_params['samples']['111_1_sil18']['C1_freq_0']
-	print '--------------------------------'
-	print 'press q to stop measurement loop'
-	print '--------------------------------'
-	qt.msleep(5)
-	if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
-	    n = 0
+	# #update
+	# qt.exp_params['samples']['111_1_sil18']['C1_freq_0'] += -f0 + detuning
+	# print 'C1_freq_0'
+	# print qt.exp_params['samples']['111_1_sil18']['C1_freq_0']
+	# print '--------------------------------'
+	# print 'press q to stop measurement loop'
+	# print '--------------------------------'
+	# qt.msleep(5)
+	# if (msvcrt.kbhit() and (msvcrt.getch() == 'q')):
+	#     n = 0
 
 if n == 1 and Carbon_2_f_ms0:
 	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
@@ -504,7 +504,7 @@ if n == 1:
 ##### Calibrate extra phase for gate for all 3 carbon spins ######
 #################################################################
 	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['C13_MBI_RO_duration'] = 60
-	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 250
+	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['SP_duration_after_C13'] = 30#250
 	qt.exp_params['protocols']['111_1_sil18']['AdwinSSRO+C13']['A_SP_amplitude_after_C13_MBI'] = 15e-9
 	
 	print 'Calibrate extra phase for gate for all 3 carbon spins'
@@ -512,12 +512,12 @@ if n == 1:
 	#set all to zero to start with
 	if (Carbon_1_self_phase or Carbon_2_self_phase or Carbon_3_self_phase or Carbon_5_self_phase or Carbon_6_self_phase):
 		GreenAOM.set_power(25e-6)
-		adwin.start_set_dio(dio_no=4,dio_val=0)
-		optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
-		adwin.start_set_dio(dio_no=4,dio_val=0)
+		# adwin.start_set_dio(dio_no=4,dio_val=0)
+		# # optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+		# adwin.start_set_dio(dio_no=4,dio_val=0)
 
 if n == 1 and Carbon_1_self_phase:
-	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1] = 0
+	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][1] = 0
 	# measure
 	NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C1', carbon_nr= 1)
 	# fit
@@ -529,11 +529,11 @@ if n == 1 and Carbon_1_self_phase:
 			            return_results = False,						title = 'phase_C1')
 	#update
 	# if A > 0:
-	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1] = phi0
+	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][1] = phi0
 # elif A < 0:
 	# 	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1] = phi0+180
 	print 'C1_Ren_extra_phase_correction_list[1]'
-	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][1]
 	print '--------------------------------'
 	print 'press q to stop measurement loop'
 	print '--------------------------------'
@@ -599,7 +599,7 @@ if n == 1 and Carbon_3_self_phase:
 
 
 if n == 1 and Carbon_5_self_phase:
-	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5] = 0
+	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][5] = 0
 	#measure
 	NuclearRamseyWithInitialization_phase(SAMPLE+'_phase_C5', carbon_nr= 5)
 	# fit
@@ -612,11 +612,11 @@ if n == 1 and Carbon_5_self_phase:
 						title = 'phase_C5')
 	#update
 	# if A > 0:
-	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5] = phi0
+	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][5] = phi0
 	# elif A < 0:
-	# 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5] = phi0+180
-	print 'C5_Ren_extra_phase_correction_list[5]'
-	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]
+	# 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][5] = phi0+180
+	print 'C5_Ren_extra_phase_correction_list_m1[5]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][5]
 	print '--------------------------------'
 	print 'press q to stop measurement loop'
 	print '--------------------------------'
@@ -655,17 +655,17 @@ if n == 1 and Carbon_6_self_phase:
 print 'Calibrate crosstalk for gate for all 3 carbon spins'
 
 #set all to zero to start with
-qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2] = 0
-qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5] = 0
-qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1] = 0
-qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5] = 0
-qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1] = 0
-qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2] = 0
+qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][2] = 0
+qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5] = 0
+qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list_m1'][1] = 0
+qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list_m1'][5] = 0
+qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1] = 0
+qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][2] = 0
 
 # if n == 1:	
 # 	GreenAOM.set_power(25e-6)
 # 	adwin.start_set_dio(dio_no=4,dio_val=0)
-# 	optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+	# optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
 # 	adwin.start_set_dio(dio_no=4,dio_val=0)
 
 if n == 1 and Carbon_2to1_crosstalk:
@@ -704,10 +704,10 @@ if n == 1 and Carbon_5to1_crosstalk:
 	              title = 'Crosstalk_gateC5_measC1')
 
 	#update
-	nr_of_pulses = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N'][0]
-	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1] = abs(f0)*nr_of_pulses*360
-	print 'C5_Ren_extra_phase_correction_list[1]'
-	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]
+	nr_of_pulses = qt.exp_params['samples']['111_1_sil18']['C5_Ren_N_m1'][0]
+	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1] = abs(f0)*nr_of_pulses*360
+	print 'C5_Ren_extra_phase_correction_list_m1[1]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1]
 	print '--------------------------------'
 	print 'press q to stop measurement loop'
 	print '--------------------------------'
@@ -778,10 +778,10 @@ if n == 1 and Carbon_1to5_crosstalk:
 	              title = 'Crosstalk_gateC1_measC5')
 
 	#update
-	nr_of_pulses = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N'][0]
-	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5] = abs(f0)*nr_of_pulses*360
+	nr_of_pulses = qt.exp_params['samples']['111_1_sil18']['C1_Ren_N_m1'][0]
+	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5] = abs(f0)*nr_of_pulses*360
 	print 'C1_Ren_extra_phase_correction_list[5]'
-	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5]
 	print '--------------------------------'
 	print 'press q to stop measurement loop'
 	print '--------------------------------'
@@ -830,7 +830,7 @@ if n == 1 and Carbon_phase_cal_2to1:
 if n == 1:	
 	GreenAOM.set_power(25e-6)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
-	optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
+	# optimiz0r.optimize(dims=['x','y','z','x','y'], int_time=120)
 	adwin.start_set_dio(dio_no=4,dio_val=0)
 
 if n == 1 and Carbon_phase_cal_5to1:
@@ -846,11 +846,11 @@ if n == 1 and Carbon_phase_cal_5to1:
 						title = 'phase_cal_gateC5_measC1')
 	#update
 	# if A > 0:
-	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1] = phi0
+	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1] = phi0
 	# elif A < 0:
 	# 	qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1] = phi0+180
 	print 'C5_Ren_extra_phase_correction_list[1]'
-	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1]
 
 if n == 1 and Carbon_phase_cal_1to2:
 	#measure
@@ -901,11 +901,11 @@ if n == 1 and Carbon_phase_cal_1to5:
 			            return_results = False,						title = 'phase_cal_gateC1_measC5')
 	#update
 	# if A > 0:
-	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5] = phi0
+	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5] = phi0
 # elif A < 0:
 	# 	qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5] = phi0+180
 	print 'C1_Ren_extra_phase_correction_list[5]'
-	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5]
 
 if n == 1 and Carbon_phase_cal_2to5:
 	#measure
@@ -1007,19 +1007,19 @@ if Carbon_6_f_ms0:
 print
 if Carbon_1_self_phase:
 	print 'C1_Ren_extra_phase_correction_list[1]'
-	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][1]
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][1]
 if Carbon_2_self_phase:
-	print 'C2_Ren_extra_phase_correction_list[2]'
-	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][2]
+	print 'C2_Ren_extra_phase_correction_list_m1[2]'
+	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list_m1'][2]
 if Carbon_3_self_phase:
-	print 'C3_Ren_extra_phase_correction_list[3]'
-	print qt.exp_params['samples']['111_1_sil18']['C3_Ren_extra_phase_correction_list'][3]
+	print 'C3_Ren_extra_phase_correction_list_m1[3]'
+	print qt.exp_params['samples']['111_1_sil18']['C3_Ren_extra_phase_correction_list_m1'][3]
 if Carbon_5_self_phase:
-	print 'C5_Ren_extra_phase_correction_list[5]'
-	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][5]
+	print 'C5_Ren_extra_phase_correction_list_m1[5]'
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][5]
 if Carbon_6_self_phase:
-	print 'C6_Ren_extra_phase_correction_list[6]'
-	print qt.exp_params['samples']['111_1_sil18']['C6_Ren_extra_phase_correction_list'][6]
+	print 'C6_Ren_extra_phase_correction_list_m1[6]'
+	print qt.exp_params['samples']['111_1_sil18']['C6_Ren_extra_phase_correction_list_m1'][6]
 print
 
 if Carbon_phase_cal_2to1:
@@ -1027,7 +1027,7 @@ if Carbon_phase_cal_2to1:
 	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][1]
 if Carbon_phase_cal_5to1:
 	print 'C5_Ren_extra_phase_correction_list[1]'
-	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][1]
+	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list_m1'][1]
 if Carbon_phase_cal_1to2:
 	print 'C1_Ren_extra_phase_correction_list[2]'
 	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][2]
@@ -1036,11 +1036,11 @@ if Carbon_phase_cal_5to2:
 	print qt.exp_params['samples']['111_1_sil18']['C5_Ren_extra_phase_correction_list'][2]
 if Carbon_phase_cal_1to5:
 	print 'C1_Ren_extra_phase_correction_list[5]'
-	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][5]
+	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list_m1'][5]
 if Carbon_phase_cal_2to5:
 	print 'C2_Ren_extra_phase_correction_list[5]'
 	print qt.exp_params['samples']['111_1_sil18']['C2_Ren_extra_phase_correction_list'][5]
-if Carbon_phase_cal_1to5:
+if Carbon_phase_cal_1to6:
 	print 'C1_Ren_extra_phase_correction_list[6]'
 	print qt.exp_params['samples']['111_1_sil18']['C1_Ren_extra_phase_correction_list'][6]
 if Carbon_phase_cal_6to1:

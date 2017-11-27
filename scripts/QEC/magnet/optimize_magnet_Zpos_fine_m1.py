@@ -24,12 +24,13 @@ for i in range (1):
 
     def darkesr(name, range_MHz, pts, reps, power, MW_power, pulse_length):
 
-        m = pulsar_msmt.DarkESR(name)
+        m = pulsar_msmt.DarkESR_Switch(name)
         m.params.from_dict(qt.exp_params['samples'][SAMPLE])
         m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
         m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
         m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
         m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+        m.params.from_dict(qt.exp_params['protocols']['111_1_sil18']['pulses'])
 
 
         m.params['temp'] = temperature_sensor.get_readlastval()
@@ -65,7 +66,7 @@ for i in range (1):
         ######################
         ## Input parameters ##
         ######################
-        safemode            = False     # If True then manual confirmation is needed befor each magnet movement
+        safemode            = True     # If True then manual confirmation is needed befor each magnet movement
         optimization_target = 5         # Target difference frequency in kHz 
         field_gradient      = 0.110     # kHz/nm 0.200 for big movements, 0.055 for small
         magnet_Z_scanner.SetBacklashCompensation(0.0042)

@@ -27,7 +27,7 @@ def optimize_NV():
     GreenAOM.set_power(50e-6)
     optimiz0r.optimize(dims=['x','y','z','x','y'], cycles = 1)
 
-def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, tau = None, N=None):
+def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, tau = None, N=None,addressed_carbon=None):
 
     if t_start != None and t_end != None:
         name = name + '_t=[%s-%s]' % (t_start, t_end)
@@ -48,12 +48,12 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] = 500 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] = 300 #Repetitions of each data point
     m.params['Initial_Pulse']       = 'x'
     m.params['Final_Pulse']         = '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
     
-    m.params['addressed_carbon'] = 4
+    m.params['addressed_carbon'] = addressed_carbon
     m.name += '_carbon%s' % m.params['addressed_carbon']
     ### Sweep parameter ###
     if t_start != None and t_end != None and pts != None:
@@ -92,7 +92,7 @@ def Carbon_Ramsey(name, t_start = None, t_end = None, pts = None, mbi = False, t
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE, t_start = 15, t_end = 75, pts = 46)
+    Carbon_Ramsey(SAMPLE, t_start = 100, t_end = 2000, pts = 80,addressed_carbon=1)
     # interrupt_script()
     # optimize_NV()
     # Carbon_Ramsey(SAMPLE, t_start = None, t_end = None, pts = None)

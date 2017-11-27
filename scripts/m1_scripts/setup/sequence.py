@@ -25,18 +25,25 @@ qt.pulsar.define_channel(id='ch2', name='MW_Qmod', type='analog', high=1,  #name
 qt.pulsar.define_channel(id='ch1_marker1', name='MW_pulsemod', type='marker', 
     high=2.0, low=0, offset=0., delay=240e-9, active=True) 
 
+# ### RF (Still calibrate delays)
+# qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+#     low=-0.9, offset=0., delay=240e-9, active=True)
+
 ### RF (Still calibrate delays)
-qt.pulsar.define_channel(id='ch4', name='RF', type='analog', high=0.9,
+qt.pulsar.define_channel(id='ch3', name='RF', type='analog', high=0.9,
     low=-0.9, offset=0., delay=240e-9, active=True)
 
 ### Sync ADwin
 qt.pulsar.define_channel(id='ch2_marker1', name='adwin_sync', type='marker', 
     high=2.0, low=0, offset=0., delay=0., active=True)
 
-### MW2 #not used, but it seems one always needs to have somethin in each of the 4 channels 
-### (interesting quetion is if this costs us memory and loading time.....)
-qt.pulsar.define_channel(id='ch3', name='MW2', type='analog', high=0.9,
-    low=-0.9, offset=0., delay=240e-9, active=True)
+# ### MW2 #not used, but it seems one always needs to have somethin in each of the 4 channels 
+# ### (interesting quetion is if this costs us memory and loading time.....)
+# qt.pulsar.define_channel(id='ch3', name='MW2', type='analog', high=0.9,
+#     low=-0.9, offset=0., delay=240e-9, active=True)
+
+qt.pulsar.define_channel(id='ch4_marker2', name='MW_switch', type='marker',
+    high=2.7, low=0, offset=0., delay=680e-9, active=True)
 
 
 

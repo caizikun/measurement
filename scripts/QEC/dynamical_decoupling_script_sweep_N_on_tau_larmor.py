@@ -33,6 +33,7 @@ def SimpleDecoupling(name, sweep = 'N',N=4,end=100e-3,nr_list=[1], shutter=0, XY
     m.params['use_shutter'] = shutter
     m.params['reps_per_ROsequence'] = reps #Repetitions of each data point
     m.params['Initial_Pulse'] ='x'
+    m.params['DD_in_eigenstate']=False
 
     
     if N==1:
@@ -156,7 +157,7 @@ def take_DD_Data(larmor_nr,Nmin,Nmax,Nstep,Single_Block=False,shutter=False,XY_s
             GreenAOM.set_power(7e-6)
             counters.set_is_running(1)
             optimiz0r.optimize(dims = ['x','y','z'], int_time = 120)
-            #stools.turn_off_all_lt2_lasers()
+            stools.turn_off_all_lasers()
 
         SimpleDecoupling(SAMPLE+'_RepT'+str(XY_scheme)+'sweep_N_on_tau_L'+ str(larmor_nr) + '_part'+str(n+1),sweep='tau',N=N,nr_list = nr_list,reps=reps, XY_scheme=XY_scheme, shutter=0, debug=debug)
 
@@ -177,9 +178,9 @@ if __name__ == '__main__':
     
   
     if n==1 and Cont:
-        Nmin = 2
-        Nmax = 100
-        Nstep = 10
+        Nmin = 8
+        Nmax = 128
+        Nstep = 8
         larmor_nr = 5
         reps = 500
         tau_larmor = 1/442829.51

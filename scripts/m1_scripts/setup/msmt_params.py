@@ -9,10 +9,10 @@ cfg={}
 ### Set current NV center ###
 #############################
 
-sample_name 		= '111_1_sil18'
+sample_name         = '111_1_sil18'
 
-cfg['samples'] 		= {'current':sample_name}
-cfg['protocols'] 	= {'current':sample_name}
+cfg['samples']      = {'current':sample_name}
+cfg['protocols']    = {'current':sample_name}
 cfg['protocols'][sample_name] = {}
 
 print 'updating msmt params M1 for {}'.format(cfg['samples']['current'])
@@ -39,7 +39,7 @@ cfg['protocols']['AdwinSSRO']={
 'counter_channel'           :       1,
 'cycle_duration'            :       1000,   ## in units of the ADWIN processor clock
 'green_off_amplitude'       :       0.0,
-'green_repump_amplitude'    :       5e-6,
+'green_repump_amplitude'    :       30e-6, #5,
 'green_repump_duration'     :       50,
 'send_AWG_start'            :       0,
 'sequence_wait_time'        :       1,
@@ -58,8 +58,8 @@ cfg['protocols']['AdwinSSRO']={
 'CR_probe_max_time'         :       1000000,
 'Shutter_channel'           :       4,
 'use_shutter'               :       0,
-'Shutter_opening_time'  	:       3000,
-'Shutter_safety_time'   	:      200000, ### used for cooling down the sample over time.
+'Shutter_opening_time'      :       3000,
+'Shutter_safety_time'       :      200000, ### used for cooling down the sample over time.
 }
 
 cfg['protocols']['AdwinSSRO']['cr_mod'] = False
@@ -76,24 +76,24 @@ else:
     cfg['protocols']['AdwinSSRO']['repump_amplitude'] =  cfg['protocols']['AdwinSSRO']['green_repump_amplitude']
     cfg['protocols']['AdwinSSRO']['CR_repump']        =  cfg['protocols']['AdwinSSRO']['green_CR_repump']
 
-	############################################
-	### General settings for AdwinSSRO+espin ###
-	############################################
+    ############################################
+    ### General settings for AdwinSSRO+espin ###
+    ############################################
 
 cfg['protocols']['AdwinSSRO+espin'] = {
 'send_AWG_start'        :          1,
-'MW_switch_risetime'    :     500e-9,
-'MW_pulse_mod_risetime' :      10e-9,
-'MW2_pulse_mod_risetime' :     10e-9,
+'MW_switch_risetime'    :    50e-9,
+'MW_pulse_mod_risetime' :      10e-9,#10
+'MW2_pulse_mod_risetime':    10e-9,#10
 'use_shutter'           :          0,
 'Shutter_channel'       :          4,
 'Shutter_opening_time'  :       3000,
 'Shutter_safety_time'   :      200000,
 }
 
-	##########################################
-	### General settings for AdwinSSRO+MBI ###
-	##########################################
+    ##########################################
+    ### General settings for AdwinSSRO+MBI ###
+    ##########################################
 
 ### General settings for AdwinSSRO+MBI
 cfg['protocols']['AdwinSSRO+MBI'] = {
@@ -102,50 +102,50 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
 'AWG_wait_for_adwin_MBI_duration'       :    15e-6,
 'AWG_wait_duration_before_shelving_pulse':   100e-9,
 'nr_of_ROsequences'                     :    1, #setting this on anything except on 1 crahses the adwin?
-'MW_pulse_mod_risetime'                 :    10e-9,
+'MW_pulse_mod_risetime'                 :    10e-9,#10
 'MW2_pulse_mod_risetime'                :    10e-9,
-'MW_switch_risetime'                    :    500e-9, #500e-9  XXXX
+'MW_switch_risetime'                    :    50e-9, #500e-9  XXXX
 'AWG_to_adwin_ttl_trigger_duration'     :    5e-6, 
 'max_MBI_attempts'                      :    1,
-'N_randomize_duration'                  :    50,
-'Ex_N_randomize_amplitude'              :    13e-9,#15e-9, #15e-9
-'A_N_randomize_amplitude'               :    15e-9,
+'N_randomize_duration'                  :    200,#50,
+'Ex_N_randomize_amplitude'              :    1e-9,#15e-9, #15e-9
+'A_N_randomize_amplitude'               :    10e-9,#15e-9,
 'repump_N_randomize_amplitude'          :    0e-9} #Green or yellow. Probably should be 0 when using Green
 
 ############### ######################
 ### SAMPLES ### ### 111 No1 SIL 18 ###
 ############### ######################
 
-	#####################################
+    #####################################
     ###111 No1 SIL 18 SSRO parameters ###
     #####################################
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
-'A_CR_amplitude' : 5e-9, 
+'A_CR_amplitude' : 8e-9, #8
 'A_RO_amplitude' :0e-9,
-'A_SP_amplitude' : 80e-9,  
+'A_SP_amplitude' : 8e-9, #8  
 'CR_duration'    : 150,     
 'CR_preselect'   : 1000,
 
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 0.5e-9, #0.5e-9  
-'Ex_RO_amplitude': 1e-9, #2
+'Ex_RO_amplitude': 1.5e-9, #2
 'Ex_SP_amplitude': 0e-9,   # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
 'SP_duration'    : 100,    #50 # THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 100,    # only for specific scripts
 'SP_duration_ms1': 100,    # only for specific scripts
 'SP_filter_duration':  0,
 'SSRO_repetitions'  :  5000,
-'SSRO_duration'     :  50,
+'SSRO_duration'     :  50,#50
 'SSRO_stop_after_first_photon' : 0} 
 
-	##################################
+    ##################################
     ### Integrated SSRO parameters ###
     ##################################
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
-'SSRO_duration'  : 20,
+'SSRO_duration'  : 40,
 'Ex_SP_amplitude': 0 }
 
     ##################################################
@@ -154,13 +154,13 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO-integrated'] = {
 
 mw_power  = 20
 mw2_power = -20
-f_msm1_cntr =   1.746666e9 	#Electron spin ms=-1 frequency
-f_msp1_cntr =   4.008621e9	#Electron spin ms=+1 frequency 
+f_msm1_cntr =   1.746666e9#1.766536e9  #Electron spin ms=-1 frequency
+f_msp1_cntr =   4.008650e9#4.008621e9  #Electron spin ms=+1 frequency 
 
-zero_field_splitting = 2.877623e9  # not calibrated # contains + 2*N_hf?
+zero_field_splitting = 2.877623e9#2.877623e9  # not calibrated # contains + 2*N_hf?
 
 N_frq    = 7.13429e6      # not calibrated
-N_HF_frq = 2.182e6 		  # was 2.196e6       
+N_HF_frq = 2.182e6        # was 2.196e6       
 Q        = 4.938e6        # not calibrated
 
 electron_transition = '-1'
@@ -181,22 +181,53 @@ if electron_transition == '-1':
     mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq     # Initialized frequency
     
-    AWG_MBI_MW_pulse_amp = 0.00824 #0.01525
+    AWG_MBI_MW_pulse_amp = 0#0.00824 #0.01525
     
-    Hermite_pi_length 	= 200e-9    
-    Hermite_pi_amp 		= 0.804 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_length   = 220e-9#200e-9    
+    Hermite_pi_amp      =  0.738 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
-    Hermite_pi2_length 	= 100e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp 	= 0.646 # 0.501
+    Hermite_pi2_length  = 100e-9 # 56e-9 # divsible by 2
+    Hermite_pi2_amp     = 0.684 #0.777 #0.62 # 0.501
 
-    Square_pi_length 	= 40e-9   #250 MHz slow
-    Square_pi_amp 		= 0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
+    Square_pi_length    = 60e-9   #250 MHz slow
+    Square_pi_amp       = 0.73 #0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
 
-    Square_pi2_length 	= 56e-9 #should be divisible by 4, slow
-    Square_pi2_amp 		=  0.242622    #0.493036,
+    Square_pi2_length   = 56e-9 #should be divisible by 4, slow
+    Square_pi2_amp      =  0.242622    #0.493036,
 
-    BB1_pi_length 		= 150e-9
-    BB1_pi_amplitude 	= 0.955
+    BB1_pi_length       = 150e-9
+    BB1_pi_amplitude    = 0.955
+
+
+elif electron_transition == '+1':
+    electron_transition_string = '_p1'
+    pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
+    if pulse_shape == 'Square':
+        mw_mod_frequency = 0       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+        N_MBI_threshold = 1
+    elif pulse_shape == 'Hermite':
+        mw_mod_frequency = 0*1e6 
+        N_MBI_threshold = 0
+
+    mw_freq             = f_msp1_cntr - mw_mod_frequency                # Center frequency
+    mw_freq_MBI         = f_msp1_cntr - mw_mod_frequency# - N_HF_frq    # Initialized frequency
+    AWG_MBI_MW_pulse_amp = 0#0.00824
+
+    Hermite_pi_length = 200e-9
+    Hermite_pi_amp = 0.869 #0.92
+
+    Hermite_pi2_length = 100e-9#120e-9#56e-9, #should be divisible by 4, slow
+    Hermite_pi2_amp = 0.493 #0.678533   
+
+    Square_pi_length = 60e-9 #180e-9   #250 MHz slow
+    Square_pi_amp =  0.7 #0.694552  #0.407225 #without switch #0.469424,with switch  #250 MHz, slow
+
+    Square_pi2_length = 92e-9 #56e-9, #should be divisible by 4, slow
+    Square_pi2_amp =  0.738335 #0.493036, # slow, only calibrated with 2 pulses
+
+    BB1_pi_length = 50e-9
+    BB1_pi_amplitude = 0.9
+
 
 print '*************************************************************************'
 print ' pulse shape is ' + pulse_shape +' and MBI_threshold is '+str(N_MBI_threshold) + ' and el transition is ' + electron_transition
@@ -206,7 +237,7 @@ print '*************************************************************************
 ### Comment: frequency should be selected automatically depending on source 1...
 
 mw2_freq            = f_msp1_cntr   # Center frequency
-mw2_pulse_shape 	= 'Hermite'
+mw2_pulse_shape     = 'Hermite'
 
 if mw2_freq == f_msm1_cntr:
     mw2_Hermite_pi_duration = 90e-9  
@@ -215,8 +246,8 @@ if mw2_freq == f_msm1_cntr:
     mw2_Hermite_pi2_amp = .5  
     mw2_Square_pi2_amp =  .5
     mw2_Square_pi_amp =  .414
-    mw2_Square_pi_length = 90e-9	#180e-9   #250 MHz slow
-    mw2_Square_pi2_length = 11e-9	#180e-9   #250 MHz slow
+    mw2_Square_pi_length = 90e-9    #180e-9   #250 MHz slow
+    mw2_Square_pi2_length = 11e-9   #180e-9   #250 MHz slow
     mw2_electron_transition_string = '_m1'
 else:
     mw2_Hermite_pi_length = 160e-9    
@@ -225,8 +256,8 @@ else:
     mw2_Hermite_pi2_amp = .5  
     mw2_Square_pi2_amp =  .5
     mw2_Square_pi_amp =  .616
-    mw2_Square_pi_length = 160e-9	#180e-9   #250 MHz slow
-    mw2_Square_pi2_length = 28e-9	#180e-9   #250 MHz slow
+    mw2_Square_pi_length = 160e-9   #180e-9   #250 MHz slow
+    mw2_Square_pi2_length = 28e-9   #180e-9   #250 MHz slow
     mw2_electron_transition_string = '_p1'
 
 cfg['samples']['111_1_sil18'] = {
@@ -257,10 +288,25 @@ cfg['samples']['111_1_sil18'] = {
     ### Carbon 1 ###
     ################
 
+    #####################################################
+    ###define which transitions to use for each carbon###
+    #####################################################
+'C1_dec_trans'  :   '_m1',
+'C2_dec_trans'  :   '_m1',
+'C3_dec_trans'  :   '_m1',
+'C4_dec_trans'  :   '_p1',
+'C5_dec_trans'  :   '_m1',
+'C6_dec_trans'  :   '_m1',
+'C7_dec_trans'  :   '_p1',
+'C8_dec_trans'  :   '_m1',
+'Cm1_dec_trans' :   '_m1',
+'Cp1_Dec_trans' :   '_p1',
 
-'C1_freq_m1'        :  450166.28,##+-104.6 #450301.0, 
-'C1_freq_0' : 432027.63,
-'C1_freq_1_m1' : 469076.2,
+
+'C1_freq_m1'    : 450877,       ##+-104.6 #450301.0, 
+'C1_freq_0'     : 432012.57,
+'C1_freq_1_m1'  : 469066.38,
+
 # 'C1_gate_optimize_tau_list_m1' : [4.994e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
 #                                4.996e-6,4.998e-6,4.998e-6,4.998e-6],
 
@@ -275,13 +321,9 @@ cfg['samples']['111_1_sil18'] = {
 # 'C1_Ren_N'      :   [34],
 # 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [-15.28] + [42.26]+[0]*2+[63.88]+ 4*[0]),
 
-# 'C1_Ren_tau'    :   [4.998e-6],
-# 'C1_Ren_N'      :   [34],
-# 'C1_Ren_extra_phase_correction_list' :  np.array([0] + [54.9] + [26.3]+[0]*2+[61.7]+ 4*[0]),
-
 'C1_Ren_tau_m1'    :  [7.220e-6],
 'C1_Ren_N_m1'      :  [44],
-'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [32.1] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [179.44] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
@@ -335,8 +377,8 @@ cfg['samples']['111_1_sil18'] = {
     ### Carbon 5 ###
     ################
 
-'C5_freq_m1' :    420021.01,### +-85.5 # 419.894e3,#XXXXXXXXXX
-'C5_freq_0' : 432044.23,
+'C5_freq_m1' :   419999,### +-85.5 # 419.894e3,#XXXXXXXXXX
+'C5_freq_0' :    432044.23,
 'C5_freq_1_m1' : 408455.5,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
@@ -365,7 +407,7 @@ cfg['samples']['111_1_sil18'] = {
 'C5_uncond_pi_N_m1':   [94],
 'C5_Ren_tau_m1'    :   [6.544e-6],
 'C5_Ren_N_m1'      :   [28],
-'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [155.13] + [4.19] + [30.87] + [0.0] + [159.52] + [-13.79] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [42.41] + [4.19] + [30.87] + [0.0] + [11.08] + [-13.79] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 6 ###
@@ -386,13 +428,99 @@ cfg['samples']['111_1_sil18'] = {
     ### Dummy C7 ###
     ################
 
-'C7_freq_m1'       	:   456e3,         	# Only roughly calibrated
-'C7_freq_0' 		: 431959.87,
-'C7_freq_1_m1' 		: 480615.5,
+'C7_freq_m1'        :   456e3,          # Only roughly calibrated
+'C7_freq_0'         : 431959.87,
+'C7_freq_1_m1'      : 480615.5,
 
 'C7_Ren_tau_m1'    :   [2.315e-6],
 'C7_Ren_N_m1'      :   [12],
 'C7_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+    ################
+    ### Dummy C8 ###
+    ################
+# ## 120 us, 2kHz, C13 cluster
+# 'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.082e3,#2.0846e3, 
+# 'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
+
+# 'C8_Ren_tau_m1'    :   [122.685e-6],
+# 'C8_Ren_N_m1'      :   [22],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# 75 us, 6800kHz, C13 cluster
+'C8_freq_m1'        : 6.60e3,          # Only roughly calibrated
+'C8_freq_0'         : 6.60e3,
+'C8_freq_1_m1'      : 6.60e3,
+
+'C8_Ren_tau_m1'    :   [76.545e-6],
+'C8_Ren_N_m1'      :   [12],#[12],
+'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# 63 us, 7800kHz, C13 cluster
+# 'C8_freq_m1'        : 7.9e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 7.9e3,#239,
+# 'C8_freq_1_m1'      : 7.9e3,
+
+# 'C8_Ren_tau_m1'    :   [63.65e-6],#[62.4969e-6],
+# 'C8_Ren_N_m1'      :   [32],#[16],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
+# 63 us, 7800kHz, C13 cluster
+'C6_freq_m1'        : 6.6e3,          # Only roughly calibrated
+'C6_freq_0'         : 6.6e3,#239,
+'C6_freq_1_m1'      : 6.6e3,
+
+'C6_Ren_tau_m1'    :   [76.545e-6],#[63.65e-6],
+'C6_Ren_N_m1'      :   [22],
+'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# # #165 us, C13 cluster
+# 'C8_freq_m1'        : 2816,#2816,#0.189e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2816,#0.189e3,
+# 'C8_freq_1_m1'      : 2816,#2.816e3,#0.189e3,
+
+# 'C8_Ren_tau_m1'    :   [172.445e-6],
+# 'C8_Ren_N_m1'      :   [8],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# 111 us, 80 Hz, C13 cluster
+# 'C8_freq_m1'        : 4.422e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 4.422e3, 
+# 'C8_freq_1_m1'      : 4.422e3,
+
+# 'C8_Ren_tau_m1'    :   [112.22e-6],
+# 'C8_Ren_N_m1'      :   [26],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# #260 us, 2kHz, C13 cluster
+# 'C8_freq_m1'        : 1.821e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 1.821e3,#130,#1.821e3, 
+# 'C8_freq_1_m1'      : 1.821e3,#1.821e3,
+
+# 'C8_Ren_tau_m1'    :   [276.8e-6],
+# 'C8_Ren_N_m1'      :   [6],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# #260 us, 2kHz, C13 cluster
+# 'C8_freq_m1'        : 2.77e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.77e3, 
+# 'C8_freq_1_m1'      : 2.77e3,
+
+# 'C8_Ren_tau_m1'    :   [256.8e-6],
+# 'C8_Ren_N_m1'      :   [8],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
+# #260 us, 2kHz, C13 cluster
+# 'C8_freq_m1'        : 2.77e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.77e3, 
+# 'C8_freq_1_m1'      : 2.77e3,
+
+# 'C8_Ren_tau_m1'    :   [4.371e-6],
+# 'C8_Ren_N_m1'      :   [1600],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 ###########################################
@@ -487,7 +615,46 @@ cfg['samples']['111_1_sil18'] = {
 'C7_Ren_tau_p1'    :   [2.315e-6],
 'C7_Ren_N_p1'      :   [12],
 'C7_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
+# #63 us, 7800kHz, C13 cluster
+# 'C8_freq_p1'        : 8.23e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 8.23e3,
+# 'C8_freq_1_p1'      : 8.23e3,
+
+# 'C8_Ren_tau_p1'    :   [60.182e-6],#[63.65e-6],
+# 'C8_Ren_N_p1'      :   [12],
+# 'C8_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+#75 us, 6600kHz, C13 cluster
+# 'C8_freq_p1'        : 6.6e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 6.6e3,
+# 'C8_freq_1_p1'      : 6.6e3,
+
+# 'C8_Ren_tau_p1'    :   [76.545e-6],#[63.65e-6],
+# 'C8_Ren_N_p1'      :   [10],
+# 'C8_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+#75 us, 6600kHz, C13 cluster
+# 'C8_freq_p1'        : 4.465e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 4.465e3,
+# 'C8_freq_1_p1'      : 4.465e3,
+
+# 'C8_Ren_tau_p1'    :   [111.22e-6],#[63.65e-6],
+# 'C8_Ren_N_p1'      :   [24],
+# 'C8_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# #165 us, 7800kHz, C13 cluster
+# 'C8_freq_p1'        : 2.777e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.777e3,
+# 'C8_freq_1_p1'      : 2.777e3,
+
+# 'C8_Ren_tau_p1'    :   [172.445e-6],
+# 'C8_Ren_N_p1'      :   [8],
+# 'C8_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 }
+
+
 
     ###########################################
     ### 111 No1 SIL 18: pulse parameters    ###
@@ -513,15 +680,15 @@ else:
         print 'no valid pulses defined, using Square pulse params'
     mw2_fast_pi_length, mw2_fast_pi_amp, mw2_fast_pi2_length, mw2_fast_pi2_amp = mw2_Square_pi_length, mw2_Square_pi_amp, mw2_Square_pi2_length, mw2_Square_pi2_amp
     
-cfg['samples']['111_1_sil18']['mw_frq'] = mw_freq 	#THT: these are two weird lines of code, because it deterministically overwrites earlier settings. Why not do it imeadiatly
+cfg['samples']['111_1_sil18']['mw_frq'] = mw_freq   #THT: these are two weird lines of code, because it deterministically overwrites earlier settings. Why not do it imeadiatly
 cfg['samples']['111_1_sil18']['mw2_frq'] = mw2_freq
 f_mod_0  = cfg['samples']['111_1_sil18']['mw_mod_freq']
 
 cfg['protocols']['111_1_sil18']['pulses'] ={
     'MW_modulation_frequency'   :   f_mod_0,
-    'MW_switch_channel'     	:   'None', ### if you want to activate the switch, put to MW_switch
+    'MW_switch_channel'         :  'MW_switch',#'None',  ### if you want to activate the switch, put to MW_switch
 
-    'DESR_pulse_duration'   	: 3e-6,
+    'DESR_pulse_duration'       : 3e-6,
     'DESR_pulse_amplitude'      : 0.01,
     'X_phase'                   :   90,
     'Y_phase'                   :    0,
@@ -581,6 +748,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
     #####################
     #                   #
     #   Square pulses   #
+
     #                   #
     #####################
 
@@ -609,14 +777,14 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
     #Spin pump before MBI
 'Ex_SP_amplitude'           :           0e-9,   #15e-9,#15e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0,    #does not seem to work yet?
-'SP_E_duration'             :           50,     #Duration for both Ex and A spin pumping
+'SP_E_duration'             :           50, #50     #Duration for both Ex and A spin pumping
     #MBI readout power and duration
 'Ex_MBI_amplitude'          :           0.65e-9,
 'MBI_duration'              :           10,
 
     #Repump after succesfull MBI
-'repump_after_MBI_duration' :           [200],
-'repump_after_MBI_A_amplitude':         [12e-9],  #18e-9
+'repump_after_MBI_duration' :           [200], 
+'repump_after_MBI_A_amplitude':         [12e-9],#8 #12 #18e-9
 'repump_after_MBI_E_amplitude':         [0e-9],
 
     #MBI parameters
@@ -647,11 +815,11 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-MBI  
 'C13_MBI_threshold_list':               [1],
-'C13_MBI_RO_duration':                  50,  
-'E_C13_MBI_RO_amplitude':               0.7e-9, #this was 0.3e-9 NK 20150316
-'SP_duration_after_C13':                300, #300 in case of swap init! 
-'A_SP_amplitude_after_C13_MBI':         30e-9, # was 15e-9
-'E_SP_amplitude_after_C13_MBI':         0e-9,
+'C13_MBI_RO_duration':                  40,#160,  
+'E_C13_MBI_RO_amplitude':               0.05e-9, #this was 0.3e-9 NK 20150316
+'SP_duration_after_C13':                30, #300 in case of swap init! 
+'A_SP_amplitude_after_C13_MBI':         8e-9, # was 15e-9
+'E_SP_amplitude_after_C13_MBI':         0*3e-9,
 'C13_MBI_RO_state':                     0, # 0 sets the C13 MBI success condition to ms=0 (> 0 counts), if 1 to ms = +/-1 (no counts)
                 
 #C13-MBE  
@@ -675,7 +843,7 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 'Shutter_safety_time':                  200000, #Sets the time after each msmts, the ADwin waits for next msmt to protect shutter (max freq is 20Hz)
 
 'min_phase_correct'   :     2,      # minimum phase difference that is corrected for by phase gates
-'min_dec_tau'         :     20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],#20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'], 
+'min_dec_tau'         :     cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'],#20e-9 + cfg['protocols']['111_1_sil18']['pulses']['fast_pi_duration'], 
 'max_dec_tau'         :     0.4e-6, #2.5e-6,#Based on measurement for fingerprint at low tau
 'dec_pulse_multiple'  :     4,      #4.
 
@@ -684,6 +852,14 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 'optical_pi_AOM_duration' :      200e-9,
 'optical_pi_AOM_delay' :         300e-9,
 'do_optical_pi' :                True,
-'initial_MW_pulse':           'pi' #'pi', 'no_pulse' 
+'initial_MW_pulse':           'pi' #'pi', 'no_pulse'            
+}
+
+    #############################
+        ### RF control ###
+    #############################
+
+cfg['protocols']['111_1_sil18']['RFTest'] = {
+'RF_pulse_frequency': 400e3
 }
 
