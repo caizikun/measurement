@@ -254,8 +254,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
         
-
-
     def _Ypi2_elt(self):
         '''
         ypi2 element that is used in different measurement child classes
@@ -2893,6 +2891,42 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.wait_time = Gate.length + 2e-6
         Gate.elements= list_of_elements
         return Gate
+
+    def generate_IQ_RF_square_pulse_element(self,Gate):
+        '''
+        Written by CEB 11.24.2017. 
+        Generate arbitrary RF pulse gate, via AWG-mediated IQ modulation.
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'IQ_RF_square_pulse'
+
+        length     = Gate.length
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+
+        list_of_elements = []
+
+        X = pulse.SquarePulse(
+            channel = 'RF',
+            length = length,
+            amplitude = amplitude)
+
+
+        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_middle.append(pulse.cp(X))
+        list_of_elements.append(e_middle)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
+        Gate.elements= list_of_elements
+        
+        return Gate
+
 
     def generate_LDE_element(self,Gate):
         '''
@@ -8019,10 +8053,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
-
-
-
-
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
@@ -8039,12 +8069,21 @@ class NuclearRabiWithDirectRF(MBI_C13):
             gate_seq.extend(carbon_init_seq)
 
             ### Carbon RF pulse
-            if self.params['RF_pulse_durations'][pt] > 3e-6:
-                rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
-                    length      = self.params['RF_pulse_durations'][pt],
-                    RFfreq      = self.params['RF_pulse_frqs'][pt],
-                    amplitude   = self.params['RF_pulse_amps'][pt])
-                gate_seq.extend([rabi_pulse])
+            if self.params['RF_generation_method'] = 'AWG':
+                if self.params['RF_pulse_durations'][pt] > 3e-6:
+                    rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                        length      = self.params['RF_pulse_durations'][pt],
+                        RFfreq      = self.params['RF_pulse_frqs'][pt],
+                        amplitude   = self.params['RF_pulse_amps'][pt])
+                    gate_seq.extend([rabi_pulse])
+            elif self.params['RF_generation_method'] = 'IQ':
+                if self.params['RF_pulse_durations'][pt] > 3e-6:
+                    rabi_pulse = Gate('Rabi_pulse_'+str(pt),'IQ_RF_square_pulse',
+                        length      = self.params['RF_pulse_durations'][pt],
+                        amplitude   = self.params['RF_pulse_amps'][pt])
+                    gate_seq.extend([rabi_pulse])
+            else:
+                print 'RF generation method not recognised'
 
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
@@ -8067,9 +8106,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
             #     wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
             #              wait_time = self.params['free_evolution_time'][pt])
             #     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
-
-
-
 
             gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
 

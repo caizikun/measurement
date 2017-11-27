@@ -15,7 +15,6 @@ Copy from BSM.py in lt2_scripts/adwin_ssro/BSM
 
 """
 
-
 import numpy as np
 import qt 
 import msvcrt
