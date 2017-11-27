@@ -128,7 +128,8 @@ def CarbonRabiWithDirectRF(name,
         debug                 = True,
         C13_init_method       = 'swap', 
         el_after_init         = '1',
-        DoRabi                = False):
+        DoRabi                = False,
+        RF_generation_method  = 'AWG'):
 
     m = DD.NuclearRabiWithDirectRF(name)
     funcs.prepare(m)
@@ -137,6 +138,7 @@ def CarbonRabiWithDirectRF(name,
     '''Set parameters'''
 
     ### Parameters
+    m.params['RF_generation_method']    = RF_generation_method
     m.params['reps_per_ROsequence']     = 500
     m.params['C13_MBI_threshold_list']  = [0]
     if el_after_init == '1': 
@@ -145,13 +147,13 @@ def CarbonRabiWithDirectRF(name,
         centerfreq = m.params['C' + str(carbon_nr) + '_freq_0']
 
     if DoRabi: 
-        m.params['RF_pulse_durations'] = 300e-6 + np.linspace(0e-6,10e-6,21)
+        m.params['RF_pulse_durations'] = 10e-6 + np.linspace(0e-6,10e-6,21)
         m.params['pts'] = len(m.params['RF_pulse_durations'])
         m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq 
         m.params['sweep_name'] = 'RF_pulse_length (us)'
         m.params['sweep_pts']  =  m.params['RF_pulse_durations'] / 1e-6 
     else: 
-        m.params['RF_pulse_frqs'] = np.linspace(centerfreq-0e3,centerfreq+2e3,1)
+        m.params['RF_pulse_frqs'] = np.linspace(centerfreq-2e3,centerfreq+2e3,21)
         m.params['pts'] = len(m.params['RF_pulse_frqs'])
         m.params['RF_pulse_durations'] = np.ones(m.params['pts']) * 410e-6
         m.params['sweep_name'] = 'RF_freq (kHz)'
@@ -161,7 +163,7 @@ def CarbonRabiWithDirectRF(name,
     m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 1
     m.params['C_RO_phase'] = np.ones(m.params['pts'] )*0,#[0] #['X'] # np.ones(m.params['pts'] )*0 # m.params['pts']*['X'] 
 
-    m.params['C13_init_method'] = C13_init_method
+    m.params['C13_init_method'] = 'swap' #C13_init_method
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = 'up' #carbon_init_state  
@@ -178,4 +180,4 @@ if __name__ == '__main__':
     i = 0
     el_after_init = '1'
     DoRabi = True
-    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_' +str(i)+'run', carbon_nr = carbon_nr, el_RO= 'positive', C13_init_method = 'MBI', el_after_init=el_after_init, DoRabi=DoRabi, debug=False)
+    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_' +str(i)+'run', carbon_nr = carbon_nr, el_RO= 'positive', el_after_init=el_after_init, DoRabi=DoRabi, RF_generation_method = 'AWG', debug=True)
