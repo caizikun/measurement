@@ -215,7 +215,7 @@ class RF_IQmod_pulse(pulse.Pulse):
         self.stop_offset = self.PM_risetime
 
 
-   def __call__(self, **kw):
+    def __call__(self, **kw):
        self.frequency = kw.pop('frequency', self.frequency)
        self.amplitude = kw.pop('amplitude', self.amplitude)
 

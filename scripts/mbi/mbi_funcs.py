@@ -22,9 +22,10 @@ def prepare(m, sil_name=SAMPLE):
     print m.params['C13_MBI_threshold_list']
 
 def finish(m, upload=True, debug=False, save_name=None, last_msmt=True):
-    
+
     m.autoconfig()
     print 'finished autoconfig'
+    
     m.params['E_RO_durations']      = [m.params['SSRO_duration']]
     m.params['E_RO_amplitudes']     = [m.params['Ex_RO_amplitude']]
     m.params['send_AWG_start']      = [1]

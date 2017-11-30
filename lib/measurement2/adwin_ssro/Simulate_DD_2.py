@@ -9,7 +9,7 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt;
+from measurement.lib.measurement2.adwin_ssro import Simulate_pulsar_msmt as pulsar_msmt;
 import pulse_select as ps; reload(ps)
 
 
@@ -4506,22 +4506,22 @@ class MBI_C13(DynamicalDecoupling):
     def autoconfig(self):
 
         #Convervting laser powers to AOM voltages
-        self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
-                    self.params['A_SP_amplitude_after_C13_MBI']))
-        self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
-                    self.params['E_SP_amplitude_after_C13_MBI']))
-        self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_C13_MBI_RO_amplitude']))
+        # self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude_after_C13_MBI']))
+        # self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_SP_amplitude_after_C13_MBI']))
+        # self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_C13_MBI_RO_amplitude']))
 
-        self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
-                    self.params['A_SP_amplitude_after_MBE']))
-        self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
-                    self.params['E_SP_amplitude_after_MBE']))
-        self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_MBE_RO_amplitude']))
+        # self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude_after_MBE']))
+        # self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_SP_amplitude_after_MBE']))
+        # self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_MBE_RO_amplitude']))
 
-        self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_Parity_RO_amplitude']))
+        # self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_Parity_RO_amplitude']))
 
         self.params['min_dec_duration'] = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
@@ -4537,8 +4537,8 @@ class MBI_C13(DynamicalDecoupling):
 
         DynamicalDecoupling.autoconfig(self)
 
-        self.physical_adwin.Set_Data_Long(
-                np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
+        # self.physical_adwin.Set_Data_Long(
+        #         np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
