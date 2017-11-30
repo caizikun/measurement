@@ -56,7 +56,7 @@ def CarbonRabiWithDirectRF(name,
         centerfreq = m.params['C' + str(carbon_nr) + '_freq_0']
 
     if DoRabi: 
-        m.params['RF_pulse_durations'] = 10e-6 + np.linspace(0e-6,10e-6,5)
+        m.params['RF_pulse_durations'] = np.linspace(1e-6,1e-6,1) + 3e-6
         m.params['pts'] = len(m.params['RF_pulse_durations'])
         m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq 
         m.params['sweep_name'] = 'RF_pulse_length (us)'
@@ -88,4 +88,6 @@ if __name__ == '__main__':
     i = 0
     el_after_init = '1'
     DoRabi = True
-    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_' +str(i)+'run', carbon_nr = carbon_nr, el_RO= 'positive', el_after_init=el_after_init, DoRabi=DoRabi, RF_generation_method = 'AWG', debug=True)
+    CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_' +str(i)+'run',
+                            carbon_nr = carbon_nr, el_RO= 'positive', el_after_init=el_after_init, 
+                            DoRabi=DoRabi, RF_generation_method = 'AWG', debug=True)
