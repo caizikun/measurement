@@ -121,7 +121,7 @@ cfg['protocols']['AdwinSSRO+MBI'] = {
     #####################################
 
 cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
-'A_CR_amplitude' : 8e-9, #8
+'A_CR_amplitude' : 8e-9, #8e-9 
 'A_RO_amplitude' :0e-9,
 'A_SP_amplitude' : 8e-9, #8  
 'CR_duration'    : 150,     
@@ -183,13 +183,13 @@ if electron_transition == '-1':
     mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq  MJD commented out to set the MBI freq to the center freq     # Initialized frequency
     
-    AWG_MBI_MW_pulse_amp = 0.009#0.00824 #0.01525
+    AWG_MBI_MW_pulse_amp = 0.013#0.00824 #0.01525
     
     Hermite_pi_length   = 220e-9#200e-9    
-    Hermite_pi_amp      = 0.704#0.716 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_amp      = 0.704 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length  = 100e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp     = 0.637#0.660 #0.777 #0.62 # 0.501
+    Hermite_pi2_amp     = 0.639#0.660 #0.777 #0.62 # 0.501
 
     Square_pi_length    = 602e-9   #250 MHz slow
     Square_pi_amp       = 0.73 #0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
@@ -307,8 +307,8 @@ cfg['samples']['111_1_sil18'] = {
 
 
 'C1_freq_m1'    : 450877,       ##+-104.6 #450301.0, 
-'C1_freq_0'     : 432012.57,
-'C1_freq_1_m1'  : 469066.38,
+'C1_freq_0'     : 431999.88,
+'C1_freq_1_m1'  : 469031.71,
 
 # 'C1_gate_optimize_tau_list_m1' : [4.994e-6,4.994e-6,4.994e-6,4.996e-6,4.996e-6,
 #                                4.996e-6,4.998e-6,4.998e-6,4.998e-6],
@@ -326,7 +326,7 @@ cfg['samples']['111_1_sil18'] = {
 
 'C1_Ren_tau_m1'    :  [7.220e-6],
 'C1_Ren_N_m1'      :  [44],
-'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [179.44] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
+'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [174.98] + [106.05] + [8.26] + [0.0] + [36.11] + [-4.49] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 2 ###
@@ -442,16 +442,47 @@ cfg['samples']['111_1_sil18'] = {
     ################
     ### Dummy C8 ###
     ################
+# 120 us, 2kHz, C13 cluster
+# 'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.082e3,#2.0846e3, 
+# 'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
+
+# 'C8_Ren_tau_m1'    :   [122.684e-6],
+# 'C8_Ren_N_m1'      :   [22],#[16]
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# # C6  for test
+# 'C6_freq_m1'        : 2.82e3,#2.0846e3,          # Only roughly calibrated
+# 'C6_freq_0'         : 2.82e3,#2.0846e3, 
+# 'C6_freq_1_m1'      : 2.82e3,#2.0846e3,
+
+# 'C6_Ren_tau_m1'    :   [172.44e-6],
+# 'C6_Ren_N_m1'      :   [12],
+# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
+# C6  for test
+# 'C6_freq_m1'        : 7.9e3,#2.0846e3,          # Only roughly calibrated
+# 'C6_freq_0'         : 7.9e3,#2.0846e3, 
+# 'C6_freq_1_m1'      : 7.9e3,#2.0846e3,
+
+# 'C6_Ren_tau_m1'    :   [76.545e-6],
+# 'C6_Ren_N_m1'      :   [24],
+# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+
 ## 120 us, 2kHz, C13 cluster
-'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
-'C8_freq_0'         : 2.082e3,#2.0846e3, 
-'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
+# 'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 2.082e3,#2.0846e3, 
+# 'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
 
-'C8_Ren_tau_m1'    :   [122.685e-6],
-'C8_Ren_N_m1'      :   [22],
-'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+# 'C8_Ren_tau_m1'    :   [120.38e-6],
+# 'C8_Ren_N_m1'      :   [16],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-# # 75 us, 6800kHz, C13 cluster
+
+
+# 75 us, 6800kHz, C13 cluster
 # 'C8_freq_m1'        : 6.60e3,          # Only roughly calibrated
 # 'C8_freq_0'         : 6.60e3,
 # 'C8_freq_1_m1'      : 6.60e3,
@@ -461,30 +492,21 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 # 63 us, 7800kHz, C13 cluster
-# 'C8_freq_m1'        : 7.9e3,          # Only roughly calibrated
-# 'C8_freq_0'         : 7.9e3,#239,
-# 'C8_freq_1_m1'      : 7.9e3,
+'C8_freq_m1'        : 239,#7.9e3,          # Only roughly calibrated
+'C8_freq_0'         : 239,#7.9e3,
+'C8_freq_1_m1'      : 239,#7.9e3,
 
-# 'C8_Ren_tau_m1'    :   [63.65e-6],#[62.4969e-6],
-# 'C8_Ren_N_m1'      :   [32],#[16],
-# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C8_Ren_tau_m1'    :   [62.4969e-6],#[63.65e-6],#
+'C8_Ren_N_m1'      :   [16],#[16],
+'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-
-# # 63 us, 7800kHz, C13 cluster
-# 'C6_freq_m1'        : 6.6e3,          # Only roughly calibrated
-# 'C6_freq_0'         : 6.6e3,#239,
-# 'C6_freq_1_m1'      : 6.6e3,
-
-# 'C6_Ren_tau_m1'    :   [76.545e-6],#[63.65e-6],
-# 'C6_Ren_N_m1'      :   [12],
-# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 # # #165 us, C13 cluster
 # 'C8_freq_m1'        : 2816,#2816,#0.189e3,          # Only roughly calibrated
 # 'C8_freq_0'         : 2816,#0.189e3,
 # 'C8_freq_1_m1'      : 2816,#2.816e3,#0.189e3,
 
-# 'C8_Ren_tau_m1'    :   [172.445e-6],
+# 'C8_Ren_tau_m1'    :   [172.44e-6],
 # 'C8_Ren_N_m1'      :   [8],
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
@@ -768,7 +790,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
     'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
     'AWG_MBI_MW_pulse_amp'      :   AWG_MBI_MW_pulse_amp,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
     # 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
-    'AWG_MBI_MW_pulse_duration' :   3000e-9}
+    'AWG_MBI_MW_pulse_duration' :   2000e-9}
 
     ###############################
     ### Nitrogen MBI parameters ###

@@ -6,6 +6,9 @@ from measurement.lib.pulsar import pulse, pulselib, element
 import BSM
 reload(BSM)
 
+# SAMPLE = qt.exp_params['samples']['current']
+# SAMPLE_CFG = qt.exp_params['protocols']['current']
+
 def run_nmr_frq_scan(name):
     m = BSM.NRabiMsmt('NMR_frq_scan_'+name) # BSM.ElectronRabiMsmt(name)
     BSM.prepare(m)
@@ -46,7 +49,7 @@ def run_nmr_rabi(name):
     m.params['sweep_name'] = 'RF duration (us)'
     m.params['sweep_pts'] = m.params['RF_pulse_durations'] * 1e6
     
-    BSM.finish(m, debug=False)
+    BSM.finish(m, debug=True)
 
 if __name__ == '__main__':
     #run_nmr_frq_scan('sil2')
