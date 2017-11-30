@@ -27,14 +27,14 @@ def NuclearRamseyWithInitialization_cal(name,
         debug               = True,
         free_evolution_time = 400e-6 + np.linspace(0., 6.0*1./0.5,44)):
     
-    m = DD.NuclearRamseyWithInitialization_v2(name)
-    # m = DD.ClusterRamseyWithInitialization(name)
+    # m = DD.NuclearRamseyWithInitialization_v2(name)
+    m = DD.ClusterRamseyWithInitialization(name)
     funcs.prepare(m)
 
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 300
     m.params['C13_MBI_RO_state'] = el_state
     ### overwritten from msmnt params
            
@@ -50,7 +50,7 @@ def NuclearRamseyWithInitialization_cal(name,
     # m.params['free_evolution_time'] = 180e-6 + np.linspace(0e-6, 4*1./74e3,m.params['pts'])
     
 
-    m.params['C'+str(carbon_nr)+'_freq_0']  += detuning
+    m.params['C'+str(carbon_nr)+'_freq_0']  +=detuning 
     m.params['C'+str(carbon_nr)+'_freq_1'+m.params['electron_transition']]  += detuning
     m.params['C_RO_phase'] =  np.ones(m.params['pts'] )*0  
 
@@ -74,13 +74,13 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['electron_readout_orientation'] = el_RO
     m.params['carbon_nr']                    = carbon_nr
     m.params['init_state']                   = carbon_init_state  
-    m.params['electron_after_init'] = 1 #str(el_state)
+    m.params['electron_after_init'] = 0 #str(el_state)
     
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
     
-    m.params['C13_MBI_threshold_list'] = [1]#[1,1]
-    m.params['Nr_C13_init']       = 1
+    m.params['C13_MBI_threshold_list'] = [1,1]
+    m.params['Nr_C13_init']       = 2
     
     print m.params['MBI_threshold']
 
@@ -124,18 +124,18 @@ if __name__ == '__main__':
     #             free_evolution_time = 100e-6 + np.linspace(0e-6, 600e-6,21))
 
 
-    detune = -432012.57
+    detune = -239
     el_state = 0
     el_RO = 'positive'
 
     NuclearRamseyWithInitialization_cal('C'+str(1)+'_ms' + str(el_state) + '_' + el_RO, 
-        carbon_nr           = 1,               
+        carbon_nr           = 8,               
         carbon_init_state   = 'up', 
         el_RO               = 'positive',
         detuning            = detune,#detuning_dict[str(1)],
         el_state            = 0,
         debug               = False,
-        free_evolution_time = 300e-6 + np.linspace(0e-6,4e-6,10))
+        free_evolution_time = 300e-6 + np.linspace(4e-3,8e-3,7))
 
     # stopper = False
 

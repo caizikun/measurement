@@ -152,9 +152,9 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
             PM_channel = 'MW_pulsemod',
             PM_risetime = self.params['MW_pulse_mod_risetime'] )
 
-        # N_pulse = pulselib.RF_erf_envelope(
-        #     channel = 'RF',
-        #     frequency = self.params['N_0-1_splitting_ms-1'])
+        N_pulse = pulselib.RF_erf_envelope(
+            channel = 'RF', amplitude = 0.7,
+            frequency = self.params['RF_pulse_frqs'])
 
         # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
         #     I_channel = 'MW_Imod',
@@ -168,23 +168,24 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
 
         # electron manipulation elements
         elts = []
-        print 'self params', self.params['pts']
+
         for i in range(self.params['pts']):
-            e = element.Element('ERabi_pt-%d' % i, pulsar=qt.pulsar,
+            e = element.Element('RF_pt-%d' % i, pulsar=qt.pulsar,
                 global_time = True)
-            e.append(T)
-            # e.append(
+            e.append(pulse.cp(T, length = 500e-9))
+            e.append(
+                    pulse.cp(N_pulse, length=self.params['RF_pulse_length'], frequency = self.params['RF_pulse_frqs'][i]))
+            e.append(pulse.cp(T, length = 500e-9))
+
+
+            # for j in range(self.params['MW_pulse_multiplicities'][i]):
+            #     e.append(
+            #         pulse.cp(X,
+            #             frequency = self.params['MW_pulse_mod_frqs'][i],
+            #             amplitude = self.params['MW_pulse_amps'][i],
+            #             length = self.params['MW_pulse_durations'][i]))
+            #     e.append(
             #         pulse.cp(T, length=self.params['MW_pulse_delays'][i]))
-
-
-            for j in range(self.params['MW_pulse_multiplicities'][i]):
-                e.append(
-                    pulse.cp(X,
-                        frequency = self.params['MW_pulse_mod_frqs'][i],
-                        amplitude = self.params['MW_pulse_amps'][i],
-                        length = self.params['MW_pulse_durations'][i]))
-                e.append(
-                    pulse.cp(T, length=self.params['MW_pulse_delays'][i]))
 
             # e.append(adwin_sync)
             elts.append(e)
@@ -196,7 +197,12 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
         #         RFfreq      = self.params['RF_pulse_frqs'][pt],
         #         amplitude   = self.params['RF_pulse_amps'][pt])
         #     gate_seq.extend([rabi_pulse])
-        # print 'Gate sequence', gate_seq[0]
+        #     print 'Gate_seq', gate_seq
+
+        #     gate_seq = DD.NitrogenRabiWithDirectRF.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+        # ### Convert elements to AWG sequence and add to combined list
+        # list_of_elements, seq2 = DD.combine_to_AWG_sequence(gate_seq, explicit=True)
 
 
 
@@ -212,7 +218,7 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
             seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
                 trigger_wait = True)
         print 'MBI at', self.params['AWG_MBI_MW_pulse_ssbmod_frq']
-        print 'MW rotations at', self.params['MW_pulse_mod_frqs'][i]
+        # print 'MW rotations at', self.params['MW_pulse_mod_frqs'][i]
         # program AWG
         if upload:
             #qt.pulsar.upload(mbi_elt, *elts)
