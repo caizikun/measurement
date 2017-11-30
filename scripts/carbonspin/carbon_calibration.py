@@ -34,7 +34,7 @@ n = 1
 
 qt.exp_params['simplify_wfnames'] = True
 
-carbons = [7]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
+carbons = [1]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -46,11 +46,11 @@ do_update_msmt_params = True
 
 use_queue = False
 
-f_ms0 = False
-f_ms1 = False
+f_ms0 = True
+f_ms1 = True
 update_average_freq = False
 
-self_phase_calibration = True
+self_phase_calibration = False
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
@@ -103,6 +103,20 @@ elif SETUP == 'lt4':
         '7' : detuning_basic,
         '8' : detuning_basic
         }
+
+elif SETUP == 'm1':
+    detuning_basic = 5e3
+    detuning_dict = {
+        '1' : detuning_basic,
+        '2' : detuning_basic,
+        '3' : detuning_basic,
+        '4' : detuning_basic,
+        '5' : detuning_basic,
+        '6' : detuning_basic,
+        '7' : detuning_basic,
+        '8' : detuning_basic
+        }
+
 ######
 
 

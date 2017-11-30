@@ -34,7 +34,7 @@ def Carbon_Ramsey(name,tau = None,N=None):
     # m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
     #                                                        np.linspace(15e3,22e3,25).astype(int)*1e-9]))
 
-    m.params['free_evolution_times']    = np.linspace(10e3,30e3,100).astype(int)*1e-9
+    m.params['free_evolution_times']    = np.linspace(10e3,40e3,45).astype(int)*1e-9
 
     m.params['pts']                     = len(m.params['free_evolution_times'])
     m.params['sweep_pts']               = m.params['free_evolution_times']

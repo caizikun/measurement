@@ -14,31 +14,39 @@ def run(name, mw_switch = False):
     if mw_switch:
         m = pulsar_mbi_espin.ElectronRabi_Switch(name)
     else:
-        m = pulsar_mbi_espin.ElectronRabi(name)
+        m = pulsar_mbi_espin.NitrogenRabiDirectRF(name)
 
     funcs.prepare(m)
-
+    m.params['centerfreq'] = 5.079e6
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
-    pts = 61
+    pts = 21
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 300
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
-    m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
+    m.params['MW_pulse_delays'] = np.ones(pts) * 100e-9
 
     # MW pulses
-    m.params['MW_pulse_durations']  = np.ones(pts) * m.params['AWG_MBI_MW_pulse_duration'] #3e-6 #3000e-9
-    m.params['MW_pulse_amps']       = np.ones(pts) * m.params['AWG_MBI_MW_pulse_amp']  #0.01525 #for msm1,  ??? for msp1, 
+    m.params['MW_pulse_durations']  = np.linspace(10e-9,5e-6,pts) #3e-6 #3000e-9
+    print 'MW_pulse_durateions', m.params['MW_pulse_durations']
+    m.params['MW_pulse_amps']       = 0*np.ones(pts) * m.params['AWG_MBI_MW_pulse_amp']  #0.01525 #for msm1,  ??? for msp1, 
 
-    m.params['MW_pulse_mod_frqs']   = np.linspace(m.params['MW_modulation_frequency']
-            -3.5e6, m.params['MW_modulation_frequency']+3.5e6, pts)
+    m.params['MW_pulse_mod_frqs']   = np.ones(pts) * m.params['MW_modulation_frequency']
 
     print m.params['MW_pulse_mod_frqs']
+
+    ## RF parameters
+
+    m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 1
+    m.params['RF_pulse_durations'] = 10e-6 + np.linspace(0e-6,10e-6,pts)
+    m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * m.params['centerfreq']
+    m.params['sweep_name'] = 'RF_pulse_length (us)'
+
 
 
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'MW pulse frequency (MHz)'
-    m.params['sweep_pts']  = (m.params['MW_pulse_mod_frqs'] + m.params['mw_frq'])/1.e6
+    m.params['sweep_name'] = 'MW_pulse_durations'
+    m.params['sweep_pts']  = (m.params['MW_pulse_durations'])/1.e-6
     
 
     # print 'MBI_Threshold', m.params['MBI_threshold']
@@ -61,7 +69,7 @@ def run(name, mw_switch = False):
 #     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
-    run('MBI_DESR',mw_switch = True)
+    run('MBI_DESR',mw_switch = False)
 
 
 

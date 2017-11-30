@@ -4987,6 +4987,7 @@ class MBI_C13(DynamicalDecoupling):
                 carbon_init_seq = [C_init_y, C_init_Ren_a, C_init_x, C_init_Ren_b, C_init_RO_Trigger]
         elif initialization_method == 'MBI': ## MBI initializes into +/-X
             carbon_init_seq = [C_init_y, C_init_Ren_a, C_init_x, C_init_RO_Trigger]
+            print 'Init method: MBI'
 
         elif initialization_method == 'MBI_y': ## MBI initializes into +/-X
 
@@ -8094,7 +8095,7 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     event_jump_element  = None,
                     RO_trigger_duration = 10e-6,
                     carbon_list         = [self.params['carbon_nr']],
-                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    RO_basis_list       = self.params['C_RO_phase'], #[self.params['C_RO_phase'][pt]],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in = int(self.params['el_after_init']))
             gate_seq.extend(carbon_tomo_seq)

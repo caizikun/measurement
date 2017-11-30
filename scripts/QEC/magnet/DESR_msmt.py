@@ -65,5 +65,6 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0,
     m.save()
     m.finish()
 
-
+if __name__ == '__main__':
+    darkesr()
 

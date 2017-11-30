@@ -166,30 +166,32 @@ Q        = 4.938e6        # not calibrated
 electron_transition = '-1'
 multiple_source = False
 
-pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
+# pulse_shape = 'Square' # alternatively 'Hermite', or 'Square'
 pulse_shape = 'Hermite' # alternatively 'Hermite', or 'Square'
 
 if electron_transition == '-1':
     electron_transition_string = '_m1'
     if pulse_shape == 'Square':
-        mw_mod_frequency = 250e6   # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
+        mw_mod_frequency = 43e6 # MJD set to 43e6 for N MBI quick sweeping in 10 MHz regime # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
         N_MBI_threshold = 1
+        Ex_SP_amplitude = 16e-9
     elif pulse_shape == 'Hermite':
         mw_mod_frequency = 0*1e6 
-        N_MBI_threshold = 0
+        N_MBI_threshold = 0#0
+        Ex_SP_amplitude = 0
 
     mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
-    mw_freq_MBI = f_msm1_cntr - mw_mod_frequency - N_HF_frq     # Initialized frequency
+    mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq  MJD commented out to set the MBI freq to the center freq     # Initialized frequency
     
-    AWG_MBI_MW_pulse_amp = 0#0.00824 #0.01525
+    AWG_MBI_MW_pulse_amp = 0.009#0.00824 #0.01525
     
     Hermite_pi_length   = 220e-9#200e-9    
-    Hermite_pi_amp      =  0.738 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_amp      = 0.704#0.716 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length  = 100e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp     = 0.684 #0.777 #0.62 # 0.501
+    Hermite_pi2_amp     = 0.637#0.660 #0.777 #0.62 # 0.501
 
-    Square_pi_length    = 60e-9   #250 MHz slow
+    Square_pi_length    = 602e-9   #250 MHz slow
     Square_pi_amp       = 0.73 #0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
 
     Square_pi2_length   = 56e-9 #should be divisible by 4, slow
@@ -205,10 +207,11 @@ elif electron_transition == '+1':
     if pulse_shape == 'Square':
         mw_mod_frequency = 0       #40e6 #250e6    # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
         N_MBI_threshold = 1
+        Ex_SP_amplitude = 16e-9
     elif pulse_shape == 'Hermite':
         mw_mod_frequency = 0*1e6 
         N_MBI_threshold = 0
-
+        Ex_SP_amplitude = 0
     mw_freq             = f_msp1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI         = f_msp1_cntr - mw_mod_frequency# - N_HF_frq    # Initialized frequency
     AWG_MBI_MW_pulse_amp = 0#0.00824
@@ -265,7 +268,7 @@ cfg['samples']['111_1_sil18'] = {
 'electron_transition_used' : electron_transition_string,
 'multiple_source'   :   multiple_source,
 'mw_mod_freq'   :       mw_mod_frequency,
-'mw_frq'        :       mw_freq_MBI, # this is automatically changed to mw_freq if hermites are selected. THT:where?
+'mw_frq'        :       mw_freq, 
 'mw2_frq'        :      mw2_freq,
 'mw_power'      :       mw_power,
 'mw2_power'      :      mw2_power,
@@ -439,23 +442,23 @@ cfg['samples']['111_1_sil18'] = {
     ################
     ### Dummy C8 ###
     ################
-# ## 120 us, 2kHz, C13 cluster
-# 'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
-# 'C8_freq_0'         : 2.082e3,#2.0846e3, 
-# 'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
+## 120 us, 2kHz, C13 cluster
+'C8_freq_m1'        : 2.082e3,#2.0846e3,          # Only roughly calibrated
+'C8_freq_0'         : 2.082e3,#2.0846e3, 
+'C8_freq_1_m1'      : 2.082e3,#2.0846e3,
 
-# 'C8_Ren_tau_m1'    :   [122.685e-6],
-# 'C8_Ren_N_m1'      :   [22],
-# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-
-# 75 us, 6800kHz, C13 cluster
-'C8_freq_m1'        : 6.60e3,          # Only roughly calibrated
-'C8_freq_0'         : 6.60e3,
-'C8_freq_1_m1'      : 6.60e3,
-
-'C8_Ren_tau_m1'    :   [76.545e-6],
-'C8_Ren_N_m1'      :   [12],#[12],
+'C8_Ren_tau_m1'    :   [122.685e-6],
+'C8_Ren_N_m1'      :   [22],
 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# # 75 us, 6800kHz, C13 cluster
+# 'C8_freq_m1'        : 6.60e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 6.60e3,
+# 'C8_freq_1_m1'      : 6.60e3,
+
+# 'C8_Ren_tau_m1'    :   [76.545e-6],
+# 'C8_Ren_N_m1'      :   [12],#[12],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 # 63 us, 7800kHz, C13 cluster
 # 'C8_freq_m1'        : 7.9e3,          # Only roughly calibrated
@@ -467,14 +470,14 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
-# 63 us, 7800kHz, C13 cluster
-'C6_freq_m1'        : 6.6e3,          # Only roughly calibrated
-'C6_freq_0'         : 6.6e3,#239,
-'C6_freq_1_m1'      : 6.6e3,
+# # 63 us, 7800kHz, C13 cluster
+# 'C6_freq_m1'        : 6.6e3,          # Only roughly calibrated
+# 'C6_freq_0'         : 6.6e3,#239,
+# 'C6_freq_1_m1'      : 6.6e3,
 
-'C6_Ren_tau_m1'    :   [76.545e-6],#[63.65e-6],
-'C6_Ren_N_m1'      :   [22],
-'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+# 'C6_Ren_tau_m1'    :   [76.545e-6],#[63.65e-6],
+# 'C6_Ren_N_m1'      :   [12],
+# 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 # # #165 us, C13 cluster
 # 'C8_freq_m1'        : 2816,#2816,#0.189e3,          # Only roughly calibrated
@@ -680,8 +683,7 @@ else:
         print 'no valid pulses defined, using Square pulse params'
     mw2_fast_pi_length, mw2_fast_pi_amp, mw2_fast_pi2_length, mw2_fast_pi2_amp = mw2_Square_pi_length, mw2_Square_pi_amp, mw2_Square_pi2_length, mw2_Square_pi2_amp
     
-cfg['samples']['111_1_sil18']['mw_frq'] = mw_freq   #THT: these are two weird lines of code, because it deterministically overwrites earlier settings. Why not do it imeadiatly
-cfg['samples']['111_1_sil18']['mw2_frq'] = mw2_freq
+
 f_mod_0  = cfg['samples']['111_1_sil18']['mw_mod_freq']
 
 cfg['protocols']['111_1_sil18']['pulses'] ={
@@ -775,7 +777,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
 cfg['protocols']['111_1_sil18']['AdwinSSRO+MBI'] ={
 
     #Spin pump before MBI
-'Ex_SP_amplitude'           :           0e-9,   #15e-9,#15e-9,    #18e-9
+'Ex_SP_amplitude'           :           Ex_SP_amplitude,   #15e-9,#15e-9,    #18e-9
 'A_SP_amplitude_before_MBI' :           0,    #does not seem to work yet?
 'SP_E_duration'             :           50, #50     #Duration for both Ex and A spin pumping
     #MBI readout power and duration

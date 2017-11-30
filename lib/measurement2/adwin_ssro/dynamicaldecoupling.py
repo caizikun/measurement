@@ -4059,8 +4059,8 @@ class MBI_C13(DynamicalDecoupling):
             carbon_init_seq.append(C_init_elec_X) 
             
 
-        # elif cluster_y_init =='0':  # Test
-            # carbon_init_seq.append(C_init_elec_X)
+        elif cluster_y_init =='0':  # Test
+            carbon_init_seq.append(C_init_elec_X)
             # carbon_init_seq.append(wait_gate_test)
             # carbon_init_seq.append(C_init_elec_X_test) 
             
@@ -4102,7 +4102,7 @@ class MBI_C13(DynamicalDecoupling):
         ### Define elements and gates
         Clu_init_y = Gate(prefix+str(addressed_carbon)+'cl_y_pt'+str(pt),'electron_Gate',
                 Gate_operation ='pi2',
-                wait_for_trigger = True,
+                wait_for_trigger = False,
                 phase = C_init_y_phase,
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
@@ -4119,8 +4119,8 @@ class MBI_C13(DynamicalDecoupling):
                 phase = C_init_y_phase,
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
-        Clu_init_Ren_a = Gate(prefix+str(addressed_carbon)+'cl_Ren_a_pt'+str(pt), 'Carbon_Gate',
-                Carbon_ind = 6,
+        Clu_init_Ren_a1 = Gate(prefix+str(addressed_carbon)+'cl_Ren_a1_pt'+str(pt), 'Carbon_Gate',
+                Carbon_ind = addressed_carbon,
                 phase = self.params['C13_X_phase'],
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
@@ -4142,7 +4142,7 @@ class MBI_C13(DynamicalDecoupling):
 
         Clu_init_x2 = Gate(prefix+str(addressed_carbon)+'_cl_x2_pt'+str(pt),'electron_Gate',
                 Gate_operation='pi2',
-                phase = self.params['X_phase']+180,
+                phase = self.params['X_phase'],
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_x3 = Gate(prefix+str(addressed_carbon)+'_cl_x3_pt'+str(pt),'electron_Gate',
@@ -4152,7 +4152,7 @@ class MBI_C13(DynamicalDecoupling):
 
         Clu_init_Ren_b = Gate(prefix+str(addressed_carbon)+'cl_Ren_b_pt'+str(pt), 'Carbon_Gate',
                 Carbon_ind = addressed_carbon,
-                phase = self.params['C13_Y_phase']+180,
+                phase = self.params['C13_Y_phase'],
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'cl_RO_trig_pt'+str(pt),'Trigger',
@@ -4186,9 +4186,15 @@ class MBI_C13(DynamicalDecoupling):
                 wait_time = 3e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         ### Set sequence
+        if initialization_method == 'cluster_1':
+            cluster_init_seq = [Clu_init_x1,Clu_init_Ren_a1,Clu_init_Ren_a2, Clu_init_x2, Clu_init_RO_Trigger]
 
-        cluster_init_seq = [Clu_init_x1,Clu_init_Ren_a, Clu_init_x2, Clu_init_RO_Trigger,Clu_init_y2,Clu_init_Ren_a3,Clu_init_x3,Clu_init_RO_Trigger_2,Clu_init_elec_X]
-        # cluster_init_seq = [Clu_init_x1,Clu_init_Ren_a, Clu_init_x2, Clu_init_RO_Trigger]
+        elif initialization_method == 'cluster_2':
+            cluster_init_seq =  [Clu_init_y,Clu_init_Ren_a3,Clu_init_x3,Clu_init_RO_Trigger_2,Clu_init_elec_X]
+       
+        # cluster_init_seq = [Clu_init_x1,Clu_init_Ren_a1,Clu_init_Ren_a2, Clu_init_x2, Clu_init_RO_Trigger,Clu_init_y,Clu_init_Ren_a3,Clu_init_x3,Clu_init_RO_Trigger_2,Clu_init_elec_X]
+        # 
+        # cluster_init_seq = [Clu_init_y,Clu_init_Ren_a1, Clu_init_x2, Clu_init_RO_Trigger,Clu_init_elec_X]
         ### TODO: THT, temporary fix for pi-pulse in Trigger, later redo trigger element workings
         ### I uncommented this part of the initialization for the Carbon T1 measurements. Norbert 20141104
         #print ('el_after_init'+str(el_after_init))
@@ -4556,8 +4562,6 @@ class MBI_C13(DynamicalDecoupling):
             #     phase = self.params['X_phase']+180,
             #     wait_for_trigger=wait_for_trigger,
             #     specific_transition=self.params['C'+str(carbons_to_RO[0])+'_dec_trans']))
-
-            print 'test'
 
         ### Add RO rotations ###
         for kk, carbon_nr in enumerate(carbon_list):
@@ -5949,16 +5953,24 @@ class ClusterRamseyWithInitialization(MBI_C13):
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
 
             ### Carbon initialization
-            cluster_init_seq = self.initialize_cluster_sequence(go_to_element = mbi,
+            cluster_init_seq1 = self.initialize_cluster_sequence(go_to_element = mbi,
                 prefix = 'Cluster_MBI_',
                 wait_for_trigger      = True, pt =pt,
-                initialization_method = 'MBI',#self.params['C13_init_method'],
+                initialization_method = 'cluster_1',#self.params['C13_init_method'],
                 C_init_state          = self.params['init_state'],
                 addressed_carbon      = self.params['carbon_nr'],
                 el_RO_result          = str(self.params['C13_MBI_RO_state']))#,
 
+            cluster_init_seq2 = self.initialize_cluster_sequence(go_to_element = mbi,
+                prefix = 'Cluster_MBI_',
+                wait_for_trigger      = True, pt =pt,
+                initialization_method = 'cluster_2',#self.params['C13_init_method'],
+                C_init_state          = self.params['init_state'],
+                addressed_carbon      = self.params['carbon_nr'],
+                el_RO_result          = str(self.params['C13_MBI_RO_state']))#,
 
-            gate_seq.extend(cluster_init_seq)
+            gate_seq.extend(cluster_init_seq1)
+            gate_seq.extend(cluster_init_seq2)
             
             # mbi2 = Gate('MBI_2'+str(pt),'MBI')
             # mbi_seq2 = [mbi2]; gate_seq.extend(mbi_seq2)
