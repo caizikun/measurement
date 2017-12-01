@@ -9,6 +9,9 @@ in a common parent class.
 Furthermore, measurements can be based on other measurements,
 e.g. by just introducing another outer parameter sweep, which can
 also be facilitated by an OO approach like this one.
+
+Cast into Simulate 20171130 @CEB for m1_sim_setup
+
 """
 
 ### imports
