@@ -217,6 +217,10 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
                 trigger_wait = False) #True
             seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
                 trigger_wait = True)
+            # seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
+            #     trigger_wait = False)      ## According to Norbert the trigger wait time should be set to False. 
+            ## This is implemented at the beginning of the MBI because it is waiting for a CR check from the adwin. 
+            ## For the readout this doesn't have to be implemented because it is deterministic. 
         print 'MBI at', self.params['AWG_MBI_MW_pulse_ssbmod_frq']
         # print 'MW rotations at', self.params['MW_pulse_mod_frqs'][i]
         # program AWG
