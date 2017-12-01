@@ -1,6 +1,6 @@
 """
 Class for SSRO with the Adwin
-last version: 2013/01/02, Wolfgang
+Cast into Simulate 20171130 @CEB for m1_sim_setup
 """
 import numpy as np
 import logging

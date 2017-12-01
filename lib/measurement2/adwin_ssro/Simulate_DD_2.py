@@ -3,6 +3,7 @@ Measurement classes for everything dynamical decoupling related.
 File made by Adriaan Rol
 Edited by THT
 Cast into v2 by NK
+Cast into Simulate by CEB (m1_sim_setup)
 '''
 import numpy as np
 from scipy.special import erfinv
@@ -549,7 +550,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse', 'carbon_delay_phase_feedback']
+        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse', 'carbon_delay_phase_feedback']
         gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling','carbon_delay_phase_feedback']
         #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
         #TODO_THT: What  does this mean??? Clearly it does not work...
@@ -576,7 +577,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_transfer_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','electron_Gate']
+        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse','electron_Gate']
 
         for i in range(len(gate_seq)-1):
             
@@ -1081,7 +1082,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Special elements
             #########
 
-            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
+            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse' or g.Gate_type =='IQ_RF_square_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
 
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
@@ -2894,8 +2895,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def generate_IQ_RF_square_pulse_element(self,Gate):
         '''
-        Written by CEB 11.24.2017. 
+        Written by CEB 24.11.2017. 
         Generate arbitrary RF pulse gate, via AWG-mediated IQ modulation.
+        As of  30.11.17, creates a square pulse from invidiual square pulses of 10 us.
         '''
 
         ###################
@@ -2908,23 +2910,66 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         amplitude  = Gate.amplitude
         prefix     = Gate.prefix
 
+        pulse_spacing = 1e-6 #Space before and after the RF pulse starts
+        total_gate_t = length + 2*pulse_spacing
+
+        block_length = 10e-6 #Size of repeated square blocks
+
+        Gate.reps, tau_remaind = divmod(total_gate_t, block_length)
+        ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
+
+        print 'gate_reps',Gate.reps
+        print 'tau_remaind',tau_remaind
+
         list_of_elements = []
 
-        X = pulse.SquarePulse(
+        T = pulse.SquarePulse(
+            channel='RF',
+            length = pulse_spacing, 
+            amplitude = 0)
+
+        X_start = pulse.SquarePulse(
             channel = 'RF',
-            length = length,
+            length = ext_pulse_length,
             amplitude = amplitude)
 
+        X_end = pulse.SquarePulse(
+            channel = 'RF',
+            length = ext_pulse_length,
+            amplitude = amplitude)
 
-        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+        X_middle = pulse.SquarePulse(
+            channel = 'RF',
+            length = block_length,
+            amplitude = amplitude)
+
+        rf_pulse_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_middle.append(pulse.cp(X))
-        list_of_elements.append(e_middle)
+
+        rf_pulse_start.append(pulse.cp(T))
+        rf_pulse_start.append(pulse.cp(X_start))
+
+        list_of_elements.append(rf_pulse_start)
+
+        rf_pulse_middle = element.Element('%s_RF_pulse_mid' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+
+        rf_pulse_middle.append(pulse.cp(X_middle))
+
+        list_of_elements.append(rf_pulse_middle)
+
+        rf_pulse_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+
+        rf_pulse_end.append(pulse.cp(X_end))
+        rf_pulse_end.append(pulse.cp(T))
+     
+        list_of_elements.append(rf_pulse_end)
 
         Gate.tau_cut = 1e-6
-        Gate.wait_time = Gate.length + 2e-6
-        Gate.elements= list_of_elements
-        
+        Gate.wait_time = Gate.length + 2e-6 
+        Gate.elements = list_of_elements
+    
         return Gate
 
 
@@ -3551,6 +3596,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                  # ending envelope element
                 # seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
                 #     trigger_wait=False,repetitions = 1)
+            elif gate.scheme == 'IQ_RF_square_pulse':
+                list_of_elements.extend(gate.elements)
+                #Pulse Delay + Start Time
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                    trigger_wait=False,repetitions = 1)
+                #Repeating Element
+                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
+                    trigger_wait=False,repetitions = gate.reps)
+                # gate.reps = 1
+                #Pulse Delay + End Time
+                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                    trigger_wait=False,repetitions = 1)
+    
+
             ######################
             ### XY4 elements
             ######################
@@ -3937,6 +3996,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_electron_repump_element(g)
             elif g.Gate_type == 'RF_pulse':
                 self.generate_RF_pulse_element(g)
+            elif g.Gate_type == 'IQ_RF_square_pulse':
+                self.generate_IQ_RF_square_pulse_element(g)
             elif g.Gate_type == 'LDE':
                 self.generate_LDE_element(g)
             elif g.Gate_type == 'feedback_trigger_decoupling':

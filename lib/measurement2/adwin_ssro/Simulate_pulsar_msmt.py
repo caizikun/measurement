@@ -1,3 +1,9 @@
+
+"""
+Class for Pulsar Measurement
+Cast into Simulate 20171130 @CEB for m1_sim_setup
+"""
+
 import msvcrt
 import numpy as np
 import qt
