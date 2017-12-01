@@ -23,7 +23,7 @@ import msvcrt
 
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
-import measurement.lib.measurement2.adwin_ssro.Simulate_DD_2 as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.DD_2 as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 
 SAMPLE = qt.exp_params['samples']['current']

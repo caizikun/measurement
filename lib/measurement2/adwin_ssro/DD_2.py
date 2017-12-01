@@ -10,7 +10,7 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.measurement2.adwin_ssro import Simulate_pulsar_msmt as pulsar_msmt;
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt as pulsar_msmt;
 import pulse_select as ps; reload(ps)
 
 
