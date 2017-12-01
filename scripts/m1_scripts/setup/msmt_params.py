@@ -186,10 +186,10 @@ if electron_transition == '-1':
     AWG_MBI_MW_pulse_amp = 0.013#0.00824 #0.01525
     
     Hermite_pi_length   = 220e-9#200e-9    
-    Hermite_pi_amp      = 0.704 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_amp      = 0.698 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length  = 100e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp     = 0.639#0.660 #0.777 #0.62 # 0.501
+    Hermite_pi2_amp     = 0.634#0.660 #0.777 #0.62 # 0.501
 
     Square_pi_length    = 602e-9   #250 MHz slow
     Square_pi_amp       = 0.73 #0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
@@ -491,14 +491,14 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_N_m1'      :   [12],#[12],
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
-# 63 us, 7800kHz, C13 cluster
-'C8_freq_m1'        : 239,#7.9e3,          # Only roughly calibrated
-'C8_freq_0'         : 239,#7.9e3,
-'C8_freq_1_m1'      : 239,#7.9e3,
+##63 us, 7800kHz, C13 cluster
+# 'C8_freq_m1'        : 7.9e3,          # Only roughly calibrated
+# 'C8_freq_0'         : 7.9e3,
+# 'C8_freq_1_m1'      : 7.9e3,
 
-'C8_Ren_tau_m1'    :   [62.4969e-6],#[63.65e-6],#
-'C8_Ren_N_m1'      :   [16],#[16],
-'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+# 'C8_Ren_tau_m1'    :   [62.4969e-6],#[63.65e-6],#
+# 'C8_Ren_N_m1'      :   [16],#[16],
+# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 # # #165 us, C13 cluster
@@ -518,6 +518,16 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_tau_m1'    :   [112.22e-6],
 # 'C8_Ren_N_m1'      :   [26],
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
+# # 111 us, 80 Hz, C13 cluster
+'C8_freq_m1'        : 4.422e3,          # Only roughly calibrated
+'C8_freq_0'         : 4.422e3, 
+'C8_freq_1_m1'      : 4.422e3,
+
+'C8_Ren_tau_m1'    :   [112.22e-6],
+'C8_Ren_N_m1'      :   [26],
+'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+
 
 # #260 us, 2kHz, C13 cluster
 # 'C8_freq_m1'        : 1.821e3,          # Only roughly calibrated

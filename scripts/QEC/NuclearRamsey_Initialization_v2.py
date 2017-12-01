@@ -34,7 +34,7 @@ def NuclearRamseyWithInitialization_cal(name,
     '''Set parameters'''
 
     ### Sweep parameters
-    m.params['reps_per_ROsequence'] = 300
+    m.params['reps_per_ROsequence'] = 500
     m.params['C13_MBI_RO_state'] = el_state
     ### overwritten from msmnt params
            
@@ -79,8 +79,8 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
     
-    m.params['C13_MBI_threshold_list'] = [1,1]
-    m.params['Nr_C13_init']       = 2
+    m.params['C13_MBI_threshold_list'] = [1]
+    m.params['Nr_C13_init']       = 1
     
     print m.params['MBI_threshold']
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     #             free_evolution_time = 100e-6 + np.linspace(0e-6, 600e-6,21))
 
 
-    detune = -239
+    detune = -4422
     el_state = 0
     el_RO = 'positive'
 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
         detuning            = detune,#detuning_dict[str(1)],
         el_state            = 0,
         debug               = False,
-        free_evolution_time = 300e-6 + np.linspace(4e-3,8e-3,7))
+        free_evolution_time = 300e-6 + np.linspace(0e-3,0.2e-3,7))
 
     # stopper = False
 
