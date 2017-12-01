@@ -11,7 +11,6 @@ class NewportConexCcError(Exception):
 
 class NewportConexCC(Instrument):
     def __init__(self, name, address=0, axis = 1):
-#    def __init__(self, name, address, axis = 1, path_to_visa_lib = 'C:/WINDOWS/system32/visa32.dll'):
         Instrument.__init__(self, name)
 
         try:
@@ -25,25 +24,13 @@ class NewportConexCC(Instrument):
                  Use 'COM1' or '1''')
 
         self._address = address
-#        self._visa = visa.instrument(self._address,     # pyvisa 1.8 !!!
-#                        baud_rate=921600, data_bits=8, 
-#                        stop_bits = visa.constants.StopBits.one, 
-#                        parity = visa.constants.Parity.none, 
-#                        flow_control=visa.constants.VI_ASRL_FLOW_XON_XOFF)
-        self._visa = visa.instrument(self._address, baud_rate=921600, data_bits=8)
-        visa.vpp43.set_attribute(self._visa.vi, visa.VI_ATTR_ASRL_PARITY, visa.VI_ASRL_PAR_NONE)
-        visa.vpp43.set_attribute(self._visa.vi, visa.VI_ATTR_ASRL_STOP_BITS, visa.VI_ASRL_STOP_ONE)
-        visa.vpp43.set_attribute(self._visa.vi, visa.VI_ATTR_ASRL_FLOW_CNTRL, visa.VI_ASRL_FLOW_XON_XOFF)
- 
+        self._rm = visa.ResourceManager()
+        self._visa = self._rm.open_resource(self._address, baud_rate=921600, data_bits=8, 
+                                            stop_bits = visa.constants.StopBits.one, 
+                                            parity = visa.constants.Parity.none, 
+                                            flow_control=visa.constants.VI_ASRL_FLOW_XON_XOFF)
         self.axis = axis
 
- #       # To make the methods accesible remotely
- #        self.add_function('Read')
- #        self.add_function('Write')
- #        self.add_function('Query')
- #        self.add_function('Close')
- #        self.add_function('Help')
- 
     def __del__(self):
         self.Close()
 

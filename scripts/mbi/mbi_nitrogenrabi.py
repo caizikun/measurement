@@ -57,12 +57,12 @@ def NMR(name):
     m = pulsar_mbi_nitrogenspin.NitrogenRabi(name)
     funcs.prepare(m)
 
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
+    # m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['Magnetometry'])
     print 'MBI threshold =' + str(m.params['MBI_threshold'])
     print 'Ex_MBI_amplitude =' + str(m.params['Ex_MBI_amplitude'])
     print 'SSRO_duration =' + str(m.params['SSRO_duration'])
 
-    pts = 51
+    pts = 1
     m.params['wait_for_AWG_done'] = 1
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 300
@@ -86,9 +86,9 @@ def NMR(name):
 
     # for the autoanalysis
 
-    funcs.finish(m, debug=False)    
+    funcs.finish(m, debug=True)    
 
 if __name__ == '__main__':
-    #NMR('NMR_mIm1')
-    NRabi('NRabi_mIp1')
+    NMR('NMR_mIm1')
+    # NRabi('NRabi_mIp1')
 

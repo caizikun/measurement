@@ -24,10 +24,6 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
     Number_of_pulses =NoP
 
-    tau = np.round(1./m.params['C1_freq_0'],9)
-    tau *=4
-
-    print tau
 
     pts = len(Number_of_pulses)
 
@@ -45,9 +41,8 @@ def SimpleDecoupling_swp_N(name,tau=None, NoP=np.arange(4,254,4),reps_per_ROsequ
     m.params['pts'] = pts
     m.params['tau_list'] = tau_list
     m.params['Number_of_pulses'] = Number_of_pulses
-    m.params['sweep_pts'] = Number_of_pulses*tau_list*1.e3
-    print m.params['sweep_pts']
-    m.params['sweep_name'] = 'Total evolution time [ms]'
+    m.params['sweep_pts'] = Number_of_pulses
+    m.params['sweep_name'] = 'Number of pulses'
     m.autoconfig()
 
 
@@ -66,12 +61,12 @@ if __name__ == '__main__':
     # tau = 10.3e-6 #6.406e-6
     
 
-    NoP1=[8, 16, 32, 64] #np.arange(2,20,2)
+    NoP1=np.arange(4,90,4)
     SimpleDecoupling_swp_N(
         SAMPLE+'_sweep_N_positive',
         NoP=NoP1,
-        tau =1, 
-        reps_per_ROsequence = 5000,
+        tau =7.216e-6, 
+        reps_per_ROsequence = 500,
         readout_pulse='-x'
     )
 

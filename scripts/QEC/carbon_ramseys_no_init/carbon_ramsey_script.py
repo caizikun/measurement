@@ -16,25 +16,25 @@ SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 def Carbon_Ramsey(name,tau = None,N=None):
 
-    # m = DD.NuclearRamsey(name)
+    #m = DD.NuclearRamsey(name)
     m = DD.NuclearRamsey_v2(name)
-    # m = DD.NuclearRamsey_no_elDD(name)
+    #m = DD.NuclearRamsey_no_elDD(name)
 
     funcs.prepare(m)
 
     '''set experimental parameters'''
-    m.params['reps_per_ROsequence'] =   500 #Repetitions of each data point
+    m.params['reps_per_ROsequence'] =   2500 #Repetitions of each data point
     m.params['Initial_Pulse']       =   'x'
     m.params['Final_Pulse']         =   '-x'
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
 
-    m.params['addressed_carbon'] = 7 
+    m.params['addressed_carbon'] = 1 
 
     ### Sweep parmater
     m.params['free_evolution_times']    = (np.concatenate([np.linspace(1e3,7.5e3,25).astype(int)*1e-9, 
                                                            np.linspace(15e3,22e3,25).astype(int)*1e-9]))
 
-    m.params['free_evolution_times']    = np.linspace(1e3,7e3,20).astype(int)*1e-9
+    m.params['free_evolution_times']    = np.linspace(10e3,1000e3,30).astype(int)*1e-9
 
     m.params['pts']                     = len(m.params['free_evolution_times'])
     m.params['sweep_pts']               = m.params['free_evolution_times']
@@ -55,7 +55,7 @@ def Carbon_Ramsey(name,tau = None,N=None):
     #!NB: These should go into msmt params
     #############################
     m.params['min_dec_tau'] = 20e-9 + m.params['fast_pi_duration']/2.0
-    m.params['max_dec_tau'] = 0.35e-6 #Based on measurement for fingerprint at low tau
+    m.params['max_dec_tau'] = 0.35e-6 #0.35e-6 #Based on measurement for fingerprint at low tau
     m.params['dec_pulse_multiple'] = 4#lowest multiple of 4 pulses
 
     m.autoconfig()
@@ -63,4 +63,4 @@ def Carbon_Ramsey(name,tau = None,N=None):
     print m.params['sweep_pts'] 
 
 if __name__ == '__main__':
-    Carbon_Ramsey(SAMPLE,N=74,tau=10.812)
+    Carbon_Ramsey(SAMPLE,N=16,tau=6.6625e-6)

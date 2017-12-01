@@ -23,13 +23,15 @@ current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
 
 def darkesr(name, range_MHz, pts, reps, power, MW_power, pulse_length):
 
-    m = pulsar_msmt.DarkESR(name)
+    m = pulsar_msmt.DarkESR_Switch(name)
     m.params.from_dict(qt.exp_params['samples'][SAMPLE])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['111_1_sil18']['pulses']) #Added to include the MW switch MA
 
+    
     m.params['mw_frq']      = m.params['ms-1_cntr_frq']-43e6 #MW source frequency
 
     m.params['mw_power']    = MW_power
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     ### Settings for the first coarse steps
     coarse_range          = 7.5     #Common: 10 MHz
     coarse_pts            = 101     #Common: 121
-    coarse_reps           = 750     #Common: 500
+    coarse_reps           = 500    #Common: 500
     coarse_amplitude      = 0.08
     coarse_pulse_length   = 3e-6
     coarse_MW_power       = -1
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     fine_range          = 0.600
     fine_pts            = 81
     fine_reps           = 2000
-    fine_amplitude      = 0.08/3 
+    fine_amplitude      = 0.08/3. 
     fine_pulse_length   = 9e-6
     fine_MW_power       = -1
 
@@ -97,7 +99,7 @@ if __name__ == '__main__':
     f0 = []; u_f0 = []; delta_f0 =[]; iterations_list =[]; magnet_postion_list =[]; fit_failed_list=[]
 
     # Measure B-field 
-    darkesr('magnet_Zpos_optimize_init', range_MHz=coarse_range, pts=coarse_pts, reps=coarse_reps, 
+    darkesr(name='magnet_Zpos_optimize_init', range_MHz=coarse_range, pts=coarse_pts, reps=coarse_reps, 
             power= coarse_amplitude, MW_power = coarse_MW_power, pulse_length=coarse_pulse_length)
 
    
@@ -198,6 +200,6 @@ if __name__ == '__main__':
     if iterations == 0:
         print 'Z position was alredy optimzed, did not move the magnet'
     else: 
-        print 'Z position optimization finished, moved the magnet '+ str((move_to_position-initial_position)*1e3) + ' um in ' + str(iterations) +' iterations'
+        print 'Z position optimization finished, moved the magnet '+ str((move_to_position-current_position)*1e3) + ' um in ' + str(iterations) +' iterations'
 
     

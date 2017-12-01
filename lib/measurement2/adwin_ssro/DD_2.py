@@ -3,13 +3,14 @@ Measurement classes for everything dynamical decoupling related.
 File made by Adriaan Rol
 Edited by THT
 Cast into v2 by NK
+Cast into Simulate by CEB (m1_sim_setup)
 '''
 import numpy as np
 from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt;
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt as pulsar_msmt;
 import pulse_select as ps; reload(ps)
 
 
@@ -254,8 +255,6 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             else:
                 print 'Please define the used transition: transition is (%s)' %self.params['electron_transition']
         
-
-
     def _Ypi2_elt(self):
         '''
         ypi2 element that is used in different measurement child classes
@@ -551,7 +550,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse', 'carbon_delay_phase_feedback']
+        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse', 'carbon_delay_phase_feedback']
         gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling','carbon_delay_phase_feedback']
         #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
         #TODO_THT: What  does this mean??? Clearly it does not work...
@@ -578,7 +577,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_transfer_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','electron_Gate']
+        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse','electron_Gate']
 
         for i in range(len(gate_seq)-1):
             
@@ -1083,7 +1082,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Special elements
             #########
 
-            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
+            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse' or g.Gate_type =='IQ_RF_square_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
 
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
@@ -1408,7 +1407,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                     initial_pulse = self._mpi2_elt()
                 else:
                     initial_phase = self.params['X_phase']
-                    initial_pulse = self.pi2_elt()
+                    initial_pulse = self._pi2_elt()
                     
 
                 decoupling_elt.append(T_out)
@@ -1565,9 +1564,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 tau_shortened            = tau_remaind/2.0 + 1e-6
                 t_around_pulse           = 2e-6 + tau_remaind/2.0
             else:
-                n_wait_reps              = n_wait_reps -2
-                tau_shortened            = tau_remaind/2.0
-                t_around_pulse           = 1e-6 + tau_remaind/2.0
+                n_wait_reps              = n_wait_reps -4  # changed to avoid problems with long delay in our MW Switch, by MA
+                tau_shortened            = tau_remaind/2.0+1e-6
+                t_around_pulse           = 2e-6 + tau_remaind/2.0
 
 
             Tus =pulse.SquarePulse(channel='MW_Imod', name='Wait: tau',
@@ -2894,6 +2893,86 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.elements= list_of_elements
         return Gate
 
+    def generate_IQ_RF_square_pulse_element(self,Gate):
+        '''
+        Written by CEB 24.11.2017. 
+        Generate arbitrary RF pulse gate, via AWG-mediated IQ modulation.
+        As of  30.11.17, creates a square pulse from invidiual square pulses of 10 us.
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'IQ_RF_square_pulse'
+
+        length     = Gate.length
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+
+        pulse_spacing = 1e-6 #Space before and after the RF pulse starts
+        total_gate_t = length + 2*pulse_spacing
+
+        block_length = 10e-6 #Size of repeated square blocks
+
+        Gate.reps, tau_remaind = divmod(total_gate_t, block_length)
+        ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
+
+        print 'gate_reps',Gate.reps
+        print 'tau_remaind',tau_remaind
+
+        list_of_elements = []
+
+        T = pulse.SquarePulse(
+            channel='RF',
+            length = pulse_spacing, 
+            amplitude = 0)
+
+        X_start = pulse.SquarePulse(
+            channel = 'RF',
+            length = ext_pulse_length,
+            amplitude = amplitude)
+
+        X_end = pulse.SquarePulse(
+            channel = 'RF',
+            length = ext_pulse_length,
+            amplitude = amplitude)
+
+        X_middle = pulse.SquarePulse(
+            channel = 'RF',
+            length = block_length,
+            amplitude = amplitude)
+
+        rf_pulse_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+
+        rf_pulse_start.append(pulse.cp(T))
+        rf_pulse_start.append(pulse.cp(X_start))
+
+        list_of_elements.append(rf_pulse_start)
+
+        rf_pulse_middle = element.Element('%s_RF_pulse_mid' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+
+        rf_pulse_middle.append(pulse.cp(X_middle))
+
+        list_of_elements.append(rf_pulse_middle)
+
+        rf_pulse_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+
+        rf_pulse_end.append(pulse.cp(X_end))
+        rf_pulse_end.append(pulse.cp(T))
+     
+        list_of_elements.append(rf_pulse_end)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6 
+        Gate.elements = list_of_elements
+    
+        return Gate
+
+
     def generate_LDE_element(self,Gate):
         '''
         Generates the primitive of an LDE element.
@@ -3517,6 +3596,20 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                  # ending envelope element
                 # seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
                 #     trigger_wait=False,repetitions = 1)
+            elif gate.scheme == 'IQ_RF_square_pulse':
+                list_of_elements.extend(gate.elements)
+                #Pulse Delay + Start Time
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                    trigger_wait=False,repetitions = 1)
+                #Repeating Element
+                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
+                    trigger_wait=False,repetitions = gate.reps)
+                # gate.reps = 1
+                #Pulse Delay + End Time
+                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                    trigger_wait=False,repetitions = 1)
+    
+
             ######################
             ### XY4 elements
             ######################
@@ -3903,6 +3996,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_electron_repump_element(g)
             elif g.Gate_type == 'RF_pulse':
                 self.generate_RF_pulse_element(g)
+            elif g.Gate_type == 'IQ_RF_square_pulse':
+                self.generate_IQ_RF_square_pulse_element(g)
             elif g.Gate_type == 'LDE':
                 self.generate_LDE_element(g)
             elif g.Gate_type == 'feedback_trigger_decoupling':
@@ -4472,22 +4567,22 @@ class MBI_C13(DynamicalDecoupling):
     def autoconfig(self):
 
         #Convervting laser powers to AOM voltages
-        self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
-                    self.params['A_SP_amplitude_after_C13_MBI']))
-        self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
-                    self.params['E_SP_amplitude_after_C13_MBI']))
-        self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_C13_MBI_RO_amplitude']))
+        # self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude_after_C13_MBI']))
+        # self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_SP_amplitude_after_C13_MBI']))
+        # self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_C13_MBI_RO_amplitude']))
 
-        self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
-                    self.params['A_SP_amplitude_after_MBE']))
-        self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
-                    self.params['E_SP_amplitude_after_MBE']))
-        self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_MBE_RO_amplitude']))
+        # self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
+        #             self.params['A_SP_amplitude_after_MBE']))
+        # self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_SP_amplitude_after_MBE']))
+        # self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_MBE_RO_amplitude']))
 
-        self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
-                    self.params['E_Parity_RO_amplitude']))
+        # self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
+        #             self.params['E_Parity_RO_amplitude']))
 
         self.params['min_dec_duration'] = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
@@ -4503,8 +4598,8 @@ class MBI_C13(DynamicalDecoupling):
 
         DynamicalDecoupling.autoconfig(self)
 
-        self.physical_adwin.Set_Data_Long(
-                np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
+        # self.physical_adwin.Set_Data_Long(
+        #         np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
@@ -7486,7 +7581,8 @@ class NuclearT1(MBI_C13):
 
 class NuclearRamseyWithInitialization_v2(MBI_C13):
     '''
-    Very flexible C13 Ramsey script, usefull to calibrate ms = +1,0,-1 frequencies. The el_state that will be calibrated is independent of the gates used
+    Very flexible C13 Ramsey script, usefull to calibrate ms = +1,0,-1 frequencies. The el_state 
+    that will be calibrated is independent of the gates used
     to initialize the carbon atom. The free induction decay transition is denoted by fid_transition
     '''
     mprefix = 'CarbonRamseyInitialised'
@@ -8019,10 +8115,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
         for pt in range(pts): ### Sweep over trigger time (= wait time)
             gate_seq = []
 
-
-
-
-
             ### Nitrogen MBI
             mbi = Gate('MBI_'+str(pt),'MBI')
             mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
@@ -8039,12 +8131,21 @@ class NuclearRabiWithDirectRF(MBI_C13):
             gate_seq.extend(carbon_init_seq)
 
             ### Carbon RF pulse
-            if self.params['RF_pulse_durations'][pt] > 3e-6:
-                rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
-                    length      = self.params['RF_pulse_durations'][pt],
-                    RFfreq      = self.params['RF_pulse_frqs'][pt],
-                    amplitude   = self.params['RF_pulse_amps'][pt])
-                gate_seq.extend([rabi_pulse])
+            if self.params['RF_generation_method'] == 'AWG':
+                if self.params['RF_pulse_durations'][pt] > 3e-6:
+                    rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                        length      = self.params['RF_pulse_durations'][pt],
+                        RFfreq      = self.params['RF_pulse_frqs'][pt],
+                        amplitude   = self.params['RF_pulse_amps'][pt])
+                    gate_seq.extend([rabi_pulse])
+            elif self.params['RF_generation_method'] == 'IQ':
+                if self.params['RF_pulse_durations'][pt] > 3e-6:
+                    rabi_pulse = Gate('Rabi_pulse_'+str(pt),'IQ_RF_square_pulse',
+                        length      = self.params['RF_pulse_durations'][pt],
+                        amplitude   = self.params['RF_pulse_amps'][pt])
+                    gate_seq.extend([rabi_pulse])
+            else:
+                print 'RF generation method not recognised'
 
             ### Readout
             carbon_tomo_seq = self.readout_carbon_sequence(
@@ -8055,7 +8156,8 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     RO_trigger_duration = 10e-6,
                     carbon_list         = [self.params['carbon_nr']],
                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
-                    readout_orientation = self.params['electron_readout_orientation'])
+                    readout_orientation = self.params['electron_readout_orientation'],
+                    el_state_in = int(self.params['el_after_init']))
             gate_seq.extend(carbon_tomo_seq)
 
             # #Add wait gate to test RF influence
@@ -8068,9 +8170,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
             #              wait_time = self.params['free_evolution_time'][pt])
             #     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
 
-
-
-
             gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
 
             ### Convert elements to AWG sequence and add to combined list
@@ -8079,24 +8178,6 @@ class NuclearRabiWithDirectRF(MBI_C13):
 
             for seq_el in seq.elements:
                 combined_seq.append_element(seq_el)
-
-            if not debug:
-                print '*'*10
-                for g in gate_seq:
-                    print g.name
-
-            if debug:
-                for g in gate_seq:
-                    print g.name
-                    if (g.C_phases_before_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_before_gate[self.params['carbon_nr']]/np.pi*180)
-
-                    if (g.C_phases_after_gate[self.params['carbon_nr']] == None):
-                        print "[ None]"
-                    else:
-                        print "[ %.3f]" %(g.C_phases_after_gate[self.params['carbon_nr']]/np.pi*180)
 
         if upload:
             print ' uploading sequence'

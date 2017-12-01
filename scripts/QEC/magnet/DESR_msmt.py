@@ -22,6 +22,7 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0,
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
     m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
     m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
+    m.params.from_dict(qt.exp_params['protocols']['111_1_sil18']['pulses']) #Added to include the MW switch MA
 
     m.params['mw_power'] = mw_power
     m.params['temp'] = temperature_sensor.get_readlastval()
@@ -63,3 +64,7 @@ def darkesr(name, ms = 'msp', range_MHz = 6, pts = 81, reps = 1000, freq=0,
     m.run()
     m.save()
     m.finish()
+
+if __name__ == '__main__':
+    darkesr()
+

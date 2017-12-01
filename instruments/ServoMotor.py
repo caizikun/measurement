@@ -6,7 +6,7 @@ from lib import config
 
 class ServoMotor(Instrument):
 
-    def __init__(self, name, servo_controller='Servo', min_pos=500, max_pos=2500):
+    def __init__(self, name, servo_controller='Servo', min_pos=500, max_pos=2500, in_pos=810, out_pos=706):
         Instrument.__init__(self, name)
         self._ins_servo=qt.instruments[servo_controller]
         #print 'servo:', self._ins_servo
@@ -41,8 +41,8 @@ class ServoMotor(Instrument):
         self.set_channel(0)
         self.set_speed(20)
         self._position = 706
-        self.set_in_position(810)
-        self.set_out_position(706)
+        self.set_in_position(in_pos)
+        self.set_out_position(out_pos)
         
         # override from config       
         cfg_fn = os.path.abspath(
