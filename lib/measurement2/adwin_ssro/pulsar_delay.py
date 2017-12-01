@@ -546,69 +546,30 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         pulsar_msmt.MBI.autoconfig(self)
 
 
-    def pulse_caller(self, pulsetype , refpoint = 'center', refpoint_new = 'center' , start= 0 ):
-        
-        start = self.params['tau_larmor']
-
-        #In case the last pulse we did was a pi pulse, then we want to echo correctly by having two times tau larmor
-        if self.last_pi == True and self.current_pi == True:
-            start *=2.
-
-        self.e1.add(pulse.cp(pulsetype),
-                            refpulse        = 'pulse%d' % (self.n-1),
-                            refpoint        = refpoint,
-                            refpoint_new    = refpoint_new,
-                            name            = 'pulse%d' % self.n,
-                            start           = start)
-
-        self.n +=1
-
     def generate_subsequence(self, seq='x'):
-        """
-        This function is used to create the subsequences we need, i.e. fiducials and germs
-        """
 
-        #In case we have the null fiducial, just return nothing. TO DO: Change to a wait pulse.
-        if seq =='e':
-            return
+        for i in range(len(seq)):
 
-        else:
-            for i in range(len(seq)):
+            start = self.params['tau_larmor']
+            
+            if seq[i] == 'u' or seq[i] =='v':
+                current_pi = True
+            else:   current_pi = False
 
-                if seq[i] == 'x':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_xpi2)
 
-                    self.last_pi = False
-                    
-                elif seq[i] == 'y':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_ypi2)
-                    
-                    self.last_pi = False
+            #In case the last pulse we did was a pi pulse, then we want to echo correctly by having two times tau larmor
+            if self.last_pi == True and current_pi == True:
+                start *=2.
 
-                elif seq[i] == 'm':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_mypi2)
-                    
-                    self.last_pi = False
+            self.e1.add(pulse.cp(self.pulse_dict[seq[i]]),
+                                refpulse        = 'pulse%d' % (self.n-1),
+                                refpoint        = 'center',
+                                refpoint_new    = 'center',
+                                name            = 'pulse%d' % self.n,
+                                start           = start)
 
-                elif seq[i] == 'u':
-                    self.current_pi = True
-                    self.pulse_caller(self.pulse_xpi)
-                    
-                    self.last_pi = True
-
-                elif seq[i] == 'v':
-                    self.current_pi = True
-                    self.pulse_caller(self.pulse_ypi)
-                    
-                    self.last_pi = True
-
-                elif seq[i] != 'e': 
-                    print "Seq exception", seq[i]
-                    sys.exit("A horrible mistake happened. Check you subsequence building routine.")
-
+            self.n +=1
+            self.last_pi = current_pi
 
 
     def generate_sequence(self, upload=True, **kw):
@@ -616,24 +577,21 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         ###
         # First let us define the necessary pulses.
         ###
+        
+        self.pulse_dict = {'x' : kw.get('x_pulse_pi2', None),
+                            'y': kw.get('y_pulse_pi2', None),
+                            'u': kw.get('x_pulse_pi', None),
+                            'v': kw.get('y_pulse_pi', None)}
 
-        # rotations pi2
-        self.pulse_xpi2  =   kw.get('x_pulse_pi2', None)
-        self.pulse_ypi2  =   kw.get('y_pulse_pi2', None)
-        self.pulse_mxpi2 =   kw.get('x_pulse_mpi2', None)
-        self.pulse_mypi2 =   kw.get('y_pulse_mpi2', None)
+        self.empty = pulse.cp(self.pulse_dict['x'], amplitude = 0.)
 
-        # rotations pi
-        self.pulse_xpi  =   kw.get('x_pulse_pi', None)
-        self.pulse_ypi  =   kw.get('y_pulse_pi', None)
-        self.pulse_mxpi =   kw.get('x_pulse_mpi', None)
-        self.pulse_mypi =   kw.get('y_pulse_mpi', None)
+        self.pulse_dict['e'] = self.empty
 
         # waiting element        
         self.T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 3000e-9, amplitude = 0.)
 
-        # Adwin sync plse that we need to send out after each sequence
+        # Adwin sync pulse that we need to send out after each sequence
         self.adwin_sync = pulse.SquarePulse(channel='adwin_sync',
            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
            amplitude = 2)

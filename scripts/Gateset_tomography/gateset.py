@@ -250,7 +250,7 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
     m.params['sequence_wait_time']  = [0]
 
 
-    #Specigfic to make it work on LT2
+    #Specific to make it work on LT2
 
     m.params['Shutter_rise_time']   = 2500
     m.params['Shutter_fall_time']   = 2500
@@ -258,7 +258,7 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
     m.params['Ex_SP_amplitude']=0
     m.params['AWG_to_adwin_ttl_trigger_duration']=3e-6  # commenting this out gives an error
     m.params['wait_for_AWG_done']=1
-    m.params['initial_msmt_delay'] = 10000.0e-9
+    m.params['initial_msmt_delay'] = 5000.0e-9
 
     #The total number of sequence repetitions
     m.params['reps_per_ROsequence'] = 5000
@@ -363,6 +363,7 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
 
     #Create a list of all experiments that we want to do. Assumes that we created a filename before
     experimentalist = create_experiment_list_pyGSTi(filename)
+    global experimentalist
     
     #Determine the number of awg runs we want to run, making sure we always round up so we take all the data we want
     awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
@@ -383,6 +384,9 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
         m = pulsar_delay.GateSetNoDecouplingTiming(name)
 
     run_names = []
+
+
+    awg_runs = 1
 
     for i in range(awg_runs):
 
@@ -521,7 +525,7 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = False, decoupling = False, pi=True, awg_size = 10)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = True, decoupling = False, pi=True, awg_size = 40)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #
