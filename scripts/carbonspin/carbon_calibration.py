@@ -34,11 +34,11 @@ n = 1
 
 qt.exp_params['simplify_wfnames'] = True
 
-carbons = [1]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
+carbons = [5]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
 
 """
-AFTER THE CALIBRATION IS DONE:
-
+AFTER THE CALIBRATION IS DONE
+:s
 The measured values are directly written into msmt_params.py,
 if the following parameter is true
 """
@@ -105,7 +105,7 @@ elif SETUP == 'lt4':
         }
 
 elif SETUP == 'm1':
-    detuning_basic = 1e3
+    detuning_basic = 0.5e3
     detuning_dict = {
         '1' : detuning_basic,
         '2' : detuning_basic,

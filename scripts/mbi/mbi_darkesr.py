@@ -19,11 +19,11 @@ def run(name, mw_switch = False):
     funcs.prepare(m)
 
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
-    pts = 61
+    pts = 81
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 300
+    m.params['reps_per_ROsequence'] = 1000
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
-    m.params['MW_pulse_delays'] = np.ones(pts) * 2500e-9
+    m.params['MW_pulse_delays'] = np.ones(pts) * 1582e-9
 
     # MW pulses
     m.params['MW_pulse_durations']  = np.ones(pts) * m.params['AWG_MBI_MW_pulse_duration'] #3e-6 #3000e-9
