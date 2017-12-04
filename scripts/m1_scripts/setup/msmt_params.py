@@ -130,14 +130,14 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO'] = {
 'CR_probe'       : 1000,
 'CR_repump'      : 1000,
 'Ex_CR_amplitude': 0.5e-9, #0.5e-9  
-'Ex_RO_amplitude': 1.5e-9, #2
+'Ex_RO_amplitude': 0.01e-9, #2
 'Ex_SP_amplitude': 0e-9,   # THT 100716 changing this away from zero breaks most singleshot scripts, please inform all if we want to change this convention
 'SP_duration'    : 100,    #50 # THT: Hardcoded in the ADWIN to be maximum 500 
 'SP_duration_ms0': 100,    # only for specific scripts
 'SP_duration_ms1': 100,    # only for specific scripts
 'SP_filter_duration':  0,
 'SSRO_repetitions'  :  5000,
-'SSRO_duration'     :  50,#50
+'SSRO_duration'     :  150,#50
 'SSRO_stop_after_first_photon' : 0} 
 
     ##################################
@@ -174,7 +174,8 @@ if electron_transition == '-1':
     if pulse_shape == 'Square':
         mw_mod_frequency = 43e6 # MJD set to 43e6 for N MBI quick sweeping in 10 MHz regime # MW modulation frequency. 250 MHz to ensure phases are consistent between AWG elements
         N_MBI_threshold = 1
-        Ex_SP_amplitude = 16e-9
+        Ex_SP_amplitude = 16e-9#16e-9
+        print 'Ex_SP_amplitude', Ex_SP_amplitude
     elif pulse_shape == 'Hermite':
         mw_mod_frequency = 0*1e6 
         N_MBI_threshold = 0#0
@@ -183,13 +184,13 @@ if electron_transition == '-1':
     mw_freq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
     mw_freq_MBI = f_msm1_cntr - mw_mod_frequency #- N_HF_frq  MJD commented out to set the MBI freq to the center freq     # Initialized frequency
     
-    AWG_MBI_MW_pulse_amp = 0.013#0.00824 #0.01525
+    AWG_MBI_MW_pulse_amp = 0.01617#0.0161#0.013#0.00824 #0.01525
     
-    Hermite_pi_length   = 220e-9#200e-9    
-    Hermite_pi_amp      = 0.698 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
+    Hermite_pi_length   = 190e-9#200e-9    
+    Hermite_pi_amp      = 0.832 #0.704 # 0.729 #0.856 #0.9#0.8175 #0.3564 #0.737 #0.442 # 0.445 for 160ns #0.481 #for 150 ns
 
     Hermite_pi2_length  = 100e-9 # 56e-9 # divsible by 2
-    Hermite_pi2_amp     = 0.634#0.660 #0.777 #0.62 # 0.501
+    Hermite_pi2_amp     = 0.624#0.660 #0.777 #0.62 # 0.501
 
     Square_pi_length    = 602e-9   #250 MHz slow
     Square_pi_amp       = 0.73 #0.231503  #0.407630#0.385# 0.3875#0.406614#0.406614  #250 MHz, slow
@@ -381,8 +382,8 @@ cfg['samples']['111_1_sil18'] = {
     ################
 
 'C5_freq_m1' :   419999,### +-85.5 # 419.894e3,#XXXXXXXXXX
-'C5_freq_0' :    432044.23,
-'C5_freq_1_m1' : 408455.5,
+'C5_freq_0' : 431938.87,
+'C5_freq_1_m1' : 408315.43,
 
 # 'C5_gate_optimize_tau_list' :  [8.928e-6,8.928e-6,8.928e-6,8.930e-6,8.930e-6,
 #                                 8.930e-6,8.932e-6,8.932e-6,8.932e-6],
@@ -410,7 +411,7 @@ cfg['samples']['111_1_sil18'] = {
 'C5_uncond_pi_N_m1':   [94],
 'C5_Ren_tau_m1'    :   [6.544e-6],
 'C5_Ren_N_m1'      :   [28],
-'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [42.41] + [4.19] + [30.87] + [0.0] + [11.08] + [-13.79] + [0.0] + [0.0] + [0.0]),
+'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [42.41] + [4.19] + [30.87] + [0.0] + [3.31] + [-13.79] + [0.0] + [0.0] + [0.0]),
 
     ################
     ### Carbon 6 ###
@@ -462,12 +463,12 @@ cfg['samples']['111_1_sil18'] = {
 
 
 # C6  for test
-# 'C6_freq_m1'        : 7.9e3,#2.0846e3,          # Only roughly calibrated
-# 'C6_freq_0'         : 7.9e3,#2.0846e3, 
-# 'C6_freq_1_m1'      : 7.9e3,#2.0846e3,
+# 'C6_freq_m1'        : 6.6e3,#2.0846e3,          # Only roughly calibrated
+# 'C6_freq_0'         : 6.6e3,#2.0846e3, 
+# 'C6_freq_1_m1'      : 6.6e3,#2.0846e3,
 
 # 'C6_Ren_tau_m1'    :   [76.545e-6],
-# 'C6_Ren_N_m1'      :   [24],
+# 'C6_Ren_N_m1'      :   [26],
 # 'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
@@ -501,14 +502,14 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
-# # #165 us, C13 cluster
-# 'C8_freq_m1'        : 2816,#2816,#0.189e3,          # Only roughly calibrated
-# 'C8_freq_0'         : 2816,#0.189e3,
-# 'C8_freq_1_m1'      : 2816,#2.816e3,#0.189e3,
+# #165 us, C13 cluster
+'C8_freq_m1'        : 189,#2816,#0.189e3,          # Only roughly calibrated
+'C8_freq_0'         : 189,#0.189e3,
+'C8_freq_1_m1'      : 189,#2.816e3,#0.189e3,
 
-# 'C8_Ren_tau_m1'    :   [172.44e-6],
-# 'C8_Ren_N_m1'      :   [8],
-# 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
+'C8_Ren_tau_m1'    :   [172.44e-6],
+'C8_Ren_N_m1'      :   [8],
+'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 # 111 us, 80 Hz, C13 cluster
 # 'C8_freq_m1'        : 4.422e3,          # Only roughly calibrated
@@ -518,15 +519,6 @@ cfg['samples']['111_1_sil18'] = {
 # 'C8_Ren_tau_m1'    :   [112.22e-6],
 # 'C8_Ren_N_m1'      :   [26],
 # 'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
-
-# # 111 us, 80 Hz, C13 cluster
-'C8_freq_m1'        : 4.422e3,          # Only roughly calibrated
-'C8_freq_0'         : 4.422e3, 
-'C8_freq_1_m1'      : 4.422e3,
-
-'C8_Ren_tau_m1'    :   [112.22e-6],
-'C8_Ren_N_m1'      :   [26],
-'C8_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0] + [0.0]),
 
 
 # #260 us, 2kHz, C13 cluster
@@ -800,7 +792,7 @@ cfg['protocols']['111_1_sil18']['pulses'] ={
     'AWG_MBI_MW_pulse_ssbmod_frq':  f_mod_0,
     'AWG_MBI_MW_pulse_amp'      :   AWG_MBI_MW_pulse_amp,  #0.01353*1.122  <-- pre-switch era  ## f_mod = 250e6 (msm1)
     # 'AWG_MBI_MW_pulse_amp'      :   0.01705,#0.0075,     ## f_mod = 125e6 (msm1)
-    'AWG_MBI_MW_pulse_duration' :   2000e-9}
+    'AWG_MBI_MW_pulse_duration' :   1582e-9}
 
     ###############################
     ### Nitrogen MBI parameters ###
@@ -849,8 +841,8 @@ cfg['protocols']['111_1_sil18']['AdwinSSRO+C13'] = {
 
 #C13-MBI  
 'C13_MBI_threshold_list':               [1],
-'C13_MBI_RO_duration':                  40,#160,  
-'E_C13_MBI_RO_amplitude':               0.05e-9, #this was 0.3e-9 NK 20150316
+'C13_MBI_RO_duration':                  60,#40 #160,  
+'E_C13_MBI_RO_amplitude':               0.01e-9, #was 0.05 for all pairs measurements - MA/ #this was 0.3e-9 NK 20150316
 'SP_duration_after_C13':                30, #300 in case of swap init! 
 'A_SP_amplitude_after_C13_MBI':         8e-9, # was 15e-9
 'E_SP_amplitude_after_C13_MBI':         0*3e-9,

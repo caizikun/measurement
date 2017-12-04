@@ -13,7 +13,7 @@ ins_aom = qt.instruments['GreenAOM']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.Simulate_dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 # import measurement.scripts.QEC.carbon_calibration_routine as CCR
 
@@ -78,10 +78,6 @@ def NuclearRamseyWithInitialization_cal(name,
     m.params['Nr_C13_init']       = 1
     m.params['Nr_MBE']            = 0
     m.params['Nr_parity_msmts']   = 0
-    
-    m.params['C13_MBI_threshold_list'] = [1,1]
-    m.params['Nr_C13_init']       = 2
-    
     print m.params['MBI_threshold']
 
 
