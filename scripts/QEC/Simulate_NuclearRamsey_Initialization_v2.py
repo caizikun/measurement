@@ -13,7 +13,7 @@ ins_aom = qt.instruments['GreenAOM']
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
-import measurement.lib.measurement2.adwin_ssro.dynamicaldecoupling as DD; reload(DD)
+import measurement.lib.measurement2.adwin_ssro.Simulate_dynamicaldecoupling as DD; reload(DD)
 import measurement.scripts.mbi.mbi_funcs as funcs
 # import measurement.scripts.QEC.carbon_calibration_routine as CCR
 
