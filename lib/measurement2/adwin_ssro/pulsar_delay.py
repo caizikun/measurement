@@ -562,6 +562,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
 
             start = self.params['tau_larmor']
             
+            
             if seq[i] == 'u' or seq[i] =='v':
                 current_pi = True
             else:   current_pi = False
