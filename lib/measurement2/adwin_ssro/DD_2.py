@@ -10,7 +10,7 @@ from scipy.special import erfinv
 import qt
 import copy
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar, eom_pulses
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt as pulsar_msmt;
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt;
 import pulse_select as ps; reload(ps)
 
 
@@ -2918,8 +2918,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.reps, tau_remaind = divmod(total_gate_t, block_length)
         ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
 
-        print 'gate_reps',Gate.reps
-        print 'tau_remaind',tau_remaind
+        # print 'gate_reps',Gate.reps
+        # print 'tau_remaind',tau_remaind
 
         list_of_elements = []
 
@@ -4567,22 +4567,22 @@ class MBI_C13(DynamicalDecoupling):
     def autoconfig(self):
 
         #Convervting laser powers to AOM voltages
-        # self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
-        #             self.params['A_SP_amplitude_after_C13_MBI']))
-        # self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
-        #             self.params['E_SP_amplitude_after_C13_MBI']))
-        # self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
-        #             self.params['E_C13_MBI_RO_amplitude']))
+        self.params['A_SP_voltage_after_C13_MBI'] = (self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_after_C13_MBI']))
+        self.params['E_SP_voltage_after_C13_MBI'] = (self.E_aom.power_to_voltage(
+                    self.params['E_SP_amplitude_after_C13_MBI']))
+        self.params['E_C13_MBI_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_C13_MBI_RO_amplitude']))
 
-        # self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
-        #             self.params['A_SP_amplitude_after_MBE']))
-        # self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
-        #             self.params['E_SP_amplitude_after_MBE']))
-        # self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
-        #             self.params['E_MBE_RO_amplitude']))
+        self.params['A_SP_voltage_after_MBE'] = (self.A_aom.power_to_voltage(
+                    self.params['A_SP_amplitude_after_MBE']))
+        self.params['E_SP_voltage_after_MBE'] = (self.E_aom.power_to_voltage(
+                    self.params['E_SP_amplitude_after_MBE']))
+        self.params['E_MBE_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_MBE_RO_amplitude']))
 
-        # self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
-        #             self.params['E_Parity_RO_amplitude']))
+        self.params['E_Parity_RO_voltage'] = (self.E_aom.power_to_voltage(
+                    self.params['E_Parity_RO_amplitude']))
 
         self.params['min_dec_duration'] = self.params['min_dec_tau']*self.params['dec_pulse_multiple']*2
 
@@ -4598,8 +4598,8 @@ class MBI_C13(DynamicalDecoupling):
 
         DynamicalDecoupling.autoconfig(self)
 
-        # self.physical_adwin.Set_Data_Long(
-        #         np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
+        self.physical_adwin.Set_Data_Long(
+                np.array(self.params['C13_MBI_threshold_list'], dtype=int), 40, 1, self.params['Nr_C13_init'])
 
     def save(self, name='adwindata'):
         reps = self.adwin_var('completed_reps')
@@ -8091,6 +8091,103 @@ class NuclearT1_repumping(MBI_C13):
         else:
             print 'upload = false, no sequence uploaded to AWG'
 
+class NitrogenRabiWithDirectRF(MBI_C13):
+    '''
+    Made by Michiel 
+    This class tests an RF pulse on a nuclear spin
+    1. Nitrogen MBI initialisation
+    2. Carbon init (MBI or SWAP)
+    3. Pulse on single nuclear spin using RF
+    4. Carbon Full Tomo
+
+    Sequence: |N-MBI| -|CinitA|-|RF-Pulse|-|Tomography|
+    '''
+    mprefix = 'NuclearRFRabi' #Changed
+    adwin_process = 'MBI_multiple_C13'
+
+    def generate_sequence(self, upload=True, debug=False):
+        pts = self.params['pts']
+
+        ### initialise empty sequence and elements
+        combined_list_of_elements =[]
+        combined_seq = pulsar.Sequence('Carbon Rabi Direct RF')
+
+        for pt in range(pts): ### Sweep over trigger time (= wait time)
+            gate_seq = []
+
+            # ### Nitrogen MBI
+            # mbi = Gate('MBI_'+str(pt),'MBI')
+            # mbi_seq = [mbi]; gate_seq.extend(mbi_seq)
+
+            # ### Carbon initialization 
+            # carbon_init_seq = self.initialize_carbon_sequence(go_to_element = mbi,
+            #     prefix = 'C_MBI_',
+            #     wait_for_trigger      = True, pt =pt,
+            #     initialization_method = self.params['C13_init_method'],
+            #     C_init_state          = self.params['init_state'],
+            #     addressed_carbon      = self.params['carbon_nr'],
+            #     el_RO_result          = str(self.params['C13_MBI_RO_state']),
+            #     el_after_init         = self.params['el_after_init'])
+            # gate_seq.extend(carbon_init_seq)
+
+            ### Carbon RF pulse
+            # if self.params['RF_generation_method'] == 'AWG':
+            #     if self.params['RF_pulse_durations'][pt] > 3e-6:
+            rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                length      = self.params['RF_pulse_durations'][pt],
+                RFfreq      = self.params['RF_pulse_frqs'][pt],
+                amplitude   = self.params['RF_pulse_amps'][pt])
+            gate_seq.extend([rabi_pulse])
+
+            print 'Gate_seq type', gate_seq
+            # elif self.params['RF_generation_method'] == 'IQ':
+            #     if self.params['RF_pulse_durations'][pt] > 3e-6:
+            #         rabi_pulse = Gate('Rabi_pulse_'+str(pt),'IQ_RF_square_pulse',
+            #             length      = self.params['RF_pulse_durations'][pt],
+            #             amplitude   = self.params['RF_pulse_amps'][pt])
+            #         gate_seq.extend([rabi_pulse])
+            # else:
+            #     print 'RF generation method not recognised'
+
+            # ### Readout
+            # carbon_tomo_seq = self.readout_carbon_sequence(
+            #         prefix              = 'Tomo',
+            #         pt                  = pt,
+            #         go_to_element       = None,
+            #         event_jump_element  = None,
+            #         RO_trigger_duration = 10e-6,
+            #         carbon_list         = [self.params['carbon_nr']],
+            #         RO_basis_list       = self.params['C_RO_phase'], #[self.params['C_RO_phase'][pt]],
+            #         readout_orientation = self.params['electron_readout_orientation'],
+            #         el_state_in = int(self.params['el_after_init']))
+            # gate_seq.extend(carbon_tomo_seq)
+
+            # #Add wait gate to test RF influence
+            # if self.params['add_wait_gate'] == True:
+            #     if self.params['free_evolution_time'][pt]< (3e-6):
+            #         print ('Error: carbon evolution time is too small')
+            #         qt.msleep(5)
+            #         ### Add waiting time
+            #     wait_gate = Gate('Wait_gate_'+str(pt),'passive_elt',
+            #              wait_time = self.params['free_evolution_time'][pt])
+            #     wait_seq = [wait_gate]; gate_seq.extend(wait_seq)
+
+            gate_seq = self.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+            ### Convert elements to AWG sequence and add to combined list
+            list_of_elements, seq = self.combine_to_AWG_sequence(gate_seq, explicit=True)
+            combined_list_of_elements.extend(list_of_elements)
+
+            for seq_el in seq.elements:
+                combined_seq.append_element(seq_el)
+
+        if upload:
+            print ' uploading sequence'
+            qt.pulsar.program_awg(combined_seq, *combined_list_of_elements, debug=debug)
+
+        else:
+            print 'upload = false, no sequence uploaded to AWG'
+
 class NuclearRabiWithDirectRF(MBI_C13):
     '''
     Made by Michiel 
@@ -8136,7 +8233,8 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
                         length      = self.params['RF_pulse_durations'][pt],
                         RFfreq      = self.params['RF_pulse_frqs'][pt],
-                        amplitude   = self.params['RF_pulse_amps'][pt])
+                        amplitude   = self.params['RF_pulse_amps'][pt],
+                        phase       = self.params['RF_pulse_phases'][pt])
                     gate_seq.extend([rabi_pulse])
             elif self.params['RF_generation_method'] == 'IQ':
                 if self.params['RF_pulse_durations'][pt] > 3e-6:
@@ -8155,7 +8253,7 @@ class NuclearRabiWithDirectRF(MBI_C13):
                     event_jump_element  = None,
                     RO_trigger_duration = 10e-6,
                     carbon_list         = [self.params['carbon_nr']],
-                    RO_basis_list       = [self.params['C_RO_phase'][pt]],
+                    RO_basis_list       = self.params['C_RO_phase'],
                     readout_orientation = self.params['electron_readout_orientation'],
                     el_state_in = int(self.params['el_after_init']))
             gate_seq.extend(carbon_tomo_seq)

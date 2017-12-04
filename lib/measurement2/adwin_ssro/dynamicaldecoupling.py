@@ -4175,14 +4175,14 @@ class MBI_C13(DynamicalDecoupling):
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'cl_RO_trig_pt'+str(pt),'Trigger',
-                wait_time= self.params['Carbon_init_RO_wait'],
+                wait_time= 160e-6,#self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
                 el_state_before_gate = el_RO_result,
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_RO_Trigger_2 = Gate(prefix+str(addressed_carbon)+'cl_RO_trig_2_pt'+str(pt),'Trigger',
-                wait_time= self.params['Carbon_init_RO_wait'],
+                wait_time= 160e-6,#self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
                 el_state_before_gate = el_RO_result,
@@ -4210,12 +4210,11 @@ class MBI_C13(DynamicalDecoupling):
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
      
         wait_gate_test = Gate('Wait_gate_test'+str(pt),'passive_elt',
-                wait_time = 31.6e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
+                wait_time = 88.78e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         ### Set sequence
         if initialization_method == 'project_into_subspace':
             cluster_init_seq = [Clu_init_x1,Clu_init_Ren_a1,Clu_init_Ren_a2, Clu_init_x2, Clu_init_RO_Trigger]
-
         elif initialization_method == 'No_subspace_projection':
             cluster_init_seq =  [Clu_init_y1,Clu_init_Ren_a1,Clu_init_x3,Clu_init_RO_Trigger_2,Clu_init_elec_X]
 
@@ -4534,7 +4533,7 @@ class MBI_C13(DynamicalDecoupling):
                      wait_time = 3e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
         
         wait_gate_RO_test = Gate('Wait_gate_after_el_pi_pt_RO'+str(pt),'passive_elt',
-                     wait_time = 31.5e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
+                     wait_time = 88.78e-6,specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
 
 
@@ -4572,7 +4571,7 @@ class MBI_C13(DynamicalDecoupling):
         carbon_RO_seq = []
 
         # for clusters
-        # print 'CLUSTER RO_ELEC_X has been commented out!'
+        
         # carbon_RO_seq.append(C_RO_elec_X)
         # carbon_RO_seq.append(wait_gate_RO_test)
         # carbon_RO_seq.append(C_RO_elec_X_test) 
@@ -4635,6 +4634,13 @@ class MBI_C13(DynamicalDecoupling):
                         phase           = RO_phase, 
                         extra_phase_after_gate = phase_error[kk],
                         Carbon_ind=carbon_nr))
+
+                # carbon_RO_seq.append(
+                #         Gate(prefix + str(carbon_nr) + '_Ren_b_2' + str(pt), 'Carbon_Gate',
+                #         specific_transition      = self.params['C'+str(carbon_nr)+'_dec_trans'],
+                #         phase           = RO_phase, 
+                #         extra_phase_after_gate = phase_error[kk],
+                #         Carbon_ind=carbon_nr))
 
         if do_RO_electron != True:
             carbon_nr=carbons_to_RO[-1] 
@@ -5997,7 +6003,7 @@ class ClusterRamseyWithInitialization(MBI_C13):
             cluster_init_seq = self.initialize_cluster_sequence(go_to_element = mbi,
                 prefix = 'Cluster_MBI_',
                 wait_for_trigger      = True, pt =pt,
-                initialization_method = 'No_subspace_projection',#self.params['C13_init_method'],
+                initialization_method = 'Full_initialization',#'project_into_subspace',#'Full_initialization',##'###self.params['C13_init_method'],
                 C_init_state          = self.params['init_state'],
                 addressed_carbon      = self.params['carbon_nr'],
                 el_RO_result          = str(self.params['C13_MBI_RO_state']))#,
@@ -6067,7 +6073,7 @@ class ClusterRamseyWithInitialization(MBI_C13):
                     pt                  = pt,
                     go_to_element       = None,
                     event_jump_element  = None,
-                    RO_trigger_duration = 10e-6,
+                    RO_trigger_duration = 8e-6,
                     carbon_list         = [self.params['carbon_nr']],
                     RO_basis_list       = [self.params['C_RO_phase'][pt]],
                     readout_orientation = self.params['electron_readout_orientation'])
