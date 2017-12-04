@@ -29,7 +29,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     espin_funcs.prepare(m)
 
     pulse_shape = m.params['pulse_shape']
-    pts = 21
+    pts = 16
 
     m.params['pts'] = pts
     
