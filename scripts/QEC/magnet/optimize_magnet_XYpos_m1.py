@@ -32,8 +32,8 @@ SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 
 f0p_temp = qt.exp_params['samples'][SAMPLE]['ms+1_cntr_frq']*1e-9
-# f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
-f0m_temp = 1.746596
+f0m_temp = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']*1e-9
+#f0m_temp = 1.746596
 N_hyperfine = qt.exp_params['samples'][SAMPLE]['N_HF_frq']
 ZFS = qt.exp_params['samples'][SAMPLE]['zero_field_splitting']
 
@@ -48,11 +48,11 @@ if __name__ == '__main__':
     
     range_coarse    = 7.5   # MHz   
     pts_coarse      = 101    
-    reps_coarse     = 750   
+    reps_coarse     = 500 #750   
     
     range_fine      = 0.60  # MHz
     pts_fine        = 81  
-    reps_fine       = 2000  
+    reps_fine       = 1500  
 
     ###########
     ## start ##
@@ -64,11 +64,11 @@ if __name__ == '__main__':
     f_diff_list = []
     position_list = []
     timestamps = []
-    position = 0
+    position = magnet_Y_scanner.GetPosition()
    
     No_steps = True
 
-    steps = [0] #[0] + 5*[20e-3] + 10*[-20e-3] + 5*[20e-3]
+    steps = [0]#+[-50e-3] + 10*[10e-3] 
 
     data = qt.Data(name='Magnet_optimize_' + axis)
     data.add_coordinate('position')
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
 
     #measure both frequencies
-    for k in range(len(steps)):
+    for k in range(1):
         
         if No_steps == False: 
             if axis == 'Y_axis' and steps[k] != 0:
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         #ms=-1 coarse
         DESR_msmt.darkesr('magnet_' + 'msm1_coarse', ms = 'msm', 
                 range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse, freq=f0m_temp*1e9, 
-                pulse_length = 3e-6, ssbmod_amplitude = 0.08, mw_power = -1, mw_switch = False)
+                pulse_length = 3e-6, ssbmod_amplitude = 0.08, mw_power = -1, mw_switch = True)
         
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr(f0m_temp, 
             qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9,do_save=save_plots, sweep_direction ='right')
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         #ms=+1 coarse
         DESR_msmt.darkesr('magnet_' + 'msp1_coarse', ms = 'msp', 
                 range_MHz=range_coarse, pts=pts_coarse, reps=reps_coarse,freq = f0p_temp*1e9, 
-                pulse_length = 3e-6, ssbmod_amplitude = 0.08, mw_power = -1, mw_switch = False)
+                pulse_length = 3e-6, ssbmod_amplitude = 0.08, mw_power = -1, mw_switch = True)
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr(f0p_temp, 
                 qt.exp_params['samples'][SAMPLE]['N_HF_frq']*1e-9 ,do_save=save_plots, sweep_direction ='left')
            
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         #ms=-1 fine
         DESR_msmt.darkesr('magnet_' +  'msm1', ms = 'msm', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0m_temp*1e9,# - N_hyperfine,
-                pulse_length = 9e-6, ssbmod_amplitude = 0.08/3,  mw_power = -1, mw_switch = False)
+                pulse_length = 9e-6, ssbmod_amplitude = 0.08/3,  mw_power = -1, mw_switch = True)
                 
         f0m_temp, u_f0m_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
         f0m_temp = f0m_temp# + N_hyperfine*1e-9
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         #ms=+1 fine
         DESR_msmt.darkesr('magnet_' + 'msp1', ms = 'msp', 
                 range_MHz=range_fine, pts=pts_fine, reps=reps_fine, freq=f0p_temp*1e9,# + N_hyperfine, 
-                pulse_length = 9e-6, ssbmod_amplitude = 0.08/3, mw_power = -1, mw_switch = False)
+                pulse_length = 9e-6, ssbmod_amplitude = 0.08/3, mw_power = -1, mw_switch = True)
         
         f0p_temp, u_f0p_temp = dark_esr_auto_analysis.analyze_dark_esr_double(do_plot=save_plots)
         f0p_temp = f0p_temp# - N_hyperfine*1e-9

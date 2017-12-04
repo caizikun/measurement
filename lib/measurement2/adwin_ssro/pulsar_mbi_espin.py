@@ -3,6 +3,7 @@ import qt
 
 from measurement.lib.pulsar import pulse, pulselib, element, pulsar
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
+from measurement.lib.measurement2.adwin_ssro import DD_2 as DD
 import pulse_select as ps
 import sys
 
@@ -69,6 +70,165 @@ class ElectronRabi(pulsar_msmt.MBI):
             #qt.pulsar.upload(mbi_elt, *elts)
             qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
         #qt.pulsar.program_sequence(seq)
+
+
+
+
+
+
+class NitrogenRabiDirectRF(pulsar_msmt.MBI):
+    """
+    MJD 201711
+    Measurement class for a Rabi flop with direct RF
+    Input:
+        name(string): Name of the measurement you want to run
+    
+    Uploads a measurement sequence to the AWG
+
+    Nitrogen init: weak e Pi pulse 
+
+
+    """
+    mprefix = 'PulsarMBINitrogenRabi'
+
+    def generate_RF_pulse_element(self,Gate):
+        '''
+        Written by MB. 
+        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
+        Pulse is build up out of a starting element, a repeated middle element and an end
+        element to save the memory of the AWG.
+
+        Copied by MJD 201711
+
+
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+
+
+        DD.Gate.scheme = 'RF_pulse'
+
+        length     = DD.Gate.length
+        freq       = DD.Gate.RFfreq
+        amplitude  = DD.Gate.amplitude
+        prefix     = DD.Gate.prefix
+        phase      = DD.Gate.phase
+
+
+        list_of_elements = []
+
+        X = pulselib.RF_erf_envelope(
+            channel = 'RF',
+            length = length,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase)
+
+        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = True)
+        e_middle.append(pulse.cp(X))
+        list_of_elements.append(e_middle)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
+        Gate.elements= list_of_elements
+        
+        return Gate
+
+    def generate_sequence(self, upload=True, debug=False):
+        # MBI element
+        mbi_elt = self._MBI_element()
+
+        # electron manipulation pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 1000e-9, amplitude = 0)
+
+        X = pulselib.MW_IQmod_pulse('MW pulse',
+            I_channel = 'MW_Imod',
+            Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod',
+            PM_risetime = self.params['MW_pulse_mod_risetime'] )
+
+        N_pulse = pulselib.RF_erf_envelope(
+            channel = 'RF', amplitude = 0.7,
+            frequency = self.params['RF_pulse_frqs'])
+
+        # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
+        #     I_channel = 'MW_Imod',
+        #     Q_channel = 'MW_Qmod',
+        #     PM_channel = 'MW_pulsemod',
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'] )
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
+            amplitude = 2)
+
+        # electron manipulation elements
+        elts = []
+
+        for i in range(self.params['pts']):
+            e = element.Element('RF_pt-%d' % i, pulsar=qt.pulsar,
+                global_time = True)
+            e.append(pulse.cp(T, length = 500e-9))
+            e.append(
+                    pulse.cp(N_pulse, length=self.params['RF_pulse_length'], frequency = self.params['RF_pulse_frqs'][i]))
+            e.append(pulse.cp(T, length = 500e-9))
+
+
+            # for j in range(self.params['MW_pulse_multiplicities'][i]):
+            #     e.append(
+            #         pulse.cp(X,
+            #             frequency = self.params['MW_pulse_mod_frqs'][i],
+            #             amplitude = self.params['MW_pulse_amps'][i],
+            #             length = self.params['MW_pulse_durations'][i]))
+            #     e.append(
+            #         pulse.cp(T, length=self.params['MW_pulse_delays'][i]))
+
+            # e.append(adwin_sync)
+            elts.append(e)
+
+        # gate_seq = []
+        # for pt in range(self.params['pts']):
+        #     rabi_pulse = DD.Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+        #         length      = self.params['RF_pulse_durations'][pt],
+        #         RFfreq      = self.params['RF_pulse_frqs'][pt],
+        #         amplitude   = self.params['RF_pulse_amps'][pt])
+        #     gate_seq.extend([rabi_pulse])
+        #     print 'Gate_seq', gate_seq
+
+        #     gate_seq = DD.NitrogenRabiWithDirectRF.generate_AWG_elements(gate_seq,pt) # this will use resonance = 0 by default in
+
+        # ### Convert elements to AWG sequence and add to combined list
+        # list_of_elements, seq2 = DD.combine_to_AWG_sequence(gate_seq, explicit=True)
+
+
+
+
+        # sequence
+        seq = pulsar.Sequence('MBI Electron Rabi sequence')
+        for i,e in enumerate(elts):
+            seq.append(name = 'MBI-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True, goto_target = 'MBI-%d' % i,
+                jump_target = e.name)
+            seq.append(name = e.name, wfname = e.name,
+                trigger_wait = False) #True
+            seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
+                trigger_wait = True)
+            # seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
+            #     trigger_wait = False)      ## According to Norbert the trigger wait time should be set to False. 
+            ## This is implemented at the beginning of the MBI because it is waiting for a CR check from the adwin. 
+            ## For the readout this doesn't have to be implemented because it is deterministic. 
+        print 'MBI at', self.params['AWG_MBI_MW_pulse_ssbmod_frq']
+        # print 'MW rotations at', self.params['MW_pulse_mod_frqs'][i]
+        # program AWG
+        if upload:
+            #qt.pulsar.upload(mbi_elt, *elts)
+            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+        #qt.pulsar.program_sequence(seq)
+
 
 
 

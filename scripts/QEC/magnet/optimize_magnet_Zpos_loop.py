@@ -19,7 +19,7 @@ execfile(qt.reload_current_setup)
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
 current_f_msm1 = qt.exp_params['samples'][SAMPLE]['ms-1_cntr_frq']
-movement
+#movement
 
 
 for i in range (1):
@@ -76,7 +76,7 @@ for i in range (1):
         ## Input parameters ##
         ######################
         safemode            = False    # If True then manual confirmation is needed befor each magnet movement
-        optimization_target = 10      # Target difference frequency in kHz 
+        optimization_target = 20      # Target difference frequency in kHz 
         field_gradient      = 0.100     
         only_fine           = True
 

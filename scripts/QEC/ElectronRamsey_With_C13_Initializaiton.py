@@ -31,10 +31,10 @@ def electronramsey_WithNuclearInit(name,
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
-    m.params['wait_times'] = np.linspace(0,10000e-9,pts)
+    m.params['wait_times'] = np.linspace(0,300000e-9,pts)
 
     # MW pulses
-    m.params['detuning']  = 0.5e6
+    m.params['detuning']  = 0 #0.5e6
 
     m.params['pi2_phases1'] = np.ones(pts) * 0
     m.params['pi2_phases2'] = np.ones(pts) * 360 * m.params['wait_times'] * m.params['detuning']
@@ -78,7 +78,7 @@ def electronramsey_WithNuclearInit(name,
 if __name__ == '__main__':
 
 
-    for ii in range(10):
+    for ii in range(1):
 
         electronramsey_WithNuclearInit(SAMPLE+'_C1_up',
         Addressed_Carbon=1,
@@ -92,11 +92,11 @@ if __name__ == '__main__':
         el_RO_result=0,
         electron_RO='positive', no_carbon_init=False)
 
-        electronramsey_WithNuclearInit(SAMPLE+'_C1_noInit',
-        Addressed_Carbon=1,
-        C_13_init_state='down',
-        el_RO_result=0,
-        electron_RO='positive', no_carbon_init=True)
+        # electronramsey_WithNuclearInit(SAMPLE+'_C1_noInit',
+        # Addressed_Carbon=1,
+        # C_13_init_state='down',
+        # el_RO_result=0,
+        # electron_RO='positive', no_carbon_init=True)
 
-        ssrocalibration(SAMPLE_CFG)    
+        # ssrocalibration(SAMPLE_CFG)    
 

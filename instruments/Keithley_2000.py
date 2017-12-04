@@ -71,14 +71,15 @@ class Keithley_2000(Instrument):
         Instrument.__init__(self, name, tags=['physical'])
         # Add some global constants
         self._address = address
-        rm = visa.ResourceManager()
-        self._visainstrument = rm.open_resource(self._address)
+        self._rm = visa.ResourceManager()
+        self._visainstrument = self._rm.open_resource(self._address, write_termination ='\n', read_termination='\n')
         self._modes = ['VOLT:AC', 'VOLT:DC', 'CURR:AC', 'CURR:DC', 'RES',
             'FRES', 'TEMP', 'FREQ']
         self._change_display = change_display
         self._change_autozero = change_autozero
         self._averaging_types = ['MOV','REP']
         self._trigger_sent = False
+        self._channels = range(1,11)
 
         # Add parameters to wrapper
         self.add_parameter('range',
@@ -136,6 +137,9 @@ class Keithley_2000(Instrument):
             flags=Instrument.FLAG_GETSET,
             units='',
             type=types.BooleanType)
+        self.add_parameter('channel',
+            units='#',
+            type=types.IntType, minval=1, maxval=10)
 
         # Add functions to wrapper
         self.add_function('set_mode_volt_ac')
@@ -824,7 +828,7 @@ class Keithley_2000(Instrument):
             False= Off
         '''
         logging.debug('Reading display from instrument')
-        reply = self._visainstrument.ask('DISP:ENAB?')
+        reply = self._visainstrument.ask(':DISP:ENAB?')    
         return bool(int(reply))
 
     def do_set_display(self, val):
@@ -1004,6 +1008,38 @@ class Keithley_2000(Instrument):
         elif ans.startswith('MOV'):
             ans='moving'
         return ans
+
+    def do_get_channel(self):
+        '''
+        get current channel
+
+        Output
+            channel (int) : channel number
+        '''
+        string = ":ROUTE:CLOSE:STATE?"
+        logging.debug("querying channel to be read out")
+        ans = self._visainstrument.ask(string)
+        if len(ans) >3:
+            return int(ans[2:-1])
+        else:
+            logging.error('invalid answer: \'%s\'' % ans)
+
+    def do_set_channel(self, channel):
+        '''
+        sets current multiplexer channel
+
+        Input
+            channel (int) : channel number. Only enter channel nr 1-5 for four wire sensors.
+        '''
+        if channel not in self._channels:
+            logging.error('invalid channel: %d' % channel)
+        else:
+            string = ':ROUTE:CLOSE (@%d)' % channel
+            logging.debug('setting channel %d to be read out' % channel)
+            self._visainstrument.write(string)
+
+
+
 # --------------------------------------
 #           Internal Routines
 # --------------------------------------

@@ -103,6 +103,20 @@ elif SETUP == 'lt4':
         '7' : detuning_basic,
         '8' : detuning_basic
         }
+
+elif SETUP == 'm1':
+    detuning_basic = 1e3
+    detuning_dict = {
+        '1' : detuning_basic,
+        '2' : detuning_basic,
+        '3' : detuning_basic,
+        '4' : detuning_basic,
+        '5' : detuning_basic,
+        '6' : detuning_basic,
+        '7' : detuning_basic,
+        '8' : detuning_basic
+        }
+
 ######
 
 
