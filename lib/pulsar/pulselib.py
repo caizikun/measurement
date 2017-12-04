@@ -60,6 +60,9 @@ class MW_IQmod_pulse(pulse.Pulse):
         if 'Sw_channel' in kw and kw['Sw_channel'].lower() != 'none':
             self.Sw_channel = kw['Sw_channel']
             self.channels.append(self.Sw_channel)
+            self.Sw_risetime = kw.pop('Sw_risetime', 500e-9) ## hot fix for scripts that don't input a SW_risetime XXX think of better solution.
+        else:
+            self.Sw_risetime = kw.pop('Sw_risetime', 0)
 
 
         self.frequency = kw.pop('frequency', 1e6)
@@ -67,7 +70,7 @@ class MW_IQmod_pulse(pulse.Pulse):
         self.length = kw.pop('length', 1e-6)
         self.phase = kw.pop('phase', 0.)
         self.PM_risetime = kw.pop('PM_risetime', 0)
-        self.Sw_risetime = kw.pop('Sw_risetime', 0)
+
 
         self.phaselock = kw.pop('phaselock', True)
         self.risetime = kw.pop('risetime', max(self.PM_risetime,self.Sw_risetime))

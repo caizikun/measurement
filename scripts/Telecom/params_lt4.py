@@ -62,10 +62,10 @@ params_lt4['master_slave_awg_trigger_delay'] = 9 # times 10ns
 params_lt4['sync_during_LDE']           = 1
 
 params_lt4['PLU_during_LDE']          = 1
-params_lt4['PLU_gate_duration']       = 50e-9#70e-9
+params_lt4['PLU_gate_duration']       = 30e-9#70e-9
 params_lt4['PLU_gate_3_duration']     = 40e-9
-params_lt4['PLU_1_delay']             = 88e-9 - 200e-9
-params_lt4['PLU_2_delay']             = 88e-9 - 200e-9
+params_lt4['PLU_1_delay']             = 88e-9 - 200e-9 + 552e-9 + 105e-9
+params_lt4['PLU_2_delay']             = 88e-9 - 200e-9 + 552e-9 + 105e-9
 params_lt4['PLU_3_delay']             = 50e-9
 params_lt4['PLU_4_delay']             = 2500e-9 # don't change this
 
@@ -86,10 +86,10 @@ params_lt4['MIN_HIST_SYNC_BIN']   =   int(3e6) #XXXX was 5438*1e3
 params_lt4['MAX_HIST_SYNC_BIN']   =   int(6e6)
 params_lt4['count_marker_channel'] = 1
 
-params_lt4['pulse_start_bin'] = 2810e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
-params_lt4['pulse_stop_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_start_bin'] = 2826e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
-params_lt4['tail_stop_bin'] = 2856e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
+params_lt4['pulse_start_bin'] = 3670e3 -params_lt4['MIN_HIST_SYNC_BIN'] #2490e3 BK  #XXX
+params_lt4['pulse_stop_bin'] = 3685e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_start_bin'] = 3685e3 - params_lt4['MIN_HIST_SYNC_BIN'] # 2499e3 BK #XXX
+params_lt4['tail_stop_bin'] = 3720e3 - params_lt4['MIN_HIST_SYNC_BIN']  # 2570e3 BK #XXX
 params_lt4['PQ_ch1_delay'] = 18e3
 
 params_lt4['measurement_time']    =   24.*60*60 #sec = 24H

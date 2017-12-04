@@ -1,0 +1,7 @@
+# My fiducial prep gate strings
+{}
+Gu
+GuGxGu
+GuGxGv
+GuGyGu
+GuGyGv
