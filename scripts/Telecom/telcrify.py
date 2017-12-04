@@ -83,20 +83,20 @@ class telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_
 
     def live_update_callback(self):
         ''' This is called when the measurement progress is printed in the PQMeasurement run function'''
-
         if self.measurement_progress_first_run:
         
-            self.no_of_cycles_for_live_update_reset = 100
+            self.no_of_cycles_for_live_update_reset = 5
             self.hist_update = np.zeros((self.hist_length,2), dtype='u4')
             self.last_sync_number_update = 0
             self.measurement_progress_first_run = False
             self.live_updates = 0
-
+        
         self.live_updates += 1
 
         if self.live_updates > self.no_of_cycles_for_live_update_reset:
             self.hist_update = copy.deepcopy(self.hist)
             self.last_sync_number_update = self.last_sync_number
+            self.live_updates = 0
 
         pulse_cts_ch0=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']:self.params['pulse_stop_bin'],0])
         pulse_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['pulse_start_bin']+self.params['PQ_ch1_delay'] : self.params['pulse_stop_bin']+self.params['PQ_ch1_delay'],1])
@@ -104,20 +104,26 @@ class telcrify(telcrify_slave.purify_single_setup,  pq.PQMeasurement ): # pq.PQ_
         tail_cts_ch1=np.sum((self.hist - self.hist_update)[self.params['tail_start_bin']+self.params['PQ_ch1_delay'] : self.params['tail_stop_bin']+self.params['PQ_ch1_delay'],1])
         print 'duty_cycle', self.physical_adwin.Get_FPar(58)
 
-
         #### update parameters in the adwin
         if (self.last_sync_number > 0) and (self.last_sync_number != self.last_sync_number_update): 
-            
+            if qt.current_setup == 'lt3':
+
                 tail_psb_lt3 = round(float(tail_cts_ch0*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
                 tail_psb_lt4 = round(float(tail_cts_ch1*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
                 self.physical_adwin.Set_FPar(56, tail_psb_lt3)
                 self.physical_adwin.Set_FPar(57, tail_psb_lt4)
-            
-    
+                 
+                # print 'tail_counts PSB (lt3/lt4)', tail_psb_lt3,tail_psb_lt4
+            else:
+                ZPL_tail = round(float( (tail_cts_ch0+ tail_cts_ch1)*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
+                Pulse_counts = round(float((pulse_cts_ch1 + pulse_cts_ch0)*1e4)/float(self.last_sync_number-self.last_sync_number_update),3)
+                self.physical_adwin.Set_FPar(56, ZPL_tail)
+                self.physical_adwin.Set_FPar(57, Pulse_counts)
 
 
 
-def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, local = True, TH = True):
+
+def tail_sweep(name,debug = True,upload_only=True, minval = 0.3, maxval = 0.8,pts = 8, local = True, TH = True):
     """
     Performs a tail_sweep in the LDE_1 element
     """
@@ -127,10 +133,11 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     if TH:
         old_pq_ins = pq_measurement.PQMeasurement.PQ_ins
         pq_measurement.PQMeasurement.PQ_ins=qt.instruments['TH_260N']
+        m.params['reps_per_ROsequence'] = 200
         load_TH_params(m)
         
     ### general params
-    pts = 8
+    pts = pts
     m.params['pts'] = pts
     m.params['reps_per_ROsequence'] = 1000
 
@@ -143,7 +150,7 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     m.params['LDE1_attempts'] = 250
 
     m.params['opt_pi_pulses'] = 1
-    m.params['opt_pulse_separation'] = 197e-9
+    m.params['opt_pulse_separation'] = 200e-9
     m.params['MW_during_LDE'] = 0
     m.params['PLU_during_LDE'] = 0
     if local:
@@ -153,14 +160,14 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
     
     # put sweep together:
     sweep_off_voltage = False
-    sweep_on_voltage = True
+    sweep_on_voltage = False
 
     m.params['do_general_sweep']    = True
 
     if sweep_off_voltage:
         m.params['general_sweep_name'] = 'eom_off_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
-        m.params['general_sweep_pts'] = np.linspace(0.5,0.8,pts)#(-0.04,-0.02,pts)
+        m.params['general_sweep_pts'] = np.linspace(0.3,0.5,pts)#(-0.04,-0.02,pts)
     elif sweep_on_voltage:
         m.params['general_sweep_name'] = 'eom_pulse_amplitude'
         print 'sweeping the', m.params['general_sweep_name']
@@ -180,6 +187,38 @@ def tail_sweep(name,debug = True,upload_only=True, minval = 0.1, maxval = 0.8, l
 
     if TH:
         pq_measurement.PQMeasurement.PQ_ins= old_pq_ins
+
+
+def do_rejection(name,debug = False, upload_only = False):
+    """
+    does some adwin live filtering on the pulse. we also employ a slightly longer pulse here.
+    we only store the histogram on both sides to save some storage capacity
+    """
+    m = telcrify(name)
+    sweep_telcrification.prepare(m)
+    sweep_telcrification.turn_all_sequence_elements_off(m)
+
+    m.params['eom_pulse_duration'] = 5e-9
+    m.params['LDE_attempts'] = 1000
+
+
+    ### general params
+    pts = 1
+    m.params['pts'] = pts
+    m.params['reps_per_ROsequence'] = 30000
+    m.params['AWG_SP_power'] = 0.
+    m.params['do_general_sweep']    = False
+    m.params['MW_during_LDE'] = 0
+   
+
+    m.params['opt_pi_pulses'] = 1
+    m.params['PLU_during_LDE'] = 1
+
+    if qt.current_setup == 'lt4':
+        m.params['pulse_start_bin'] = m.params['pulse_start_bin']
+        m.params['pulse_stop_bin'] = m.params['pulse_stop_bin']  + 2*m.params['eom_pulse_duration']
+
+    sweep_telcrification.run_sweep(m,debug = debug,upload_only = upload_only)
 
 
 
@@ -245,7 +284,7 @@ def SPCorrsPuri_PSB_singleSetup(name, debug = False, upload_only = False):
 
     pq_measurement.PQMeasurement.PQ_ins= old_pq_ins
 
-def SPCorrsPuri_ZPL_singleSetup(name, debug = False, upload_only = False):
+def SPCorrsPuri_ZPL_singleSetup(name,is_Tel_Phot=True, debug = False, upload_only = False):
     """
     Performs a regular Spin-photon correlation measurement.
     """
@@ -256,7 +295,7 @@ def SPCorrsPuri_ZPL_singleSetup(name, debug = False, upload_only = False):
 
     ### general params
     m.params['pts'] = 1
-    m.params['reps_per_ROsequence'] = 1000
+    m.params['reps_per_ROsequence'] = 2000
 
     sweep_telcrification.turn_all_sequence_elements_off(m)
     ### which parts of the sequence do you want to incorporate.
@@ -274,6 +313,12 @@ def SPCorrsPuri_ZPL_singleSetup(name, debug = False, upload_only = False):
 
     m.params['do_final_mw_LDE'] = 1
     m.params['LDE_final_mw_amplitude'] = 0
+
+
+    if not(is_Tel_Phot):
+        m.params['PLU_1_delay']             = 88e-9 - 200e-9 + 552e-9 -20e-9 #+ 105e-9
+        m.params['PLU_2_delay']             = 88e-9 - 200e-9 + 552e-9 -20e-9 #+ 105e-9
+
     ### upload
 
     sweep_telcrification.run_sweep(m, debug = debug, upload_only = upload_only)
@@ -479,12 +524,13 @@ if __name__ == '__main__':
 
     # MW_Position(name+'_MW_position',upload_only=False)
 
-    tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.8, local=True, TH = True)
+    # tail_sweep(name[:-1]+'tail',debug = False,upload_only=False, minval = 0.1, maxval=0.9,pts=8, local=True, TH = False)
+    # do_rejection(name[:-1]+'reject',debug = False,upload_only=False)
     # TPQI(name+'_HOM_test_red',debug = True,upload_only=True)
     # optical_rabi(name+'_optical_rabi_22_deg',debug = False,upload_only=False, local=False)
     # SPCorrsPuri_PSB_singleSetup(name+'_SPCorrs_PSB',debug = False,upload_only=False)
     
-    # SPCorrsPuri_ZPL_singleSetup(name+'_SPCorrs_ZPL',debug = False,upload_only=False)
+    SPCorrsPuri_ZPL_singleSetup(name+'_SPCorrs_ZPL',is_Tel_Phot=True,debug = False,upload_only=False)
     # measureInterferometerDelay(name,debug = False,upload_only=False)
     
     # qt.mstart()

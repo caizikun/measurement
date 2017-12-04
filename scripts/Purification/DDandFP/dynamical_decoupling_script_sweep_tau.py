@@ -41,10 +41,9 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
     '''set experimental parameters'''
     m.params['reps_per_ROsequence'] = reps_per_ROsequence
     m.params['Initial_Pulse'] ='x'
-    if N%4 == 0: 
-        m.params['Final_Pulse'] ='-x'
-    else:
-        m.params['Final_Pulse'] ='x'
+
+    m.params['Final_Pulse'] ='-x'
+
     m.params['Decoupling_sequence_scheme'] = 'repeating_T_elt'
     # m.params['Decoupling_sequence_scheme'] = 'single_block'
     Number_of_pulses = N 
@@ -66,13 +65,13 @@ def SimpleDecoupling_swp_tau(name,tau_min=9e-6,tau_max=10e-6,tau_step =50e-9, N 
 
 if __name__ == '__main__':
 
-    center_tau = 4.36e-6
+    center_tau = 3.692e-6
     tau_step = 2e-9
-    steps = 10 #has to be divisble by two.
+    steps = 20 #has to be divisble by two.
 
     SimpleDecoupling_swp_tau(SAMPLE, 
         tau_min=center_tau - (steps/2)*tau_step,
         tau_max=center_tau + (steps/2)*tau_step,
         tau_step = tau_step,
-        N=32,
+        N=66,
         reps_per_ROsequence = 250)

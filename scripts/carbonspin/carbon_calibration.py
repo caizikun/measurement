@@ -32,9 +32,9 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-qt.exp_params['simplify_wfnames'] = True
+qt.exp_params['simplify_wfnames'] = False
 
-carbons = [7]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
+carbons = [6]
 
 """
 AFTER THE CALIBRATION IS DONE:
@@ -46,16 +46,16 @@ do_update_msmt_params = True
 
 use_queue = False
 
-f_ms0 = False
-f_ms1 = False
-update_average_freq = False
+f_ms0 = True
+f_ms1 = True
+update_average_freq = True
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 
