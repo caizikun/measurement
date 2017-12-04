@@ -114,7 +114,7 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
 # class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
 class GateSetWithDecoupling(pulsar_msmt.MBI):
     """
-    Class used to generate a gate set tomography sequence. 
+    Class used to generate a gate set tomography sequence. This class generates decoupling following XY8 decoupling
     generate_sequence needs to be supplied with a xpi2_pulse and a ypi2_pulse as kw.
     """
     mprefix = 'GateSetTomography'
@@ -463,6 +463,15 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
                     sys.exit("A horrible mistake happened. Check you subsequence building routine.")
 
 
+    def save(self, name='adwindata'):
+        
+        reps = self.adwin_var('completed_reps')
+        sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
+
+        self.save_adwin_data(name,
+                [  ('ssro_results', reps) ])
+        
+        return
 
     def generate_sequence(self, upload=True, **kw):
 
@@ -538,7 +547,8 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
 
 class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
     """
-    Class used to generate a gate set tomography sequence without decoupling, but with refocusing due to germ sequence.
+    Class used to generate a gate set tomography sequence without decoupling, but with refocusing due to germ sequence. Latest addition, based on the idea that we can 
+    construct a self-refocusing germ list.
     """
     mprefix = 'GateSetTomographyNoDecouplingWithTiming'
 
@@ -557,7 +567,8 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
             else:   current_pi = False
 
 
-            #In case the last pulse we did was a pi pulse, then we want to echo correctly by having two times tau larmor
+            #In case the last pulse we did was a pi pulse and we are also no having a pi pulse, then we want to echo correctly by having two times tau larmor,
+            ##sine usually we just use tau larmor for the spacing.
             if self.last_pi == True and current_pi == True:
                 start *=2.
 
@@ -601,6 +612,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         ###
         elements = []
 
+        #A counting index that we use to cross-reference the pulse timings w.r.t. the last sequence
         self.n = 0
 
         for k in range(self.params['pts']):
@@ -608,6 +620,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
             self.e1 = element.Element('Single_germ_sequence_%d' % self.params['run_numbers'][k], pulsar=qt.pulsar,
                     global_time = True)
 
+            #First do carbon initialization
             elements.append(pulsar_msmt.MBI._MBI_element(self, name='CNOT%d' % k))
 
             self.e1.add(pulse.cp(self.T, 
