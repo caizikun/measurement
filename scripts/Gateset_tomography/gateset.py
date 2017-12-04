@@ -12,10 +12,10 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 #reload all parameters and modules
 
 
-from measurement.scripts.espin import espin_funcs as funcs
+from measurement.scripts.mbi import mbi_funcs
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
-reload(funcs)
+reload(mbi_funcs)
 
 # from darkesr, use of some of these is hidden. Not relevant
 import measurement.lib.config.adwins as adwins_cfg
@@ -39,7 +39,6 @@ matplotlib.use('Agg')
 
 
 execfile(qt.reload_current_setup)
-#reload(funcs)
 
 #name = 'HANS_sil4'
 SAMPLE = qt.exp_params['samples']['current']
@@ -231,20 +230,11 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
 
     if sequence_type == 'specific_germ_position':
         m = pulsar_delay.GateSetWithDecoupling(name)
+        mbi_funcs.prepare(m) # load msmt params
 
+    
 
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-
-
+    #from mbi_funcs.py
     m.params['E_RO_durations']      = [m.params['SSRO_duration']]
     m.params['E_RO_amplitudes']     = [m.params['Ex_RO_amplitude']]
     m.params['send_AWG_start']      = [1]
@@ -252,13 +242,6 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
 
 
     #Specific to make it work on LT2
-
-    m.params['Shutter_rise_time']   = 2500
-    m.params['Shutter_fall_time']   = 2500
-    m.params['pulse_type'] = 'Hermite'
-    m.params['Ex_SP_amplitude']=0
-    m.params['AWG_to_adwin_ttl_trigger_duration']=3e-6  # commenting this out gives an error
-    m.params['wait_for_AWG_done']=1
     m.params['initial_msmt_delay'] = 5000.0e-9
 
     #The total number of sequence repetitions
@@ -271,6 +254,8 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
     m.params['germ_position']       = germ_position
     m.params['N_decoupling']        = N_decoupling
     m.params['run_numbers']         = run_numbers
+
+    #Muss auch nicht imer definiert werden
     
     #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
     tau_larmor = np.round(1/m.params['C1_freq_0'],9)
@@ -404,6 +389,8 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
         # m = pulsar_delay.GateSetNoDecoupling(name)
         m = pulsar_delay.GateSetNoDecouplingTiming(name)
 
+
+    mbi_funcs.prepare(m)
     run_names = []
 
     for i in range(awg_runs):
@@ -437,6 +424,7 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
 
         run_names.extend(['Start_run%d' %run[0]])
 
+        #Optimierungspotential!
         m.params['all_run_names'] = run_names
 
         #Finally pass everything to the gateset function
@@ -547,7 +535,10 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = True, decoupling = False, pi=True, awg_size = 40)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", 
+        debug = True, 
+        decoupling = False, 
+        pi=True, awg_size = 40)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #

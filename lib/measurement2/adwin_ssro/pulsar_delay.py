@@ -99,7 +99,7 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
             elements.append(e2)
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('ElectronRamsey self-triggered sequence with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('ElectronRamsey self-triggered sequence with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -393,7 +393,7 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -527,7 +527,7 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -643,7 +643,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -724,7 +724,7 @@ class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
             elements.append(e1)
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -910,7 +910,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Electron refocussing with delay trigger with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Electron refocussing with delay trigger with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
