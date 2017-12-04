@@ -1,0 +1,7 @@
+# My fiducial meas gate strings
+{}
+Gx
+Gy
+Gu
+GxGu
+GyGu

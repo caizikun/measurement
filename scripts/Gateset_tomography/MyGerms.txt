@@ -1,0 +1,16 @@
+# My germ gate strings, optimised to reduce the number of germs
+Gu
+Gv
+GxGuGuGxGv
+GxGvGuGyGv
+GxGvGvGyGv
+GyGuGyGvGv
+GyGuGvGvGu
+GxGuGxGuGyGv
+GxGuGxGvGyGu
+GxGuGyGvGyGv
+GxGuGvGyGuGu
+GxGuGvGyGuGv
+GxGvGyGvGuGv
+GxGvGuGyGvGu
+GxGvGuGyGvGv

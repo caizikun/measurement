@@ -1,0 +1,18 @@
+# My germ gate strings
+Gu
+Gv
+GxGuGuGxGv
+GxGvGuGyGv
+GxGvGvGyGu
+GxGvGvGyGv
+GyGuGyGvGv
+GyGuGvGvGu
+GxGuGxGuGyGv
+GxGuGxGvGyGu
+GxGuGyGvGyGv
+GxGuGvGyGuGu
+GxGuGvGyGuGv
+GxGvGyGvGuGv
+GxGvGuGyGvGu
+GxGvGuGyGvGv
+GxGvGvGyGvGu
