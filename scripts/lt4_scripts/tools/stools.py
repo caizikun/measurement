@@ -16,8 +16,8 @@ def turn_off_all_lasers():
 
     turn_off_lasers(['MatisseAOM', 'NewfocusAOM','GreenAOM','YellowAOM'])
 
-    if 'PhaseAOM' in qt.instruments.get_instrument_names():
-        turn_off_lasers(['PhaseAOM'])
+    # if 'PhaseAOM' in qt.instruments.get_instrument_names():
+    #     turn_off_lasers(['PhaseAOM'])
 
     if 'PulseAOM' in qt.instruments.get_instrument_names():
         turn_off_lasers(['PulseAOM'])
@@ -26,6 +26,7 @@ def turn_off_all_lt4_lasers():
     turn_off_all_lasers()
 
 def recalibrate_laser(name, servo, adwin, awg=False):
+
     #qt.instruments[adwin].set_simple_counting()
     qt.instruments[servo].move_in()
     qt.msleep(1)

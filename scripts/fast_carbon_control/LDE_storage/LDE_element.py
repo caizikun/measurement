@@ -147,6 +147,9 @@ def generate_LDE_elt(msmt,Gate, **kw):
     _create_syncs_and_triggers(msmt,Gate)
     _create_wait_times(Gate)
 
+    LDE_length = msmt.joint_params['LDE_element_length']
+    if not 'LDE_element_length_modifier' in msmt.params.to_dict().keys(): msmt.params['LDE_element_length_modifier'] = 0
+    msmt.joint_params['LDE_element_length'] +=  msmt.params['LDE_element_length_modifier']
 
     ### create element
     e = element.Element(Gate.name, pulsar = qt.pulsar, global_time=True)
@@ -231,41 +234,50 @@ def generate_LDE_elt(msmt,Gate, **kw):
 
 
         else: # no final mw duration = no barret & kok
-            e.add(Gate.mw_X,
-                start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
-                refpulse        = 'initial_delay',#'MW_Theta',
-                refpoint        = 'end',#'end',
-                refpoint_new    = 'center',#'end',
-                name            = 'MW_pi')
+            if msmt.params['skip_LDE_mw_pi'] == 1:
+                e.add(Gate.mw_first_pulse,
+                    start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
+                    refpulse        = 'initial_delay',#'MW_Theta',
+                    refpoint        = 'end',#'end',
+                    refpoint_new    = 'center',#'end',
+                    name            = 'MW_theta')
 
-            #mw pi/2 pulse or 'theta'
-            e.add(Gate.mw_first_pulse,
-                start           = -msmt.params['LDE_decouple_time'],
-                refpulse        = 'MW_pi',#'opt pi 1', 
-                refpoint        = 'center', 
-                refpoint_new    = 'center',
-                name            = 'MW_Theta')
+            else:
+                e.add(Gate.mw_X,
+                    start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
+                    refpulse        = 'initial_delay',#'MW_Theta',
+                    refpoint        = 'end',#'end',
+                    refpoint_new    = 'center',#'end',
+                    name            = 'MW_pi')
+
+                #mw pi/2 pulse or 'theta'
+                e.add(Gate.mw_first_pulse,
+                    start           = -msmt.params['LDE_decouple_time'],
+                    refpulse        = 'MW_pi',#'opt pi 1', 
+                    refpoint        = 'center', 
+                    refpoint_new    = 'center',
+                    name            = 'MW_Theta')
 
 
 
 
     ### we still need MW pulses (with zero amplitude) as a reference for the first optical pi pulse.
-    else:
-        # MW pi pulse
-        e.add(pulse.cp(Gate.mw_X,amplitude=0),
-            start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
-            refpulse        = 'initial_delay',#'MW_Theta',
-            refpoint        = 'end',#'end',
-            refpoint_new    = 'center',#'end',
-            name            = 'MW_pi')
+    # else:
+        # #MW pi pulse
+        # e.add(pulse.cp(Gate.mw_X,amplitude=0),
+        #     start           = msmt.joint_params['LDE_element_length']-msmt.joint_params['initial_delay']-(msmt.params['LDE_decouple_time']-msmt.params['average_repump_time']),
+        #     refpulse        = 'initial_delay',#'MW_Theta',
+        #     refpoint        = 'end',#'end',
+        #     refpoint_new    = 'center',#'end',
+        #     name            = 'MW_pi')
 
-        #mw pi/2 pulse or 'theta'
-        e.add(pulse.cp(Gate.mw_first_pulse,amplitude=0),
-            start           = -msmt.params['LDE_decouple_time'],
-            refpulse        = 'MW_pi',#'opt pi 1', 
-            refpoint        = 'center', 
-            refpoint_new    = 'center',
-            name            = 'MW_Theta')
+        # #mw pi/2 pulse or 'theta'
+        # e.add(pulse.cp(Gate.mw_first_pulse,amplitude=0),
+        #     start           = -msmt.params['LDE_decouple_time'],
+        #     refpulse        = 'MW_pi',#'opt pi 1', 
+        #     refpoint        = 'center', 
+        #     refpoint_new    = 'center',
+        #     name            = 'MW_Theta')
 
     #4 opt. pi pulses
     # print 'Nr of opt pi pulses', msmt.joint_params['opt_pi_pulses']
@@ -345,7 +357,7 @@ def generate_LDE_elt(msmt,Gate, **kw):
     # if e_len != msmt.joint_params['LDE_element_length']:
     #     raise Exception('LDE element "{}" has length {:.6e}, but specified length was {:.6e}. granularity issue?'.format(e.name, e_len, msmt.joint_params['LDE_element_length']))
 
-
+    msmt.joint_params['LDE_element_length']=LDE_length
 def _LDE_rephasing_elt(msmt,Gate,forced_wait_duration = 0,addressed_carbon=None):
     """waits the right amount of time after and LDE element for the 
     electron to rephase.

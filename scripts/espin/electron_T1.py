@@ -4,17 +4,13 @@ Script for e-spin T1 using the pulsar sequencer.
 import numpy as np
 import qt
 import msvcrt
-
+# import the msmt class
+from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 #reload all parameters and modules
 execfile(qt.reload_current_setup)
 
-import measurement.lib.config.adwins as adwins_cfg
-import measurement.lib.measurement2.measurement as m2
 
-# import the msmt class
-from measurement.lib.measurement2.adwin_ssro import ssro
-from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
-from analysis.lib.m2.ssro import ssro as ssroanal
+
 
 SAMPLE = qt.exp_params['samples']['current']
 SAMPLE_CFG = qt.exp_params['protocols']['current']
@@ -76,11 +72,14 @@ def T1(name, T1_initial_state = 'ms=0', T1_readout_state = 'ms=0',
 
 if __name__ == '__main__':
 
-    times = np.linspace(1e2,50e3,7)
+    times =  np.linspace(1e3,400e3,7)
 
     
-    T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
-                    T1_readout_state = 'ms=0', debug=False)
-    # T1(SAMPLE+'_'+'init_1_RO_1', T1_initial_state = 'ms=-1',wait_times = times, 
-                    # T1_readout_state = 'ms=-1', debug=False)
+    # T1(SAMPLE+'_'+'init_0_RO_0', T1_initial_state = 'ms=0',wait_times = times, 
+    #                 T1_readout_state = 'ms=0', debug=False)  
+    for V in np.linspace(-0.148,-0.152,7):
+        qt.instruments['NewfocusAOM'].set_V_off(V)
+        qt.instruments['NewfocusAOM'].save_cfg()
+        T1(SAMPLE+'_'+'init_1_RO_1_'+str(abs(V)), T1_initial_state = 'ms=-1',wait_times = times, 
+                        T1_readout_state = 'ms=-1', debug=False)
     

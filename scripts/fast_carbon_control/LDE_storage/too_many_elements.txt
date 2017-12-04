@@ -1,2 +1,6 @@
 111no2_SIL2_Sweep_Repump_time_X: 12090
 111no2_SIL2_Sweep_Repump_time_X: 9270
+111no2_SIL2_Sweep_Repump_time_X_C3: 9263
+111no2_SIL2_sweep_number_of_reps_C3_Z: 8120
+111no2_SIL2_sweep_number_of_reps_X_C3: 8175
+111no2_SIL2_sweep_number_of_reps_Z: 8170
