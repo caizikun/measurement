@@ -50,13 +50,13 @@ elif electron_transition == '-1':
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 126e-9 # divisible by 2
-	hermite_pi_amp =  0.844#0.956#0.867 #0.863
+	hermite_pi_amp =  0.824#0.956#0.867 #0.863
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
 	hermite_pi2_length = 60e-9 # divisible by 2
-	hermite_pi2_amp = 0.626 # 0.632
+	hermite_pi2_amp = 0.618 # 0.632
 
 
 ### General settings for AdwinSSRO

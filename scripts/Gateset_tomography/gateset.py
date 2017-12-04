@@ -343,7 +343,7 @@ def reoptimize():
     """
     Function used for reoptimizing on the NV center position
     """
-    GreenAOM.set_power(10e-6)
+    GreenAOM.set_power(4e-6)
     optimiz0r.optimize(dims=['x','y','z'], cycles=2)
     GreenAOM.turn_off()
 
@@ -536,9 +536,9 @@ if __name__ == '__main__':
 
 
     individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", 
-        debug = True, 
+        debug = False, 
         decoupling = False, 
-        pi=True, awg_size = 40)
+        pi=True, awg_size = 10)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #
