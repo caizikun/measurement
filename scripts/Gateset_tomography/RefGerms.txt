@@ -1,0 +1,16 @@
+# Reference germ gate strings
+Gx
+Gy
+Gu
+Gv
+GxGuGvGy
+GxGvGyGu
+GxGvGyGv
+GxGvGuGu
+GyGuGvGv
+GuGuGuGv
+GuGvGvGv
+GxGxGyGxGu
+GxGyGuGyGy
+GxGuGvGuGy
+GxGvGuGyGv
