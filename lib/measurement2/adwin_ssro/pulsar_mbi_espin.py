@@ -86,74 +86,87 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
     Uploads a measurement sequence to the AWG
 
     Nitrogen init: weak e Pi pulse 
+    Nitrogen manip: RF sequence
+    Nitrogen RO:   weak e Pi pulse
 
 
     """
+
     mprefix = 'PulsarMBINitrogenRabi'
 
-    def generate_RF_pulse_element(self,Gate):
-        '''
-        Written by MB. 
-        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
-        Pulse is build up out of a starting element, a repeated middle element and an end
-        element to save the memory of the AWG.
-
-        Copied by MJD 201711
+    def _RO_element(self,name ='RO weak pi'):
+        # define the necessary pulses
+        T = pulse.SquarePulse(channel='MW_pulsemod',
+            length = 100e-9, amplitude = 0)
 
 
-        '''
+        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+            PM_channel = 'MW_pulsemod', Sw_channel='MW_switch',
+            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+            length = self.params['AWG_MBI_MW_pulse_duration'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'],
+            Sw_risetime = self.params['MW_switch_risetime'])
 
-        ###################
-        ## Set paramters ##
-        ###################
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \
+                + self.params['AWG_wait_for_adwin_MBI_duration']),
+            amplitude = 2)
 
+        # the actual element
+        ro_element = element.Element(name, pulsar=qt.pulsar)
+        ro_element.append(T)
+        ro_element.append(X)
+        ro_element.append(adwin_sync)
 
+        return ro_element
 
-        DD.Gate.scheme = 'RF_pulse'
-
-        length     = DD.Gate.length
-        freq       = DD.Gate.RFfreq
-        amplitude  = DD.Gate.amplitude
-        prefix     = DD.Gate.prefix
-        phase      = DD.Gate.phase
-
-
-        list_of_elements = []
-
-        X = pulselib.RF_erf_envelope(
-            channel = 'RF',
-            length = length,
-            frequency = freq,
-            amplitude = amplitude,
-            phase = phase)
-
-        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
-                global_time = True)
-        e_middle.append(pulse.cp(X))
-        list_of_elements.append(e_middle)
-
-        Gate.tau_cut = 1e-6
-        Gate.wait_time = Gate.length + 2e-6
-        Gate.elements= list_of_elements
-        
-        return Gate
 
     def generate_sequence(self, upload=True, debug=False):
         # MBI element
         mbi_elt = self._MBI_element()
 
+        ro_elt = self._RO_element()
+
         # electron manipulation pulses
         T = pulse.SquarePulse(channel='MW_pulsemod',
             length = 1000e-9, amplitude = 0)
 
-        X = pulselib.MW_IQmod_pulse('MW pulse',
-            I_channel = 'MW_Imod',
-            Q_channel = 'MW_Qmod',
+        X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+            I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
             PM_channel = 'MW_pulsemod',
-            PM_risetime = self.params['MW_pulse_mod_risetime'] )
+            frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+            amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+            length = self.params['AWG_MBI_MW_pulse_duration'],
+            PM_risetime = self.params['MW_pulse_mod_risetime'])
 
-        N_pulse = pulselib.RF_erf_envelope(
-            channel = 'RF', amplitude = 0.7,
+        
+
+        adwin_sync = pulse.SquarePulse(channel='adwin_sync',
+            length = (self.params['AWG_to_adwin_ttl_trigger_duration'] \
+                + self.params['AWG_wait_for_adwin_MBI_duration']),
+            amplitude = 2)
+
+        # # define the necessary pulses
+        # T = pulse.SquarePulse(channel='MW_pulsemod',
+        #     length = 100e-9, amplitude = 0)
+
+
+        # X = pulselib.MW_IQmod_pulse('MBI MW pulse',
+        #     I_channel = 'MW_Imod', Q_channel = 'MW_Qmod',
+        #     PM_channel = 'MW_pulsemod',
+        #     frequency = self.params['AWG_MBI_MW_pulse_ssbmod_frq'],
+        #     amplitude = self.params['AWG_MBI_MW_pulse_amp'],
+        #     length = self.params['AWG_MBI_MW_pulse_duration'],
+        #     PM_risetime = self.params['MW_pulse_mod_risetime'])
+
+        # # the actual element
+        # ro_element = element.Element(name, pulsar=qt.pulsar)
+        # ro_element.append(T)
+        # ro_element.append(X)
+
+        N_pulse = pulselib.RF_erf_envelope(channel = 'RF', amplitude = self.params['RF_pulse_amp'],
             frequency = self.params['RF_pulse_frqs'])
 
         # X = pulselib.HermitePulse_Envelope_IQ('MW pulse',
@@ -174,7 +187,7 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
                 global_time = True)
             e.append(pulse.cp(T, length = 500e-9))
             e.append(
-                    pulse.cp(N_pulse, length=self.params['RF_pulse_length'], frequency = self.params['RF_pulse_frqs'][i]))
+                    pulse.cp(N_pulse, length=self.params['RF_pulse_length'][i], frequency = self.params['RF_pulse_frqs']))
             e.append(pulse.cp(T, length = 500e-9))
 
 
@@ -187,7 +200,7 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
             #     e.append(
             #         pulse.cp(T, length=self.params['MW_pulse_delays'][i]))
 
-            # e.append(adwin_sync)
+            #e.append(adwin_sync)
             elts.append(e)
 
         # gate_seq = []
@@ -214,9 +227,10 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
                 trigger_wait = True, goto_target = 'MBI-%d' % i,
                 jump_target = e.name)
             seq.append(name = e.name, wfname = e.name,
-                trigger_wait = False) #True
-            seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
-                trigger_wait = True)
+                trigger_wait = True) #True
+            seq.append(name = 'RO_pt-%d' % i, wfname = ro_elt.name,
+                trigger_wait = False)
+
             # seq.append(name = 'RO-%d' % i, wfname = mbi_elt.name,
             #     trigger_wait = False)      ## According to Norbert the trigger wait time should be set to False. 
             ## This is implemented at the beginning of the MBI because it is waiting for a CR check from the adwin. 
@@ -226,7 +240,7 @@ class NitrogenRabiDirectRF(pulsar_msmt.MBI):
         # program AWG
         if upload:
             #qt.pulsar.upload(mbi_elt, *elts)
-            qt.pulsar.program_awg(seq, mbi_elt, *elts , debug=debug)
+            qt.pulsar.program_awg(seq, mbi_elt, ro_elt, *elts , debug=debug)
         #qt.pulsar.program_sequence(seq)
 
 
