@@ -4175,14 +4175,14 @@ class MBI_C13(DynamicalDecoupling):
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_RO_Trigger = Gate(prefix+str(addressed_carbon)+'cl_RO_trig_pt'+str(pt),'Trigger',
-                wait_time= 160e-6,#self.params['Carbon_init_RO_wait'],
+                wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
                 el_state_before_gate = el_RO_result,
                 specific_transition = self.params['C'+str(addressed_carbon)+'_dec_trans'])
 
         Clu_init_RO_Trigger_2 = Gate(prefix+str(addressed_carbon)+'cl_RO_trig_2_pt'+str(pt),'Trigger',
-                wait_time= 160e-6,#self.params['Carbon_init_RO_wait'],
+                wait_time= self.params['Carbon_init_RO_wait'],
                 event_jump = 'next',
                 go_to = go_to_element,
                 el_state_before_gate = el_RO_result,
