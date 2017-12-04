@@ -21,9 +21,9 @@ def run(name, mw_switch = False):
     funcs.prepare(m)
     m.params['centerfreq'] = 5.068e6
     # m.params.from_dict(qt.exp_params['protocols']['Hans_sil1']['Magnetometry'])
-    pts = 41
+    pts = 31
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 500
+    m.params['reps_per_ROsequence'] = 300
     m.params['MW_pulse_multiplicities'] = np.ones(pts).astype(int)
     m.params['MW_pulse_delays'] = np.ones(pts) * 100e-9
 
@@ -39,17 +39,18 @@ def run(name, mw_switch = False):
     ## RF parameters
 
     m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 1
-    m.params['RF_pulse_length'] = 75e-6#np.linspace(1e-6, 120e-6, pts)
+    m.params['RF_pulse_length'] = np.linspace(1e-6, 1000e-6, pts)
     # m.params['RF_pulse_durations'] = 10e-6 + np.linspace(0e-6,10e-6,pts)
-    m.params['RF_pulse_frqs'] = np.linspace(m.params['centerfreq']-50e3,m.params['centerfreq']+50e3,pts) #m.params['centerfreq']#np.linspace(m.params['centerfreq']-50e3,m.params['centerfreq']+50e3,pts)
+    m.params['RF_pulse_frqs'] = m.params['centerfreq']# np.linspace(m.params['centerfreq']-50e3,m.params['centerfreq']+50e3,pts) #np.linspace(m.params['centerfreq']-50e3,m.params['centerfreq']+50e3,pts)
     m.params['sweep_name'] = 'RF_pulse_length (us)'
+    m.params['RF_pulse_amp'] = 0.35 
 
 
 
 
     # for the autoanalysis
-    m.params['sweep_name'] = 'RF_pulse_frqs'
-    m.params['sweep_pts']  = (m.params['RF_pulse_frqs'])/1.e6
+    m.params['sweep_name'] = 'RF_pulse_length (us)'
+    m.params['sweep_pts']  = (m.params['RF_pulse_length'])/1.e-6
     
 
     # print 'MBI_Threshold', m.params['MBI_threshold']
@@ -72,7 +73,7 @@ def run(name, mw_switch = False):
 #     optimiz0r.optimize(dims = ['x','y','z','y','x'])
 
 if __name__ == '__main__':
-    run('MBI_DESR',mw_switch = False)
+    run('MBI_RABI',mw_switch = False)
 
 
 
