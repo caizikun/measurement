@@ -561,7 +561,12 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         for i in range(len(seq)):
 
             start = self.params['tau_larmor']
-            
+
+            #If the sequence is empty then do not add something, since we get MV
+            #switch noise in this case
+            if seq[i]=='e':
+                return
+
             
             if seq[i] == 'u' or seq[i] =='v':
                 current_pi = True
