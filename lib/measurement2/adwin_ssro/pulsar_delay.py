@@ -99,7 +99,7 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
             elements.append(e2)
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('ElectronRamsey self-triggered sequence with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('ElectronRamsey self-triggered sequence with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -114,7 +114,7 @@ class GeneralElectronRamseySelfTriggered(pulsar_msmt.PulsarMeasurement):
 # class GateSetNoTriggers(pulsar_msmt.PulsarMeasurement):
 class GateSetWithDecoupling(pulsar_msmt.MBI):
     """
-    Class used to generate a gate set tomography sequence. 
+    Class used to generate a gate set tomography sequence. This class generates decoupling following XY8 decoupling
     generate_sequence needs to be supplied with a xpi2_pulse and a ypi2_pulse as kw.
     """
     mprefix = 'GateSetTomography'
@@ -393,7 +393,7 @@ class GateSetWithDecoupling(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -463,6 +463,15 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
                     sys.exit("A horrible mistake happened. Check you subsequence building routine.")
 
 
+    def save(self, name='adwindata'):
+        
+        reps = self.adwin_var('completed_reps')
+        sweeps = self.params['pts'] * self.params['reps_per_ROsequence']
+
+        self.save_adwin_data(name,
+                [  ('ssro_results', reps) ])
+        
+        return
 
     def generate_sequence(self, upload=True, **kw):
 
@@ -518,7 +527,7 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -538,7 +547,8 @@ class GateSetNoDecoupling(pulsar_msmt.MBI):
 
 class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
     """
-    Class used to generate a gate set tomography sequence without decoupling, but with refocusing due to germ sequence.
+    Class used to generate a gate set tomography sequence without decoupling, but with refocusing due to germ sequence. Latest addition, based on the idea that we can 
+    construct a self-refocusing germ list.
     """
     mprefix = 'GateSetTomographyNoDecouplingWithTiming'
 
@@ -546,69 +556,37 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         pulsar_msmt.MBI.autoconfig(self)
 
 
-    def pulse_caller(self, pulsetype , refpoint = 'center', refpoint_new = 'center' , start= 0 ):
-        
-        start = self.params['tau_larmor']
-
-        #In case the last pulse we did was a pi pulse, then we want to echo correctly by having two times tau larmor
-        if self.last_pi == True and self.current_pi == True:
-            start *=2.
-
-        self.e1.add(pulse.cp(pulsetype),
-                            refpulse        = 'pulse%d' % (self.n-1),
-                            refpoint        = refpoint,
-                            refpoint_new    = refpoint_new,
-                            name            = 'pulse%d' % self.n,
-                            start           = start)
-
-        self.n +=1
-
     def generate_subsequence(self, seq='x'):
-        """
-        This function is used to create the subsequences we need, i.e. fiducials and germs
-        """
 
-        #In case we have the null fiducial, just return nothing. TO DO: Change to a wait pulse.
-        if seq =='e':
-            return
+        for i in range(len(seq)):
 
-        else:
-            for i in range(len(seq)):
+            start = self.params['tau_larmor']
 
-                if seq[i] == 'x':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_xpi2)
+            #If the sequence is empty then do not add something, since we get MV
+            #switch noise in this case
+            if seq[i]=='e':
+                return
 
-                    self.last_pi = False
-                    
-                elif seq[i] == 'y':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_ypi2)
-                    
-                    self.last_pi = False
+            
+            if seq[i] == 'u' or seq[i] =='v':
+                current_pi = True
+            else:   current_pi = False
 
-                elif seq[i] == 'm':
-                    self.current_pi = False
-                    self.pulse_caller(self.pulse_mypi2)
-                    
-                    self.last_pi = False
 
-                elif seq[i] == 'u':
-                    self.current_pi = True
-                    self.pulse_caller(self.pulse_xpi)
-                    
-                    self.last_pi = True
+            #In case the last pulse we did was a pi pulse and we are also no having a pi pulse, then we want to echo correctly by having two times tau larmor,
+            ##sine usually we just use tau larmor for the spacing.
+            if self.last_pi == True and current_pi == True:
+                start *=2.
 
-                elif seq[i] == 'v':
-                    self.current_pi = True
-                    self.pulse_caller(self.pulse_ypi)
-                    
-                    self.last_pi = True
+            self.e1.add(pulse.cp(self.pulse_dict[seq[i]]),
+                                refpulse        = 'pulse%d' % (self.n-1),
+                                refpoint        = 'center',
+                                refpoint_new    = 'center',
+                                name            = 'pulse%d' % self.n,
+                                start           = start)
 
-                elif seq[i] != 'e': 
-                    print "Seq exception", seq[i]
-                    sys.exit("A horrible mistake happened. Check you subsequence building routine.")
-
+            self.n +=1
+            self.last_pi = current_pi
 
 
     def generate_sequence(self, upload=True, **kw):
@@ -616,24 +594,21 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         ###
         # First let us define the necessary pulses.
         ###
+        
+        self.pulse_dict = {'x' : kw.get('x_pulse_pi2', None),
+                            'y': kw.get('y_pulse_pi2', None),
+                            'u': kw.get('x_pulse_pi', None),
+                            'v': kw.get('y_pulse_pi', None)}
 
-        # rotations pi2
-        self.pulse_xpi2  =   kw.get('x_pulse_pi2', None)
-        self.pulse_ypi2  =   kw.get('y_pulse_pi2', None)
-        self.pulse_mxpi2 =   kw.get('x_pulse_mpi2', None)
-        self.pulse_mypi2 =   kw.get('y_pulse_mpi2', None)
+        self.empty = pulse.cp(self.pulse_dict['x'], amplitude = 0.)
 
-        # rotations pi
-        self.pulse_xpi  =   kw.get('x_pulse_pi', None)
-        self.pulse_ypi  =   kw.get('y_pulse_pi', None)
-        self.pulse_mxpi =   kw.get('x_pulse_mpi', None)
-        self.pulse_mypi =   kw.get('y_pulse_mpi', None)
+        self.pulse_dict['e'] = self.empty
 
         # waiting element        
         self.T = pulse.SquarePulse(channel='MW_Imod', name='delay',
             length = 3000e-9, amplitude = 0.)
 
-        # Adwin sync plse that we need to send out after each sequence
+        # Adwin sync pulse that we need to send out after each sequence
         self.adwin_sync = pulse.SquarePulse(channel='adwin_sync',
            length = self.params['AWG_to_adwin_ttl_trigger_duration'],
            amplitude = 2)
@@ -643,6 +618,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
         ###
         elements = []
 
+        #A counting index that we use to cross-reference the pulse timings w.r.t. the last sequence
         self.n = 0
 
         for k in range(self.params['pts']):
@@ -650,6 +626,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
             self.e1 = element.Element('Single_germ_sequence_%d' % self.params['run_numbers'][k], pulsar=qt.pulsar,
                     global_time = True)
 
+            #First do carbon initialization
             elements.append(pulsar_msmt.MBI._MBI_element(self, name='CNOT%d' % k))
 
             self.e1.add(pulse.cp(self.T, 
@@ -672,7 +649,7 @@ class GateSetNoDecouplingTiming(pulsar_msmt.MBI):
             elements.append(self.e1)
 
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Single germ sequence with AWG timing with {} pulses'.format(self.params['pulse_shape']))
 
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
@@ -753,7 +730,7 @@ class ElectronT2NoTriggers(pulsar_msmt.PulsarMeasurement):
             elements.append(e1)
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Electron T2 with AWG timing with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 
@@ -939,7 +916,7 @@ class ElectronRefocussingTriggered(DelayTimedPulsarMeasurement):
             
         # return_e=e
         # create a sequence from the pulses
-        seq = pulsar.Sequence('Electron refocussing with delay trigger with {} pulses'.format(self.params['pulse_type']))
+        seq = pulsar.Sequence('Electron refocussing with delay trigger with {} pulses'.format(self.params['pulse_shape']))
         for e in elements:
             seq.append(name=e.name, wfname=e.name, trigger_wait=True)
 

@@ -12,10 +12,10 @@ import measurement.scripts.mbi.mbi_funcs as funcs
 #reload all parameters and modules
 
 
-from measurement.scripts.espin import espin_funcs as funcs
+from measurement.scripts.mbi import mbi_funcs
 from measurement.lib.measurement2.adwin_ssro import pulsar_msmt
 from measurement.lib.measurement2.adwin_ssro import pulse_select as ps
-reload(funcs)
+reload(mbi_funcs)
 
 # from darkesr, use of some of these is hidden. Not relevant
 import measurement.lib.config.adwins as adwins_cfg
@@ -39,7 +39,6 @@ matplotlib.use('Agg')
 
 
 execfile(qt.reload_current_setup)
-#reload(funcs)
 
 #name = 'HANS_sil4'
 SAMPLE = qt.exp_params['samples']['current']
@@ -144,9 +143,10 @@ def create_experiment_list_pyGSTi(filename):
     filename: string
         Name of the .txt file. File must be formatted in the way as done by
         pyGSTi.
-        One gatesequence per line, formatted as e.g.:Gx(Gy)^2Gx.
+        One gatesequence per line, formatted as e.g.:Gx(Gy)^2Gx. This is usually created
+        with the simulateGST ipython notebook, and saved as MyDataTemplate.txt
     Returns:
-    Nested list of single experiments, 
+    Nested list of single experiment in a format the code below can understand it 
     """
 
     try:
@@ -225,40 +225,24 @@ def create_experiment_list_pyGSTi(filename):
 
 def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single_decoupling = False, last_seq = False, fid_1 = ['e'], fid_2 = ['e'], sequence_type = 'all', germ = ['e'], germ_position = [1,3], N_decoupling = [4], run_numbers=[1,2,3]):
     """
-    Gateset tomography code. Please enter a nice code description here once it is in the format I want it.
+    Function used to run GST on the individual experiment level.
     """
 
     if sequence_type == 'specific_germ_position':
         m = pulsar_delay.GateSetWithDecoupling(name)
+        mbi_funcs.prepare(m) # load msmt params
 
+    
 
-    m.params.from_dict(qt.exp_params['samples'][SAMPLE])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO-integrated'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+espin'])
-    m.params.from_dict(qt.exp_params['protocols']['cr_mod'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols']['AdwinSSRO+MBI'])
-    m.params.from_dict(qt.exp_params['protocols'][SAMPLE_CFG]['pulses'])
-
-
+    #from mbi_funcs.py
     m.params['E_RO_durations']      = [m.params['SSRO_duration']]
     m.params['E_RO_amplitudes']     = [m.params['Ex_RO_amplitude']]
     m.params['send_AWG_start']      = [1]
     m.params['sequence_wait_time']  = [0]
 
 
-    #Specigfic to make it work on LT2
-
-    m.params['Shutter_rise_time']   = 2500
-    m.params['Shutter_fall_time']   = 2500
-    m.params['pulse_type'] = 'Hermite'
-    m.params['Ex_SP_amplitude']=0
-    m.params['AWG_to_adwin_ttl_trigger_duration']=3e-6  # commenting this out gives an error
-    m.params['wait_for_AWG_done']=1
-    m.params['initial_msmt_delay'] = 10000.0e-9
+    #Specific to make it work on LT2
+    m.params['initial_msmt_delay'] = 5000.0e-9
 
     #The total number of sequence repetitions
     m.params['reps_per_ROsequence'] = 5000
@@ -270,6 +254,8 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
     m.params['germ_position']       = germ_position
     m.params['N_decoupling']        = N_decoupling
     m.params['run_numbers']         = run_numbers
+
+    #Muss auch nicht imer definiert werden
     
     #Calculae the larmor frequency, since we want to sit on larmor revival points for this experiment
     tau_larmor = np.round(1/m.params['C1_freq_0'],9)
@@ -352,21 +338,42 @@ def gateset(m, debug = False, decoupling = True, multiple=False, pi=True, single
                 m.finish()
         # if sequence_type == 'specific_germ_position':
         #     m.finish()
+
 def reoptimize():
+    """
+    Function used for reoptimizing on the NV center position
+    """
     GreenAOM.set_power(10e-6)
     optimiz0r.optimize(dims=['x','y','z'], cycles=2)
     GreenAOM.turn_off()
 
 def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, awg_size = 50):
+    """
+    Function used to set up a long sequence of experiments. 
+    Inputs are: filename,   a filename that corresponds to the list of experiments as output by the pygsti package. Foir this use the ipython notebook SimulateGST.
+                debug,      wether we want to run the seuqnece just for debugging, or for real
+                pi,         wether we want to run pi or pi/2 pulses. Irrelevant when using the self-focusing mechanism.
+                decoupling, If we want our code to come up with a decoupling sequence (currently only XY8 implemented) for us to decouple in between germ pulses
+                awg_size    the size of individual measurements that we break our overall length of experimental runs saved in filename into. This is needed as to not 
+                            freeze the AWG with a memory error.
+    This function then calls the gateset function, which handles individual awg runs.
+    """
     
+    #Variable I need to check wether we are running the last sequence
     last_seq = False
 
-    #Create a list of all experiments that we want to do. Assumes that we created a filename before
+    #Create a list of all experiments that we want to do. Assumes that we created a filename before with our ipython notebook Simulating GST.
     experimentalist = create_experiment_list_pyGSTi(filename)
+    global experimentalist
     
     #Determine the number of awg runs we want to run, making sure we always round up so we take all the data we want
-    awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
+    if debug:
+        awg_runs = 1
+    else:
+        awg_runs = int(len(experimentalist)/awg_size) + (len(experimentalist) % awg_size > 0)
+    
     print "This experiment will have", awg_runs, "runs"
+
     #To keep track what we need to do for the save name
     if awg_runs >1:
         multiple = True
@@ -382,17 +389,20 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
         # m = pulsar_delay.GateSetNoDecoupling(name)
         m = pulsar_delay.GateSetNoDecouplingTiming(name)
 
+
+    mbi_funcs.prepare(m)
     run_names = []
 
     for i in range(awg_runs):
 
+        #If we are not debugging and we are runnign a real sequence, then reoptimize the NV counts signal every twenty sequences to counteract drift 
         if i % 20 == 0 and debug == False:
             reoptimize()
 
         if i == awg_runs:
             last_seq = True
 
-        ## Option to stop the measurement in a clean fashion
+        ## Option to stop the measurement in a clean fashion every awg_size measurements
         breakst = show_stopper()
         if breakst: break
 
@@ -408,12 +418,16 @@ def individual_awg_write_ro(filename, debug = True, pi=True, decoupling = True, 
             N_dec   = [pos[3] for pos in single_awg_list]
         run     = [pos[4] for pos in single_awg_list]
 
+        #Print progress updates since these are very long measurements
         print "Currently working on run numbers", run
         print float(100*i/awg_runs), "% of measurements are finished"
+
         run_names.extend(['Start_run%d' %run[0]])
 
+        #Optimierungspotential!
         m.params['all_run_names'] = run_names
 
+        #Finally pass everything to the gateset function
         gateset(m, debug = debug, decoupling = decoupling, multiple = multiple, pi = pi, last_seq = last_seq, fid_1 = fid_1, fid_2 = fid_2, sequence_type = 'all', germ = germ, N_decoupling = N_dec, run_numbers=run)
    
     if not debug:
@@ -521,7 +535,10 @@ if __name__ == '__main__':
     # electronT2_NoTriggers(name, debug=True, range_start = hahn_echo_range[0], range_end = hahn_echo_range[1])
 
 
-    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", debug = False, decoupling = False, pi=True, awg_size = 10)
+    individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataTemplate.txt", 
+        debug = True, 
+        decoupling = False, 
+        pi=True, awg_size = 40)
 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = False, pi=True, single_decoupling = False,  fid_1 = ['x', 'x', 'x', 'x', 'x'], fid_2 = [ 'm', 'm', 'm', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e', 'e', 'e'], N_decoupling = [1, 2, 4, 8, 16] ,run_numbers=[1, 2, 4, 8, 16])
 #
@@ -532,29 +549,4 @@ if __name__ == '__main__':
     # individual_awg_write_ro("D://measuring//measurement//scripts//Gateset_tomography//MyDataset.txt", debug = False, decoupling = True, pi=False, awg_size = 10)
 # 
     # gateset(pulsar_delay.GateSetWithDecoupling(name), debug = True, fid_1 = ['x', 'x', 'x'], fid_2 = ['m', 'm', 'm'], sequence_type = 'all', germ = ['e', 'e', 'e'], N_decoupling = [2, 4, 8], run_numbers=[2, 4, 8])
-
-
-    # reoptimize()
-    # electronRefocussingTriggered("HahnEchoNoTrigger_" + name, debug=True, 
-    #     range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
-    #     evolution_1_self_trigger = False, evolution_2_self_trigger=False,
-    #     vary_refocussing_time = True)
-    
-    # reoptimize()    
-    # electronRefocussingTriggered("DefocussingNoTrigger_" + name, debug=False, 
-    #     range_start = defocussing_range[0], range_end = defocussing_range[1], 
-    #     evolution_1_self_trigger = False, evolution_2_self_trigger=False,
-    #     vary_refocussing_time = False)
-
-    # reoptimize()    
-    # electronRefocussingTriggered("DefocussingOneTrigger_" + name, debug=False, 
-    #     range_start = defocussing_range[0], range_end = defocussing_range[1], 
-    #     evolution_1_self_trigger = True, evolution_2_self_trigger=False,
-    #     vary_refocussing_time = False)
-
-    # reoptimize()
-    # electronRefocussingTriggered("HahnEchoTwoTrigger_" + name, debug=False, 
-    #     range_start = hahn_echo_range[0], range_end = hahn_echo_range[1], 
-    #     evolution_1_self_trigger = True, evolution_2_self_trigger=True,
-    #     vary_refocussing_time = True)
 

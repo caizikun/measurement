@@ -35,7 +35,7 @@ def calibrate_pi_pulse(name, multiplicity=1, debug=False, mw2=False, **kw):
     
     ps.X_pulse(m) #### update the pulse params depending on the chosen pulse shape.
 
-    m.params['repetitions'] = 1000 if multiplicity == 1 else 2000
+    m.params['repetitions'] = 1000 if multiplicity == 1 else 1000
     rng = 0.1 if multiplicity == 1 else 0.06
 
     ### comment NK: the previous parameters for MW_duration etc. were not used anywhere in the underlying measurement class.
@@ -350,8 +350,8 @@ def sweep_pm_risetime(name, debug=False, mw2=False, **kw):
 if __name__ == '__main__':
     calibrate_pi_pulse(SAMPLE_CFG + 'Pi', multiplicity = 5, debug = False, mw2=False)
     # calibrate_theta_pulse(SAMPLE_CFG + 'theta')
-    #sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
-    #pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
+    # sweep_pm_risetimexe(SAMPLE_CFG + 'PMrisetime', debug = False, mw2=True) #Needs calibrated square pulses
+    # pi_pulse_sweepdelay_singleelement(SAMPLE_CFG + 'QuanMem_Pi', multiplicity = 2)
     # sweep_number_pi_pulses(SAMPLE_CFG + 'QuanMem_Pi',pts=30)
     # calibrate_pi2_pulse(SAMPLE_CFG + 'Hermite_Pi2', debug = False, mw2=False)
     # calibrate_comp_pi2_pi_pi2_pulse(SAMPLE_CFG + 'Hermite_composite_pi',multiplicity = 35,debug = False)

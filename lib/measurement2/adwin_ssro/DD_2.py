@@ -550,7 +550,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_phase_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse', 'carbon_delay_phase_feedback']
+        gates_in_need_of_connecting_elts1 = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','RF_pulse_repeated','IQ_RF_square_pulse','carbon_delay_phase_feedback']
         gates_in_need_of_connecting_elts2 = ['Carbon_Gate','electron_decoupling','carbon_delay_phase_feedback']
         #TODO_MAR: Insert a different type of phase gate in the case of a passive element.
         #TODO_THT: What  does this mean??? Clearly it does not work...
@@ -577,7 +577,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def insert_transfer_gates(self,gate_seq,pt=0):
         ext_gate_seq = [] # this is the list that also contains the connection elements
-        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','IQ_RF_square_pulse','electron_Gate']
+        gates_in_need_of_transfer_elts = ['Carbon_Gate','electron_decoupling','passive_elt','RF_pulse','RF_pulse_repeated','IQ_RF_square_pulse','electron_Gate']
 
         for i in range(len(gate_seq)-1):
             
@@ -1082,7 +1082,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             # Special elements
             #########
 
-            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse' or g.Gate_type =='IQ_RF_square_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
+            elif g.Gate_type =='passive_elt' or g.Gate_type =='RF_pulse' or g.Gate_type == 'RF_pulse_repeated' or g.Gate_type =='IQ_RF_square_pulse': #MB: added RF pulse temporary, now RF pulses cant be phase tracked
 
                 for iC in range(len(g.C_phases_before_gate)):
                     if (g.C_phases_after_gate[iC] == None) and (g.C_phases_before_gate[iC] !=None):
@@ -2698,10 +2698,11 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def generate_RF_pulse_element(self,Gate):
         '''
-        Written by MB. 
+        Written by MB. Cleaned by CEB 20171201.
+
         Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
-        Pulse is build up out of a starting element, a repeated middle element and an end
-        element to save the memory of the AWG.
+        Pulse is here created as a single AWG element (memory intensive), consisting of an off-time, then a single erf envelope
+        with 500 ns rise/fall time.
         '''
 
         ###################
@@ -2716,42 +2717,14 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         prefix     = Gate.prefix
         phase      = Gate.phase
 
-        #We choose a max length for pulse block of
+        pulse_spacing = 1e-6
 
-        # Freq_Res = 5 #Needed freq res in Hz
-        # multiplier = freq / Freq_Res
-        # periods_in_pulse = int(1e-6 * freq) + 1
-
-        # while (periods_in_pulse / freq) % 1e-9 != 0:
-        #     periods_in_pulse += 1
-        #     if periods_in_pulse / freq > 1e-3:
-        #         print periods_in_pulse
-        #         raise Exception('Choose different freq')
-        # print periods_in_pulse / freq
-        
-
-        #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
-        # periods_in_pulse = int(1e-6 * freq) + 1
-
-        # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
-        # #     print periods_in_pulse * 1e9 / freq
-        # #     periods_in_pulse *= 2
-
-        # print periods_in_pulse
-        # #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
-        # MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
-        # rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
-
-
-        # #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
-        # if length <= periods_in_pulse/freq + 2e-6:
-        #     raise Exception('RF pulse is too short')
-
-        # print periods_in_pulse
-        #Determine number of repeated elements
-        # Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
-        # tau_remaind *= 1e-9 
         list_of_elements = []
+
+        T = pulse.SquarePulse(
+            channel='RF',
+            length = pulse_spacing, 
+            amplitude = 0)
 
         X = pulselib.RF_erf_envelope(
             channel = 'RF',
@@ -2759,35 +2732,15 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             frequency = freq,
             amplitude = amplitude,
             phase = phase)
-        # Env_start_p = pulselib.RF_erf_rise_element(
-        #     channel = 'RF',
-        #     length = rise_length + tau_remaind / 2,
-        #     frequency = freq,
-        #     amplitude = amplitude,
-        #     phase = phase,
-        #     startorend = 'start')
-        # Env_end_p = pulselib.RF_erf_rise_element(
-        #     channel = 'RF',
-        #     length = rise_length + tau_remaind / 2,
-        #     frequency = freq,
-        #     amplitude = amplitude,
-        #     phase = phase,
-        #     startorend = 'end')
-
-        # e_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
-        #         global_time = True)
-        # e_start.append(pulse.cp(Env_start_p))
-        # list_of_elements.append(e_start)
-
-        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+       
+        rf_pulse = element.Element('%s_RF_pulse' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_middle.append(pulse.cp(X))
-        list_of_elements.append(e_middle)
 
-        # e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
-        #         global_time = True)
-        # e_end.append(pulse.cp(Env_end_p))
-        # list_of_elements.append(e_end)
+        rf_pulse.append(pulse.cp(T))
+        rf_pulse.append(pulse.cp(X))
+        rf_pulse.append(pulse.cp(T))
+
+        list_of_elements.append(rf_pulse)
 
         Gate.tau_cut = 1e-6
         Gate.wait_time = Gate.length + 2e-6
@@ -2797,7 +2750,116 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
 
     def generate_RF_pulse_element_repeated_middle(self,Gate):
         '''
-        Written by MB. 
+        Written by CEB 20171201 
+        Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
+        Pulse is build up out of a starting element, a repeated middle element and an end
+        element to save the memory of the AWG.
+
+        #TODO: Global time = 
+        '''
+
+        ###################
+        ## Set paramters ##
+        ###################
+
+        Gate.scheme = 'RF_pulse_repeated'
+
+        length     = Gate.length
+        freq       = Gate.RFfreq
+        amplitude  = Gate.amplitude
+        prefix     = Gate.prefix
+        phase      = Gate.phase
+
+        pulse_spacing = 1e-6
+        total_gate_t = length + 2*pulse_spacing
+
+        period_t = 1/freq
+        periods_in_pulse = 5
+        pulse_t = periods_in_pulse * period_t
+
+        Gate.reps, tau_remaind = divmod(total_gate_t,pulse_t)
+        ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
+
+        if ext_pulse_length < 0:
+            Gate.reps -= 1
+            ext_pulse_length += 5e-6
+
+        ext_pulse_final_phase = 360* ((ext_pulse_length/period_t) %1)
+        print 'Additional Phase:',ext_pulse_final_phase
+        print 'Initial Phase:', phase
+        print 'X Phase:', phase+ext_pulse_final_phase
+        print 'Start Pulse Length', ext_pulse_length
+
+        list_of_elements = []
+
+        T = pulse.SquarePulse(
+            channel='RF',
+            length = pulse_spacing, 
+            amplitude = 0)
+
+        X = pulse.SinePulse(
+            channel = 'RF',
+            length = pulse_t,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase+ext_pulse_final_phase)
+
+        # Env_start_p = pulse.SinePulse(
+        #     channel = 'RF',
+        #     length = ext_pulse_length,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase)
+
+        # Env_end_p = pulse.SinePulse(
+        #     channel = 'RF',
+        #     length = ext_pulse_length,
+        #     frequency = freq,
+        #     amplitude = amplitude,
+        #     phase = phase+ext_pulse_final_phase)
+
+    
+        Env_start_p = pulselib.RF_erf_rise_element(
+            channel = 'RF',
+            length = ext_pulse_length,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase,
+            startorend = 'start')
+
+        Env_end_p = pulselib.RF_erf_rise_element(
+            channel = 'RF',
+            length = ext_pulse_length,
+            frequency = freq,
+            amplitude = amplitude,
+            phase = phase+ext_pulse_final_phase,
+            startorend = 'end')
+
+        rf_pulse_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+                global_time = False)
+        rf_pulse_start.append(pulse.cp(T))
+        rf_pulse_start.append(pulse.cp(Env_start_p))
+        list_of_elements.append(rf_pulse_start)
+
+        rf_pulse_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+                global_time = False)
+        rf_pulse_middle.append(pulse.cp(X))
+        list_of_elements.append(rf_pulse_middle)
+
+        rf_pulse_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+                global_time = False)
+        rf_pulse_end.append(pulse.cp(Env_end_p))
+        rf_pulse_end.append(pulse.cp(T))
+        list_of_elements.append(rf_pulse_end)
+
+        Gate.tau_cut = 1e-6
+        Gate.wait_time = Gate.length + 2e-6
+        Gate.elements= list_of_elements
+        return Gate
+
+    def generate_RF_pulse_element_repeated_middle_Michiel(self,Gate):
+        '''
+        Written by MB.
         Generate arbitrary RF pulse gate, so a pulse that is directly created by the AWG.
         Pulse is build up out of a starting element, a repeated middle element and an end
         element to save the memory of the AWG.
@@ -2807,7 +2869,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         ## Set paramters ##
         ###################
 
-        Gate.scheme = 'RF_pulse'
+        Gate.scheme = 'RF_pulse_repeated'
 
         length     = Gate.length
         freq       = Gate.RFfreq
@@ -2815,42 +2877,62 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         prefix     = Gate.prefix
         phase      = Gate.phase
 
-        #We choose a max length for pulse block of
+        pulse_spacing = 1e-6
+        total_gate_t = length + 2*pulse_spacing
 
-        Freq_Res = 5 #Needed freq res in Hz
-        multiplier = freq / Freq_Res
-        periods_in_pulse = int(1e-6 * freq) + 1
+        period_t = 1/freq
+        periods_in_pulse = 5
+        pulse_t = periods_in_pulse * period_t
 
-        while (periods_in_pulse / freq) % 1e-9 != 0:
-            periods_in_pulse += 1
-            if periods_in_pulse / freq > 1e-3:
-                print periods_in_pulse
-                raise Exception('Choose different freq')
-        print periods_in_pulse / freq
-        
+        Gate.reps, tau_remaind = divmod(total_gate_t,pulse_t)
+        ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
 
-        #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
+        if ext_pulse_length < 0:
+            Gate.reps -= 1
+            ext_pulse_length += 5e-6
+
+        print(Gate.reps, tau_remaind)
+        print(period_t)
+
+        # #We choose a max length for pulse block of
+
+        # Freq_Res = 5 #Needed freq res in Hz
+        # multiplier = freq / Freq_Res
         # periods_in_pulse = int(1e-6 * freq) + 1
 
-        # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
-        # #     print periods_in_pulse * 1e9 / freq
-        # #     periods_in_pulse *= 2
+        # # while (periods_in_pulse / freq) % 1e-9 != 0:
+        # #     periods_in_pulse += 1
+        # #     if periods_in_pulse / freq > 1e-3:
+        # #         print periods_in_pulse
+        # #         raise Exception('Choose different freq')
+        # print 'periods in pulse',periods_in_pulse
+        # print 'periods/freq',periods_in_pulse / freq
+        
 
-        print periods_in_pulse
-        #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
-        MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
-        rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
+        # #Determine the number of periods that fit in one repeated middle element and if its dividable by 4 ns. 
+        # # periods_in_pulse = int(1e-6 * freq) + 1
+
+        # # # while round(periods_in_pulse * 1e9 / freq) % 4 != 0:
+        # # #     print periods_in_pulse * 1e9 / freq
+        # # #     periods_in_pulse *= 2
+        # #Determine the length of the rise element based on the amplitude you want the Erf to have when cutting off
+        # MinErfAmp = 0.999 #99.9% of full amplitude when cutting off error function
+        # rise_length = max(0.5 * 0.5e-6 * (2+erfinv(0.99)),1e-6) #0.5e-6 is the risetime of the pulse
 
 
-        #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
-        if length <= periods_in_pulse/freq + 2e-6:
-            raise Exception('RF pulse is too short')
+        # #RF pulses are limited due to structure, but this shouldnt be conflicting if one wants to perform a gate 
+        # if length <= periods_in_pulse/freq + 2e-6:
+        #     raise Exception('RF pulse is too short')
 
-        print periods_in_pulse
-        #Determine number of repeated elements
-        Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
-        tau_remaind *= 1e-9 
+        # #Determine number of repeated elements
+        # Gate.reps, tau_remaind = divmod(round(1e9*(length-2*rise_length)),periods_in_pulse/freq*1e9)
+        # tau_remaind *= 1e-9 
         list_of_elements = []
+
+        T = pulse.SquarePulse(
+            channel='RF',
+            length = pulse_spacing, 
+            amplitude = 0)
 
         X = pulse.SinePulse(
             channel = 'RF',
@@ -2858,6 +2940,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             frequency = freq,
             amplitude = amplitude,
             phase = phase)
+
         Env_start_p = pulselib.RF_erf_rise_element(
             channel = 'RF',
             length = rise_length + tau_remaind / 2,
@@ -2865,6 +2948,7 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             amplitude = amplitude,
             phase = phase,
             startorend = 'start')
+
         Env_end_p = pulselib.RF_erf_rise_element(
             channel = 'RF',
             length = rise_length + tau_remaind / 2,
@@ -2873,20 +2957,22 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             phase = phase,
             startorend = 'end')
 
-        e_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
+        rf_pulse_start = element.Element('%s_RF_pulse_start' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_start.append(pulse.cp(Env_start_p))
-        list_of_elements.append(e_start)
+        # rf_pulse_start.append(pulse.cp(T))
+        rf_pulse_start.append(pulse.cp(Env_start_p))
+        list_of_elements.append(rf_pulse_start)
 
-        e_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
+        rf_pulse_middle = element.Element('%s_RF_pulse_middle' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_middle.append(pulse.cp(X))
-        list_of_elements.append(e_middle)
+        rf_pulse_middle.append(pulse.cp(X))
+        list_of_elements.append(rf_pulse_middle)
 
-        e_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
+        rf_pulse_end = element.Element('%s_RF_pulse_end' %(prefix),  pulsar=qt.pulsar,
                 global_time = True)
-        e_end.append(pulse.cp(Env_end_p))
-        list_of_elements.append(e_end)
+        rf_pulse_end.append(pulse.cp(Env_end_p))
+        # rf_pulse_end.append(pulse.cp(T))
+        list_of_elements.append(rf_pulse_end)
 
         Gate.tau_cut = 1e-6
         Gate.wait_time = Gate.length + 2e-6
@@ -2918,8 +3004,9 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
         Gate.reps, tau_remaind = divmod(total_gate_t, block_length)
         ext_pulse_length = (tau_remaind*0.5)-pulse_spacing
 
-        # print 'gate_reps',Gate.reps
-        # print 'tau_remaind',tau_remaind
+        if ext_pulse_length < 0:
+            Gate.reps -= 1
+            ext_pulse_length += 5e-6
 
         list_of_elements = []
 
@@ -3586,16 +3673,22 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
             ####################
             elif gate.scheme == 'RF_pulse':
                 list_of_elements.extend(gate.elements)
-                # starting envelope element
-                # seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
-                #     trigger_wait=False,repetitions = 1)
-                # repeating period element
-                gate.reps = 1
                 seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                    trigger_wait=False,repetitions = 1)
+
+            elif gate.scheme == 'RF_pulse_repeated':
+                list_of_elements.extend(gate.elements)
+                # starting envelope element
+                seq.append(name=gate.elements[0].name, wfname=gate.elements[0].name,
+                    trigger_wait=False,repetitions = 1)
+                # repeating period element
+                # gate.reps = 1
+                seq.append(name=gate.elements[1].name, wfname=gate.elements[1].name,
                     trigger_wait=False,repetitions = gate.reps)
                  # ending envelope element
-                # seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
-                #     trigger_wait=False,repetitions = 1)
+                seq.append(name=gate.elements[2].name, wfname=gate.elements[2].name,
+                    trigger_wait=False,repetitions = 1)
+
             elif gate.scheme == 'IQ_RF_square_pulse':
                 list_of_elements.extend(gate.elements)
                 #Pulse Delay + Start Time
@@ -3996,6 +4089,8 @@ class DynamicalDecoupling(pulsar_msmt.MBI):
                 self.generate_electron_repump_element(g)
             elif g.Gate_type == 'RF_pulse':
                 self.generate_RF_pulse_element(g)
+            elif g.Gate_type == 'RF_pulse_repeated':
+                self.generate_RF_pulse_element_repeated_middle(g)
             elif g.Gate_type == 'IQ_RF_square_pulse':
                 self.generate_IQ_RF_square_pulse_element(g)
             elif g.Gate_type == 'LDE':
@@ -8231,6 +8326,14 @@ class NuclearRabiWithDirectRF(MBI_C13):
             if self.params['RF_generation_method'] == 'AWG':
                 if self.params['RF_pulse_durations'][pt] > 3e-6:
                     rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse',
+                        length      = self.params['RF_pulse_durations'][pt],
+                        RFfreq      = self.params['RF_pulse_frqs'][pt],
+                        amplitude   = self.params['RF_pulse_amps'][pt],
+                        phase       = self.params['RF_pulse_phases'][pt])
+                    gate_seq.extend([rabi_pulse])
+            elif self.params['RF_generation_method'] == 'AWG_Long':
+                if self.params['RF_pulse_durations'][pt] > 3e-6:
+                    rabi_pulse = Gate('Rabi_pulse_'+str(pt),'RF_pulse_repeated',
                         length      = self.params['RF_pulse_durations'][pt],
                         RFfreq      = self.params['RF_pulse_frqs'][pt],
                         amplitude   = self.params['RF_pulse_amps'][pt],

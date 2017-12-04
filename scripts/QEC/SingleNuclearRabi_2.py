@@ -53,36 +53,26 @@ def CarbonRabiWithDirectRF(name,
         centerfreq = m.params['C' + str(carbon_nr) + '_freq_0']
 
     if DoRabi: 
-        m.params['RF_pulse_durations'] = np.linspace(0e-6,1200e-6,21) + 4e-6
-        print m.params['RF_pulse_durations']
+        m.params['RF_pulse_durations'] = np.linspace(100e-6,100e-6,1) + 3e-6
         m.params['pts'] = len(m.params['RF_pulse_durations'])
-        m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq
-        m.params['RF_pulse_phases'] = np.ones(m.params['pts']) * 0
+        m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq 
         m.params['sweep_name'] = 'RF_pulse_length (us)'
         m.params['sweep_pts']  =  m.params['RF_pulse_durations'] / 1e-6 
-    elif Sweep_RF_phase: 
-        m.params['RF_pulse_phases'] = np.linspace(0,360,21)
-        m.params['pts'] = len(m.params['RF_pulse_phases'])
-        m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq 
-        m.params['RF_pulse_durations'] = np.ones(m.params['pts']) * 400e-6
-        m.params['sweep_name'] = 'Phase (deg)'
-        m.params['sweep_pts']  =  m.params['RF_pulse_phases']
     elif Sweep_C_RO_phase: 
         m.params['C_RO_phase'] = [i for i in np.linspace(0,90,21)]#np.linspace(0,180,21)       
         m.params['pts'] = len(m.params['C_RO_phase'])
         m.params['RF_pulse_durations'] = np.ones(m.params['pts']) * 10e-6
-        m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq
-        m.params['RF_pulse_phases'] = np.ones(m.params['pts']) * 0 
+        m.params['RF_pulse_frqs'] = np.ones(m.params['pts']) * centerfreq 
         m.params['sweep_name'] = 'RF_pulse_length (us)'
         m.params['sweep_pts']  =  m.params['C_RO_phase'] 
     else: 
-        m.params['RF_pulse_frqs'] = np.linspace(centerfreq-1e3,centerfreq+1e3,21)
+        m.params['RF_pulse_frqs'] = np.linspace(centerfreq-100e3,centerfreq+100e3,21)
         m.params['pts'] = len(m.params['RF_pulse_frqs'])
-        m.params['RF_pulse_durations'] = np.ones(m.params['pts']) * 800e-6
-        m.params['RF_pulse_phases'] = np.ones(m.params['pts']) * 0
+        m.params['RF_pulse_durations'] = np.ones(m.params['pts']) * 4e-6
         m.params['sweep_name'] = 'RF_freq (kHz)'
         m.params['sweep_pts']  =  m.params['RF_pulse_frqs'] / 1e3    
 
+    m.params['RF_pulse_phases'] = np.ones(m.params['pts']) * 180. 
     m.params['RF_pulse_amps'] = np.ones(m.params['pts']) * 0.7       
 
     m.params['C13_init_method'] = 'swap' #C13_init_method
@@ -105,9 +95,7 @@ if __name__ == '__main__':
     i = 0
     el_after_init = '1'
     DoRabi = True
-    Sweep_RF_phase = False
     Sweep_C_RO_phase = False
     CarbonRabiWithDirectRF(SAMPLE + 'Rabi_C'+str(carbon_nr)+'_el1_positive_' +str(i)+'run',
                             carbon_nr = carbon_nr, el_RO= 'positive', el_after_init=el_after_init, 
-                            DoRabi=DoRabi, RF_generation_method = 'AWG', debug=False)
-
+                            DoRabi=DoRabi, RF_generation_method = 'AWG_Long', debug=True)

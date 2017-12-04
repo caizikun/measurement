@@ -32,13 +32,13 @@ n = 1
 ###### Set which carbons and values to calibrate ######
 #######################################################
 
-qt.exp_params['simplify_wfnames'] = True
+qt.exp_params['simplify_wfnames'] = False
 
-carbons = [5]#[1,2,3,4,5,6,7]#[2,4,5]#,4]
+carbons = [6]
 
 """
-AFTER THE CALIBRATION IS DONE
-:s
+AFTER THE CALIBRATION IS DONE:
+
 The measured values are directly written into msmt_params.py,
 if the following parameter is true
 """
@@ -48,14 +48,14 @@ use_queue = False
 
 f_ms0 = True
 f_ms1 = True
-update_average_freq = False
+update_average_freq = True
 
 self_phase_calibration = True
 self_unc_phase_offset_calibration = False
 self_unc_phase_calibration = False
 check_unc_phase_calibration = False
 check_phase_or_offset = 'phase' # Check timing after, or phase offset.
-cross_phase_calibration = True
+cross_phase_calibration = False
 cross_phase_steps       = 1
 
 
@@ -105,7 +105,7 @@ elif SETUP == 'lt4':
         }
 
 elif SETUP == 'm1':
-    detuning_basic = 0.5e3
+    detuning_basic = 1e3
     detuning_dict = {
         '1' : detuning_basic,
         '2' : detuning_basic,

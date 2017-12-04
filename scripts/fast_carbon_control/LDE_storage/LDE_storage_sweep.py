@@ -12,6 +12,7 @@ import datetime
 import time
 name = qt.exp_params['protocols']['current']
 
+
 def json_load_byteified(file_handle):
     return _byteify(
         json.load(file_handle, object_hook=_byteify),
@@ -215,6 +216,7 @@ def prepare_carbon_params(m):
         m.params['Carbon_LDE_init_phase_correction_list'] = np.array([0.0] + extract_carbon_param_list(m, 'init_phase_correction', list(range(1,m.params['number_of_carbon_params'] + 1))))
 
     if m.params['use_avg_repump_time_from_msmt_params'] > 0:
+        print 'using avg. repump time from msmt params!'
         carbon = m.params['carbons'][0]
         etrans = m.params['electron_transition']
         m.params['average_repump_time'] = m.params['C%d_LDE_phase_matching_time%s' % (carbon, etrans)]
@@ -309,6 +311,7 @@ def turn_all_sequence_elements_off(m):
     m.params['do_delay_fb_pulses']      = 0
     m.params['skip_LDE_mw_pi']          = 0
     m.params['do_carbon_hahn_echo']     = 0
+    m.params['do_wait_instead_LDE']     = 0
     ### Should be made: PQ_during_LDE = 0??? Most of the time we don't need it.
     ### interesting to look at the spinpumping though...
 
@@ -371,7 +374,7 @@ def repump_speed(name,debug = False,upload_only=False,power = None):
     m.params['do_general_sweep']    = True
     m.params['general_sweep_name'] = 'LDE_SP_duration'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.append(np.linspace(0.0,0.15e-6,50),np.linspace(0.15e-6,2.e-6,pts-50))
+    m.params['general_sweep_pts'] = np.append(np.linspace(0.0,0.15e-6,50),np.linspace(0.15e-6,3.e-6,pts-50))
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e9
     m.params['is_two_setup_experiment']=0  
@@ -491,32 +494,26 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 5
+    pts = 22
     m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 200
+    m.params['reps_per_ROsequence'] = 1500
 
     turn_all_sequence_elements_off(m)
 
     ### sequence specific parameters
     m.params['is_two_setup_experiment'] = 0
     m.params['PLU_during_LDE'] = 0
+    m.params['use_avg_repump_time_from_msmt_params'] = 0
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
-    # m.params['do_general_sweep']    = 1
-    # m.params['do_carbon_init']  = 1 
-    # m.params['do_carbon_readout']  = 1
-    # m.params['do_LDE_2'] = 1
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1
     m.params['do_LDE_1'] = 1
     m.params['do_carbon_readout']  = 1
-    # m.params['mw_first_pulse_amp'] = 0
     m.params['MW_during_LDE'] = 1
-    # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
-    #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
-    #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
+
     m.joint_params['opt_pi_pulses'] = 0
-    m.params['do_carbon_hahn_echo']     = 1
+    m.params['do_carbon_hahn_echo']     = 0
     if 'LDE2_attempts' not in override_params:
         m.params['LDE2_attempts'] = 100
 
@@ -528,13 +525,15 @@ def sweep_average_repump_time(name,do_Z = False,upload_only = False,debug=False,
     ### define sweep
     m.params['general_sweep_name'] = 'average_repump_time'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.linspace(-0.0e-6,1e-6,pts)
+    m.params['general_sweep_pts'] = np.linspace(-0.3e-6,1.8e-6,pts)
     m.params['sweep_name'] = m.params['general_sweep_name'] 
     m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
     m.params['do_phase_correction'] = 0
 
     multi_carbon_expm = len(m.params['carbons']) > 1
-    
+  
+    # m.joint_params['LDE_element_length'] = m.params['LDE_SP_duration']+m.params['LDE_decouple_time']*2+0.5e-6
+    # m.params['LDE_element_length'] = m.joint_params['LDE_element_length']
     ### loop over tomography bases and RO directions upload & run
     breakst = False
     autoconfig = True
@@ -640,8 +639,10 @@ def update_average_repump_time(**kw):
     print("Done!")
 
 
-def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, carbon_override=None, override_params=None,
-                         do_upload=True):
+def sweep_number_of_reps(name,do_Z = False, upload_only = False, 
+                        debug=False, carbon_override=None, 
+                        override_params=None,
+                        do_upload=True,**kw):
 
     """
     runs the measurement for X and Y tomography. Also does positive vs. negative RO
@@ -652,50 +653,96 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
 
     if carbon_override is not None:
         override_params['carbons'] = [carbon_override]
+
     prepare(m, override_params=override_params)
 
     ### general params
-    pts = 10
-    m.params['pts'] = pts
-    m.params['reps_per_ROsequence'] = 200
+
+    pts = 14
+    if do_Z:
+        pts = 9
+
+    if m.params['number_of_carbon_pis'] == 2:
+        pts = 9
+        if do_Z:
+            pts = 7
+    
+    m.params['reps_per_ROsequence'] = 500
 
     turn_all_sequence_elements_off(m)
 
     ###parts of the sequence: choose which ones you want to incorporate and check the result.
+    m.params['simple_data_saving'] = 1
     m.params['do_general_sweep']    = 1
     m.params['do_carbon_init']  = 1
     m.params['do_LDE_1'] = 1
     m.params['do_carbon_readout']  = 1
-    # m.params['mw_first_pulse_amp'] = 0
     m.params['MW_during_LDE'] = 1
-    # m.params['mw_first_pulse_amp'] = 0#m.params['Hermite_pi_amp']
-    #m.params['mw_first_pulse_phase'] = m.params['Y_phase']# +180 
-    #m.params['mw_first_pulse_length'] = m.params['Hermite_pi_length']
     m.joint_params['opt_pi_pulses'] = 0
-    m.params['do_carbon_hahn_echo']     = 1
+    print override_params
+    ##### XXXX DIRTY HAAAAAACCCCKKKS COMMET OUT BELOW IF ERRORING
+    m.params['do_carbon_hahn_echo'] = 1#override_params['do_carbon_hahn_echo']
+    m.params['skip_LDE_mw_pi'] = 1#override_params['skip_LDE_mw_pi']
+    m.params['MW_during_LDE'] = 1#override_params['MW_during_LDE']
+    m.params['do_wait_instead_LDE'] = 0#override_params['do_wait_instead_LDE']
+
     ### calculate the sweep array
-    minReps = 10
-    maxReps = 1000
-    step = int((maxReps-minReps)/pts)+1
+    minReps = 4
+    maxReps = 1600 * min([m.params['AWG_SP_power']*1e6/1.5,1.])
+
+    if do_Z or m.params['do_wait_instead_LDE']:
+        maxReps = 2000
+
+    # step = int((maxReps-minReps)/pts)
+    #np.arange(minReps,maxReps,step)
     ### define sweep
     m.params['general_sweep_name'] = 'LDE1_attempts'
     print 'sweeping the', m.params['general_sweep_name']
-    m.params['general_sweep_pts'] = np.arange(minReps,maxReps,step)
-    m.params['sweep_name'] = m.params['general_sweep_name'] 
-    m.params['sweep_pts'] = m.params['general_sweep_pts']
-    print 'sweep pts', np.arange(minReps,maxReps,step)
-    ### loop over tomography bases and RO directions upload & run
+    multiplier = 2*m.params['number_of_carbon_pis']
+    m.params['general_sweep_pts'] = np.floor_divide(np.linspace(2*multiplier,maxReps,pts),multiplier)*multiplier 
+    
 
+    #### this bit lets you sweep the time if no pi pulse is applied
+    rng = 2e-6
+    c =override_params['carbons'][0]
+    centre = 1/abs(m.params['C'+str(c)+'_freq_0']-m.params['C'+str(c)+'_freq_1_m1'])-350e-9
+    coupling = 1/centre
+    m.joint_params['LDE1_attempts'] = m.params['LDE1_attempts'] = 700
+    m.params['general_sweep_pts'] = kw.pop('offset_array', np.linspace(-rng,+rng,pts))+centre
+    m.params['general_sweep_name'] = 'LDE_element_length_modifier'
+    m.params['LDE_decouple_time'] = np.amax(m.params['general_sweep_pts'])
+
+    if m.params['carbons'][0] == 3:
+        LDE_decoup_time = np.array([15.82e-6])[0]
+    elif m.params['carbons'][0] == 6:
+        LDE_decoup_time = np.array([12.81e-6])[0]
+    m.params['LDE_decouple_time'] = LDE_decoup_time
+
+    ### finish sweep params
+    m.params['sweep_name'] = m.params['general_sweep_name']+ ' (us)'
+    m.params['sweep_pts'] = m.params['general_sweep_pts']*1e6
+    m.params['pts'] = pts
+    print m.params['sweep_pts']
+
+    
+    length_multiplier = 1
+    m.joint_params['LDE_element_length'] = m.params['LDE_SP_duration']+m.params['LDE_decouple_time']*length_multiplier+1e-6
+    m.params['LDE_element_length'] = m.joint_params['LDE_element_length']
     breakst = False
     autoconfig = True
+
+    tomos = ['X','Y']
+
     if do_Z:
         for t in ['Z']:
             if breakst:
                 break
             for ro in ['positive','negative']:
+                
                 breakst = show_stopper()
                 if breakst:
                     break
+
                 print t,ro
                 m.params['do_C_init_SWAP_wo_SSRO'] = 1
                 save_name = t+'_'+ro
@@ -705,10 +752,11 @@ def sweep_number_of_reps(name,do_Z = False, upload_only = False, debug=False, ca
                 autoconfig = False
 
     else:
-        for t in ['X','Y']:
+        for t in tomos:
             if breakst:
                 break
             for ro in ['positive','negative']:
+                
                 breakst = show_stopper()
                 if breakst:
                     break
@@ -2223,6 +2271,11 @@ def check_newfocus_power(pwr):
     PMServo.move_out()
     return m_pwr
 
+def optimize():
+    GreenAOM.set_power(2e-6)
+    optimiz0r.optimize(dims=['x','y','z','y','x'])
+    GreenAOM.turn_off()
+
 if __name__ == '__main__':
     # test_pwr = 600e-9
     # if (np.abs(check_newfocus_power(test_pwr) - test_pwr) > 0.02*test_pwr):
@@ -2235,19 +2288,36 @@ if __name__ == '__main__':
     #     if show_stopper():
     #         break
     #     repump_speed(name+'_repump_speed_power'+str(rep_power*1e6)+'_uW',upload_only = False, power=rep_power)
-    # repump_speed(name+'_repump_speed',upload_only = True)
+    # repump_speed(name+'_repump_speed',upload_only = False)
 
     # sweep_average_repump_time(name+'_Sweep_Repump_time_Z',do_Z = True,debug = False)
-    # sweep_average_repump_time(
-    #     name+'_Sweep_Repump_time_Z_C6',do_Z = True,debug=False,
-    #     override_params={
-    #         'carbons': [6],
-    #         'LDE2_attempts': 300
-    #     }
-    # )
+    # for c in [1,3,6]:
+    #     sweep_average_repump_time(
+    #         name+'_Sweep_Repump_time_X_C'+str(c),do_Z = False,debug=False,
+    #         override_params={
+    #             'carbons': [c],
+    #             'LDE2_attempts': 70,
+    #             'LDE1_attempts' : 70,
+    #         }
+    #     )
 
-    sweep_number_of_reps(name+'_sweep_number_of_reps_X',do_Z = False, debug=False,carbon_override=7)
-    # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True,carbon_override = 6)
+    for c in [6,3]:
+        for p in np.array([4])*1e-6:
+            if c == 3:
+                t = 15.82
+            elif c == 6:
+                t = 12.81
+            for ii in range(12):
+                arr = np.linspace(-t+ii,-t+ii+1,14)*1e-6
+                breakst = show_stopper()
+                if breakst:
+                    break
+                optimize()
+                override_params={'do_carbon_hahn_echo':1,'number_of_carbon_pis':1,'AWG_SP_power':p}
+                print arr
+                sweep_number_of_reps(name+'_sweep_number_of_reps_X_C'+str(c)+'_%s_uW' % np.round(p*1e6,1) + '_'+str(ii),do_Z = False,
+                                override_params=override_params, debug=False,carbon_override=c,upload_only=False,offset_array = arr)
+        # sweep_number_of_reps(name+'_sweep_number_of_reps_Z',do_Z = True,carbon_override = 3,upload_only=True)
 
     # characterize_el_to_c_swap(name+'_Swap_el_to_C',  upload_only = False)
     # characterize_el_to_c_swap_success(name+'_SwapSuccess_el_to_C', upload_only = False)
@@ -2425,13 +2495,31 @@ if __name__ == '__main__':
                 update_average_repump_time()
         elif m_data['requested_measurement'] == 'decay_curve':
             c_str = "".join([str(c) for c in m_data['carbons']])
+            power = str(np.round(m_data['AWG_SP_power']*1e6,2))
+            C13_pis = m_data['number_of_carbon_pis']
+            # if (not m_data['do_z_in_loop']) and (m_data['LDE_decouple_time'] == 2.256e-6) and m_data['do_carbon_hahn_echo'] == 0:
+            #     m_name = name + '_sweep_number_of_reps_C%s_%suW_benchmark_X' % (c_str,power)
+            # else:#### this gives the bare carbon decay for this power.
+
+            m_name = name + '_sweep_number_of_reps_C%s_%suW_%s_13Cpi_%sMW%s_X' % (c_str,power,C13_pis,m_data['MW_during_LDE'],m_data['first_mw_pulse_type'])
+            print m_name
+            print m_data
             sweep_number_of_reps(
-                name + '_sweep_number_of_reps_C%s_X' % c_str,
+                m_name,
                 do_Z=False,
                 debug=debug,
                 override_params=m_data,
                 do_upload=not debug
-            )
+                )
+
+            if m_data['do_z_in_loop']:
+                sweep_number_of_reps(
+                    name + '_sweep_number_of_reps_C%s_%suW_Z' % (c_str,power),
+                    do_Z=True,
+                    debug=debug,
+                    override_params=m_data,
+                    do_upload=not debug
+                )
         else:
             print("What do you want?")
 

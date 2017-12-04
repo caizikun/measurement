@@ -92,10 +92,14 @@ def MBE(name, carbon            =   1,
     funcs.finish(m, upload =True, debug=debug)
     
 if __name__ == '__main__':
+<<<<<<< HEAD
+    carbons = [3]#,2,3,4,5,6,7]
+=======
     carbons = [1]#,2,3,4,5,6,7]
+>>>>>>> 69b20c8569fd43e04e397716ca5d612044b057da
     debug = False
     breakst = False
-    init_method = 'MBI'
+    init_method = 'both'
 
     if init_method == 'both' or init_method == 'swap':
         for c in carbons:

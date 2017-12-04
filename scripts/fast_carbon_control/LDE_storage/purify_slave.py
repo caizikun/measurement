@@ -37,6 +37,7 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         self.params = m2.MeasurementParameters('LocalParameters')
         self.current_setup = qt.current_setup
 
+        self.params['simple_data_saving'] = 0 # typically want full data sets
 
     def reset_plu(self):
         self.adwin.start_set_dio(dio_no=0, dio_val=0)
@@ -260,9 +261,20 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
         ]
 
         if self.params['use_old_feedback'] > 0:
-            save_data = base_data + old_fb_data
+            save_data = base_data #+ old_fb_data
         else:
-            save_data = base_data + new_fb_data
+            save_data = base_data #+ new_fb_data
+
+        if self.params['simple_data_saving'] > 0:
+            save_data = [
+                ('CR_before',1, reps),
+                ('CR_after',1, reps),
+                ('statistics', 10),
+                ('counted_awg_reps'                      ,1,reps),
+                ('attempts_first'                        ,1,reps),
+                ('ssro_results'                          ,1,reps),
+                'completed_reps',
+            ]
 
         self.save_adwin_data(name, save_data)
 
@@ -1062,38 +1074,52 @@ class purify_single_setup(DD.MBI_C13, pq.PQMeasurement):
                     #### norbert's dirty hack for symmetric carbon hahn echoes
                     ### ONLY WORKS WITH A SINGLE CARBON!
                     if self.params['do_carbon_hahn_echo'] > 0 and i ==0: ### only applies to the first run of this forloop
-
-                        
+                        LDE_gate_list = []
                         LDE1_first_part = copy.deepcopy(LDE1_gate_list[i])
-                        reps = int((LDE1_gate_list[i].reps+1)/2.)
+                        reps = int((LDE1_gate_list[i].reps+1)/(self.params['number_of_carbon_pis']*2.))
                         LDE1_first_part.reps = reps
+
                         if gate_seq == []:
                             LDE1_first_part.wait_for_trigger = True
-                        # wait_time = reps*self.joint_params['LDE_element_length']
-                        # LDE1_first_part = DD_2.Gate('wait_name1'+str(pt),'passive_elt',wait_time = wait_time)
-                        # LDE1_first_part.no_mw_pulse = True
-                        gate_seq.append(LDE1_first_part)
 
-                        carbon_nr = self.params['carbons'][0] ### only works with a single carbon
-                        ### now add carbon pi pulse
-                        Cpi2_1 = DD_2.Gate(str(carbon_nr) + '_C13_pi_a_' + str(pt), 'Carbon_Gate',
-                        Carbon_ind = carbon_nr, phase = 'reset')
-                        Cpi2_2 = DD_2.Gate(str(carbon_nr) + '_C13_pi_b_' + str(pt), 'Carbon_Gate',Carbon_ind = carbon_nr) ### has to be additive in terms of phase
-                        repump = copy.deepcopy(LDE1_repump_list[0])
-                        repump.name = repump.name + '1' 
-                        repump.prefix = repump.prefix + '1' 
-                        gate_seq.append(repump)
-                        gate_seq.append(Cpi2_1)
-                        gate_seq.append(Cpi2_2)
+                        LDE_gate_list.append(LDE1_first_part)
 
-                        ## now add the rest of the LDE1.
-                        LDE1_second_part = copy.deepcopy(LDE1_first_part)
-                        LDE1_second_part.name = LDE1_second_part.name+ '1'
-                        LDE1_second_part.prefix = LDE1_second_part.prefix+ '1'
-                        LDE1_second_part.reps = reps -1
-                        # LDE1_second_part.no_mw_pulse = True
-                        # LDE1_second_part = DD_2.Gate('wait_name2'+str(pt),'passive_elt',wait_time = wait_time)
-                        gate_seq.append(LDE1_second_part)
+                        for ii in range(self.params['number_of_carbon_pis']):
+
+
+                            carbon_nr = self.params['carbons'][0] ### only works with a single carbon
+                            ### now add carbon pi pulse
+                            Cpi2_1 = DD_2.Gate(str(carbon_nr) + '_C13_pi_a_%s_%s'%(ii,pt), 'Carbon_Gate',
+                            Carbon_ind = carbon_nr, phase = 'reset')
+                            Cpi2_2 = DD_2.Gate(str(carbon_nr) + '_C13_pi_b_%s_%s'%(ii,pt), 'Carbon_Gate',Carbon_ind = carbon_nr) ### has to be additive in terms of phase
+                            repump = copy.deepcopy(LDE1_repump_list[0])
+                            repump.name = repump.name + '_%s' % ii 
+                            repump.prefix = repump.prefix + '_%s' % ii 
+                            LDE_gate_list.append(repump)
+                            LDE_gate_list.append(Cpi2_1)
+                            LDE_gate_list.append(Cpi2_2)
+
+                            ## now add the rest of the LDE1.
+                            LDE1_next_part = copy.deepcopy(LDE1_first_part)
+                            LDE1_next_part.name = LDE1_next_part.name+ '_%s'%ii
+                            LDE1_next_part.prefix = LDE1_next_part.prefix+ '_%s'%ii
+                            if ii != self.params['number_of_carbon_pis']-1:
+                                LDE1_next_part.reps = 2*reps
+                            else:
+                                LDE1_next_part.reps = reps-1
+                            LDE_gate_list.append(LDE1_next_part)
+
+                        if self.params['do_wait_instead_LDE']:
+                            for ii,g in enumerate(LDE_gate_list):
+                                if g.Gate_type == 'LDE':
+                                    LDE_gate_list[ii] =  DD.Gate(g.name,'passive_elt',wait_time = g.reps*self.params['LDE_element_length']+3e-6)
+
+                        
+
+
+
+                        gate_seq.extend(LDE_gate_list)
+
 
                     else:
                         if gate_seq == []:

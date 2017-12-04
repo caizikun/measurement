@@ -20,7 +20,7 @@ print 'updating msmt params lt4 for {}'.format(cfg['samples']['current'])
 mw_mod_frequency = 0
 mw_power = 20
 
-f_msm1_cntr = 1.717509e9 #by JS #Electron spin ms=-1 frquency   ##Calib 2017-XX-XX
+f_msm1_cntr = 1.718064e9 #by JS #Electron spin ms=-1 frquency   ##Calib 2017-XX-XX
 f_msp1_cntr = 4.038204e9 #by JS #4.038781e9 #4.044206e9  #Electron spin ms=+1 frequency
 
 N_frq    = 7.13429e6        #not calibrated
@@ -36,7 +36,7 @@ if electron_transition == '+1':
 	mw_frq_MBI = f_msp1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
 	hermite_pi_length = 220e-9#100e-9 #Not calibrated
-	hermite_pi_amp = 0.862
+	hermite_pi_amp = 0.84
 
 	square_pi_length = 20e-9 #Not calibrated
 	square_pi_amp = 0.6 #Not calibrated
@@ -49,14 +49,14 @@ elif electron_transition == '-1':
 	mw_frq     = f_msm1_cntr - mw_mod_frequency                # Center frequency
 	mw_frq_MBI = f_msm1_cntr - mw_mod_frequency # - N_HF_frq    # Initialized frequency
 
-	hermite_pi_length = 104e-9 # divisible by 2
-	hermite_pi_amp = 0.874 #0.863
+	hermite_pi_length = 126e-9 # divisible by 2
+	hermite_pi_amp =  0.844#0.956#0.867 #0.863
 
 	square_pi_length = 50e-9
 	square_pi_amp = 0.291
 
-	hermite_pi2_length = 50e-9 # divisible by 2
-	hermite_pi2_amp = 0.6293 # 0.632
+	hermite_pi2_length = 60e-9 # divisible by 2
+	hermite_pi2_amp = 0.626 # 0.632
 
 
 ### General settings for AdwinSSRO
@@ -67,7 +67,7 @@ cfg['protocols']['AdwinSSRO']={
 		'counter_channel':              1,
 		'cycle_duration':               300,
 		'green_off_amplitude':          0.0,
-		'green_repump_amplitude':       30e-6,#18e-6
+		'green_repump_amplitude':       4.5e-6,
 		'green_repump_duration':        100,#20,
 		'send_AWG_start':               0,
 		'sequence_wait_time':           0,
@@ -96,7 +96,7 @@ cfg['protocols']['cr_mod']={
 	'repump_mod_control_dac'	:   'yellow_aom_frq',
 	}
 
-yellow = True
+yellow = False
 
 
 cfg['protocols']['AdwinSSRO']['yellow'] = yellow
@@ -240,18 +240,18 @@ cfg['samples'][sample_name] = {
 	'number_of_carbon_params':	8, # JS: should match with the list below
 
 	# ###############
-	# # C1 (A~ -350)#
+	# # C1 (A~ -376)#
 	# ###############
 	'C1_T2star_0'		: 10.76e-3,
 	'C1_T2star_1_m1'	: 9.16e-3,
 
-	'C1_freq_m1'        : (443342.77 + 819801.47)/2,
-	'C1_freq_0' 		: 443342.77,
-	'C1_freq_1_m1' 		: 819801.47,
+	'C1_freq_m1'        : (443317.88 + 819798.18)/2,
+	'C1_freq_0' 		: 443317.88,
+	'C1_freq_1_m1' 		: 819798.18,
 
 	'C1_Ren_tau_m1'    :   [5.936e-6],
 	'C1_Ren_N_m1'      :   [20],
-	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-11.59] + [-5.54] + [2.57] + [1.19] + [6.55] + [2.0] + [-3.79] + [0.0] + [0.0] + [0.0]),
+	'C1_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-12.78] + [-5.54] + [2.57] + [1.19] + [6.55] + [2.0] + [-3.79] + [0.0] + [0.0] + [0.0]),
 
 	'C1_phase_per_LDE_sequence_m1'	: 344.184,
 	'C1_init_phase_correction_m1': 0.0,
@@ -266,9 +266,9 @@ cfg['samples'][sample_name] = {
 	'C1_phase_per_LDE_sequence_p1'	:	0.0,
 	'C1_init_phase_correction_p1': 0.0,
 
-	'C1_LDE_phase_matching_time_m1' : 100e-9,
+	'C1_LDE_phase_matching_time_m1' : 95e-9,
 	###############
-	# C2(A ~ -26)  #
+	# C2(A ~ -32)  #
 	###############
 	'C2_T2star_0'		: 11.79e-3,
 	'C2_T2star_1_m1'	: 10.76e-3,
@@ -304,13 +304,13 @@ cfg['samples'][sample_name] = {
 	'C3_T2star_0'		: 10.05e-3,
 	'C3_T2star_1_m1'	: 9.71e-3,
 
-	'C3_freq_m1'        : (443004.38 + 505392.39)/2,
-	'C3_freq_0' 		: 443004.38,
-	'C3_freq_1_m1' 		: 505392.39,
+	'C3_freq_m1'        : (442980.35 + 505394.68)/2,
+	'C3_freq_0' 		: 442974.49,
+	'C3_freq_1_m1' 		: 505367.01,
 
 	'C3_Ren_tau_m1'    :   [3.692e-6],
 	'C3_Ren_N_m1'      :   [66],
-	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [44.7] + [-3.89] + [-2.17] + [2.83] + [-0.92] + [0.0] + [0.0] + [0.0]),
+	'C3_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [0.26] + [-9.16] + [44.29] + [-3.89] + [-2.17] + [2.44] + [-0.92] + [0.0] + [0.0] + [0.0]),
 
 	'C3_phase_per_LDE_sequence_m1'	: 84.63,
 	'C3_init_phase_correction_m1': 0.0,
@@ -325,20 +325,20 @@ cfg['samples'][sample_name] = {
 	'C3_phase_per_LDE_sequence_p1'	: 0.0, #84.126,
 	'C3_init_phase_correction_p1': 0.0,
 
-	'C3_LDE_phase_matching_time_m1' : 282e-9,
+	'C3_LDE_phase_matching_time_m1' : 250e-9,
 	###############
 	# C4 (A ~ 33) #
 	###############
 	'C4_T2star_0'		: 18.98e-3,
 	'C4_T2star_1_m1'	: 16.05e-3,
 
-	'C4_freq_m1'        : (442824.08 + 416202.95)/2,
-	'C4_freq_0' 		: 442824.08,
-	'C4_freq_1_m1' 		: 416202.95,
+	'C4_freq_m1'        : (442805.46 + 416193.95)/2,
+	'C4_freq_0' 		: 442805.46,
+	'C4_freq_1_m1' 		: 416193.95,
 
 	'C4_Ren_tau_m1'    :   [6.402e-6],#[1.745e-6],##[6.386e-6],
 	'C4_Ren_N_m1'      :   [28],#[56], #28
-	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-4.0] + [7.64] + [2.39] + [-2.62] + [0.0] + [0.0]),
+	'C4_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [7.15] + [-2.45] + [7.68] + [-2.22] + [7.64] + [2.39] + [-2.62] + [0.0] + [0.0]),
 
 	'C4_phase_per_LDE_sequence_m1'	: 14.616,
 	'C4_init_phase_correction_m1'	: 0.0,
@@ -354,20 +354,20 @@ cfg['samples'][sample_name] = {
 	'C4_phase_per_LDE_sequence_p1'	: 0.0, #15.795,
 	'C4_init_phase_correction_p1'	: 0.0,
 
-	'C4_LDE_phase_matching_time_m1' : 305e-9,
+	'C4_LDE_phase_matching_time_m1' : 0e-9,#305e-9,
 	###############
 	# C5 (A ~ 26) #
 	###############
 	'C5_T2star_0'		: 4.46e-3,
 	'C5_T2star_1_m1'	: 4.53e-3,
 
-	'C5_freq_m1'        : (443669.98 + 422802.79)/2,
-	'C5_freq_0' 		: 443669.98,
-	'C5_freq_1_m1' 		: 422802.79,
+	'C5_freq_m1'        : (443714.55 + 422758.50)/2,
+	'C5_freq_0' 		: 443714.55,
+	'C5_freq_1_m1' 		: 422758.5,
 
 	'C5_Ren_tau_m1'    :   [8.656e-6], #[10.964e-6], #8.826
 	'C5_Ren_N_m1'      :   [40], # [46],  #,
-	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-5.84] + [10.16] + [0.79] + [-0.04] + [0.0] + [0.0]),
+	'C5_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [-9.09] + [-5.32] + [7.72] + [-5.84] + [9.7] + [0.79] + [-0.04] + [0.0] + [0.0]),
 
 	'C5_phase_per_LDE_sequence_m1'	: 21.329,
 	'C5_init_phase_correction_m1': 0.0,
@@ -382,27 +382,27 @@ cfg['samples'][sample_name] = {
 	'C5_phase_per_LDE_sequence_p1'	: 0.0, #22.336,
 	'C5_init_phase_correction_p1': 0.0,
 
-	'C5_LDE_phase_matching_time_m1' : 272e-9,
+	'C5_LDE_phase_matching_time_m1' : 0e-9,#272e-9,
 	###############
 	# C6(A ~ -72) #
 	###############
 	'C6_T2star_0'		: 9.89e-3,
 	'C6_T2star_1_m1'	: 9.20e-3,
 
-	'C6_freq_m1'        : (443866.55 + 520877.99)/2,
-	'C6_freq_0' 		: 443866.55,
-	'C6_freq_1_m1' 		: 520877.99,
+	'C6_freq_m1'        : (443857.94 + 520853.65)/2,
+	'C6_freq_0' 		: 443857.94,
+	'C6_freq_1_m1' 		: 520853.65,
 
 	'C6_Ren_tau_m1'    :   [3.632e-6],
 	'C6_Ren_N_m1'      :   [52],
-	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [4.16] + [-0.87] + [1.04] + [98.83] + [-18.99] + [0.0] + [0.0] + [0.0]),
+	'C6_Ren_extra_phase_correction_list_m1' : np.array([0.0] + [3.89] + [-2.53] + [-4.81] + [-0.87] + [1.04] + [95.54] + [-18.99] + [0.0] + [0.0] + [0.0]),
 
 	'C6_phase_per_LDE_sequence_m1'	: 100.51,
 	'C6_init_phase_correction_m1': 0.0,
 
 	'C6_freq_p1'        : (443849.06 + 367087)/2,
 	'C6_freq_1_p1' 		: 367053.62,
-	#367087
+
 	'C6_Ren_tau_p1'    :   [9.238e-6],
 	'C6_Ren_N_p1'      :   [24],
 	'C6_Ren_extra_phase_correction_list_p1' : np.array([0.0] + [0.0] + [-1.12] + [-3.57] + [-3.73] + [-0.81] + [-15.32] + [-5.92] + [0.0] + [0.0] + [0.0]),
@@ -410,7 +410,7 @@ cfg['samples'][sample_name] = {
 	'C6_phase_per_LDE_sequence_p1'	: 0.0, #97.5,
 	'C6_init_phase_correction_p1': 0.0,
 
-	'C6_LDE_phase_matching_time_m1' : 201e-9,
+	'C6_LDE_phase_matching_time_m1' : 250e-9,
 	###############
 	# C7(A ~ -11)  #
 	###############
@@ -471,15 +471,15 @@ cfg['samples'][sample_name] = {
 cfg['protocols'][name]['AdwinSSRO'] = {
 		'A_CR_amplitude':			 	 4.5e-9,#4.5e-9, #4e-9
 		'A_RO_amplitude' :				 0,
-		'A_SP_amplitude':				 20e-9,
+		'A_SP_amplitude':				 100e-9,
 		'CR_duration' :				 	 60, 
 		'CR_preselect':					 1000,
 		'CR_probe':						 1000,
 		'CR_repump':					 1000,
-		'Ex_CR_amplitude':				 1.5e-9,#1.5e-9, #2e-9 
+		'Ex_CR_amplitude':				 1.8e-9,#1.5e-9, #2e-9 
 		'Ex_RO_amplitude':				 4.5e-9,#4.5e-9,#used to be 8e-9
 		'Ex_SP_amplitude':				 0,
-		'Ex_SP_calib_amplitude':		 4.5e-9,
+		'Ex_SP_calib_amplitude':		 14.0e-9,
 		'SP_duration':					 100,
 		'SP_duration_ms0':				 100,
 		'SP_duration_ms1':				 1000,
@@ -583,7 +583,7 @@ cfg['protocols'][name]['pulses'] = {
 		'C13_Y_phase' 			:270,
 
 		'pulse_shape': pulse_shape,
-		'MW_switch_channel'		:	'None',#'mw_switch', ### if you want to activate the switch, put to MW_switch
+		'MW_switch_channel'		:	'mw_switch', ###'None', if you want to activate the switch, put to MW_switch
 		'mw2_modulation_frequency'   :  0,
 		'MW_modulation_frequency'   :  0,
     	'CORPSE_rabi_frequency' :   9e6,
@@ -633,13 +633,13 @@ cfg['protocols'][name]['pulses'] = {
     	'eom_pulse_amplitude'		 : -2.0, # calibration PH 2017-02-24
     	'eom_pulse_duration'         : 2e-9,
     	'eom_off_duration'           : 50e-9,
-    	'eom_off_amplitude'          : 0.71, # calibration PH 2017-02-24
+    	'eom_off_amplitude'          : 0.32,#0.522, # calibration PH 2017-10-10
     	'eom_overshoot_duration1'    : 20e-9,
     	'eom_overshoot1'             : -0.04,
     	'eom_overshoot_duration2'    : 4e-9,
     	'eom_overshoot2'             : -0.00,
-    	'aom_risetime'               : 24e-9, #17e-9
-    	'aom_amplitude'              : 0.8, 
+    	'aom_risetime'               : 20e-9, #17e-9
+    	'aom_amplitude'              : 0.7, 
 }
 
 cfg['protocols'][name]['cr_linescan'] = {
