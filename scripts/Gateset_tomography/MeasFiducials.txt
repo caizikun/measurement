@@ -1,7 +1,7 @@
 # My fiducial meas gate strings
 {}
-Gx
-Gy
 Gu
-GxGu
-GyGu
+GuGxGu
+GuGyGu
+GvGxGu
+GvGyGu
